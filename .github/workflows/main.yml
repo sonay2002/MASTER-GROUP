@@ -1,31 +1,25 @@
 name: Deploy Master Group
 
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-on: push
-
+permissions:
+  contents: read
 
 jobs:
-
-
   deploy:
-
-
     runs-on: ubuntu-latest
-
-
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Write deployment version
+        run: echo '{"version":"${{ github.sha }}"}' > build-info.json
 
-      - uses: actions/checkout@v7
-
-
-      - uses: shipstatic/action@v2
-
-
+      - name: Deploy to ShipStatic
+        uses: shipstatic/action@v2
         with:
-
-
           token: ${{ secrets.SHIP_TOKEN }}
-
-
           path: .
