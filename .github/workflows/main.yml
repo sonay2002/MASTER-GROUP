@@ -7,6 +7,12 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -18,8 +24,14 @@ jobs:
       - name: Write deployment version
         run: echo '{"version":"${{ github.sha }}"}' > build-info.json
 
-      - name: Deploy to ShipStatic
-        uses: shipstatic/action@v2
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          token: ${{ secrets.SHIP_TOKEN }}
           path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
