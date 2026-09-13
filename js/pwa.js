@@ -18,7 +18,11 @@ if ('serviceWorker' in navigator) {
           notice.id = 'mgUpdateNotice';
           notice.className = 'mg-update-notice';
           notice.innerHTML = '<span>Доступно обновление приложения</span><button type="button">Обновить</button>';
-          notice.querySelector('button').addEventListener('click', () => window.location.reload());
+          notice.querySelector('button').addEventListener('click', () => {
+            const url = new URL(window.location.href);
+            url.searchParams.set('_update', String(Date.now()));
+            window.location.replace(url);
+          });
           document.body.append(notice);
         };
         const checkRelease = () => fetch('build-info.json', { cache: 'no-store' })

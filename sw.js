@@ -36,7 +36,10 @@ self.addEventListener('fetch', event => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      const response = await fetch(request);
+      // Bypass the browser's HTTP cache after a deployment. The Cache Storage
+      // copy below remains the offline fallback, but it must never mask a new
+      // CSS or JavaScript release.
+      const response = await fetch(request, { cache: 'no-store' });
       if (response.ok) cache.put(request, response.clone());
       return response;
     } catch (_) {
