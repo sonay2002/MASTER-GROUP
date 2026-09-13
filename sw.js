@@ -1,4 +1,4 @@
-const CACHE='master-group-v176';
+const CACHE='master-group-v177';
 const CORE=[
   './','./index.html','./manifest.webmanifest','./css/styles.css',
   './js/state.js','./js/data-model.js','./js/storage.js','./js/catalog.js','./js/estimate-engine.js','./js/calculations.js','./js/finance-service.js','./js/estimate-ui.js','./js/zoom-lock.js','./js/estimate-core.js','./js/finance-ui.js','./js/app-core.js','./js/ui-refresh-fix.js','./js/print.js',
