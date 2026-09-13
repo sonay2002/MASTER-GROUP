@@ -12,6 +12,15 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
       .then(registration => {
         const RELEASE_KEY = 'master-group-release';
+        const showUpdateNotice = () => {
+          if (document.getElementById('mgUpdateNotice')) return;
+          const notice = document.createElement('div');
+          notice.id = 'mgUpdateNotice';
+          notice.className = 'mg-update-notice';
+          notice.innerHTML = '<span>Доступно обновление приложения</span><button type="button">Обновить</button>';
+          notice.querySelector('button').addEventListener('click', () => window.location.reload());
+          document.body.append(notice);
+        };
         const checkRelease = () => fetch('build-info.json', { cache: 'no-store' })
           .then(response => response.ok ? response.json() : null)
           .then(build => {
@@ -20,8 +29,7 @@ if ('serviceWorker' in navigator) {
             const knownVersion = localStorage.getItem(RELEASE_KEY);
             localStorage.setItem(RELEASE_KEY, version);
             if (knownVersion && knownVersion !== version && !reloading) {
-              reloading = true;
-              window.location.reload();
+              showUpdateNotice();
             }
           }).catch(() => {});
         const checkForUpdate = () => {

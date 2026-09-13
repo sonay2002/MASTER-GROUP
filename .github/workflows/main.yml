@@ -1,34 +1,36 @@
-name: Deploy Master Group
+name: Deploy Master Group to GitHub Pages
 
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
-on: push
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
 
 jobs:
-
-
   deploy:
-
-
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
-
     steps:
-
-
-      - uses: actions/checkout@v7
-
+      - name: Checkout
+        uses: actions/checkout@v6
       - name: Write deployment version
         run: echo '{"version":"${{ github.sha }}"}' > build-info.json
-
-
-      - uses: shipstatic/action@v2
-
-
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v4
         with:
-
-
-          token: ${{ secrets.SHIP_TOKEN }}
-
-
           path: .
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
