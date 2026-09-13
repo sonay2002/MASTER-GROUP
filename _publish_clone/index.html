@@ -1,0 +1,285 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v191"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v191"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v191</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="js/zoom-lock.js"></script>
+
+
+
+<link rel="stylesheet" href="css/styles.css">
+</head><body>
+<!-- Master Group v105: responsive notification controls -->
+<div id="dashboard" class="app screen dashboard-v3">
+<header class="home-head">
+  <button class="home-menu menu-btn" data-menu="open" aria-label="Открыть меню">☰</button>
+  <div class="home-brand"><span class="home-mark">MG</span><div><b>Master Group</b><small>Рабочее пространство</small></div></div>
+
+</header>
+
+<button class="home-create" data-action="new" aria-label="Создать новую смету">
+  <span class="home-create-icon">＋</span>
+  <span class="home-create-text"><b>Новая смета</b><small>Создать новый документ</small></span>
+  <span class="home-create-arrow">→</span>
+</button>
+
+<section class="home-quick">
+  <button class="home-quick-card" data-v58="estimates" data-nav="estimates"><span class="home-quick-icon">▤</span><span><b>Все сметы</b><small>Документы</small></span><i>›</i></button>
+  <button class="home-quick-card" data-v58="stats" data-nav="stats"><span class="home-quick-icon">◒</span><span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i></button>
+</section>
+
+<section class="home-recent">
+  <div class="home-section-head"><div><span>ПОСЛЕДНИЕ ДОКУМЕНТЫ</span><h2>Ваши сметы</h2></div><button class="home-see-all" data-v58="estimates" data-nav="estimates">Все&nbsp; →</button></div>
+  <div id="saved"></div>
+</section>
+<div id="count" hidden>0</div><div id="sum" hidden>0</div>
+</div>
+
+<div id="editor" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span id="mode">Новая смета</span></div></div></div><button class="btn secondary" data-action="home">Сметы</button></header><div class="stepbar" id="stepbar"></div><div id="flowNote" class="flow-note"></div>
+<section id="step1" class="step-screen"><div class="card direction-card-shell"><div class="section-kicker">01 · Направления</div><div class="title-row"><div><h1 class="title">Что делаем на объекте?</h1><p class="subtitle">Выберите одно или несколько направлений.</p></div><div class="selection-count" id="selectionCount">0</div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="nav-actions"><button class="btn primary full" data-action="step2">Перейти к услугам <span>→</span></button></div></div></section>
+<section id="step2" class="step-screen" hidden><div class="card services-shell"><div class="section-kicker">02 · Услуги</div><div class="title-row"><div><h1 class="title">Соберите работы</h1><p class="subtitle">Выберите услуги для каждого направления.</p></div></div><div id="serviceDirections" class="service-directions"></div><div id="services" class="service-list"></div><div class="nav-actions"><button class="btn secondary full" data-action="step1">← Направления</button><button class="btn primary full" data-action="step3">Далее →</button></div></div></section>
+<section id="step3" class="step-screen" hidden><div class="card"><div class="calc-head"><div class="calc-total-header"><span>ИТОГО</span><b id="total">0.00 MDL</b></div><div class="calc-count" id="calcCount">0 позиций</div></div><div id="items" class="calc-groups"></div><div class="calc-add-actions"><button type="button" class="btn secondary calc-add" data-calc-add>＋ Добавить услугу</button><button type="button" class="btn primary calc-add-direction" data-calc-add-direction>＋ Добавить направление</button></div><div class="nav-actions"><button class="btn secondary full" data-action="step2">← Услуги</button><button class="btn primary full" data-action="step4">Далее →</button></div></div></section>
+<section id="step4" class="step-screen" hidden><div class="card"><div class="section-kicker">04 · Контакты</div><h1 class="title">Контактная информация</h1><p class="subtitle">Укажите данные клиента и адрес объекта.</p><div class="fields"><div class="field"><label>Имя клиента</label><input id="client" autocomplete="name" placeholder="Имя или название компании"></div><div class="field"><label>Номер телефона</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+373 ..."></div><div class="field"><label>Город</label><input id="city" autocomplete="address-level2" placeholder="Введите город"></div><div class="field"><label>Адрес</label><input id="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step3">← Назад</button><button class="btn primary full" data-action="step5">Далее →</button></div></div></section>
+<section id="step5" class="step-screen" hidden><div class="card"><h1 class="title">Проверка</h1><p class="subtitle">Проверьте данные перед сохранением.</p><div id="review" class="review"></div><div class="finance-box"><div class="section-kicker">ФИНАНСЫ</div><div class="finance-grid"><div class="field"><label>Предоплата, MDL</label><input id="prepayment" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Материалы, MDL</label><input id="expenseMaterial" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Транспорт, MDL</label><input id="expenseTransport" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Зарплата, MDL</label><input id="expenseSalary" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Другие расходы, MDL</label><input id="expenseOther" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div></div><div id="financeSummary" class="finance-summary"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step4">← Изменить</button><button class="btn primary full" data-action="create">Создать смету</button></div></div></section></div>
+
+<div id="documentScreen" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Готовая смета</span></div></div></div><button class="btn secondary" data-action="edit">Изменить</button></header><section class="card doc" id="document"></section><section class="actions no-print"><button type="button" class="btn primary" data-action="share" onclick="return window.__mgDirectShare ? window.__mgDirectShare() : false;">Поделиться</button><button class="btn secondary" data-action="wa">WhatsApp</button><button class="btn secondary" data-action="tg">Telegram</button><button class="btn secondary" data-action="print">Печать / PDF</button></section></div>
+
+<div id="estimatesScreen" class="app screen" hidden><header class="top archive-top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div><div class="eyebrow">Master Group</div><h1 class="archive-heading">Сметы</h1></div></div></header><section class="card estimates-intro"><div><div class="section-kicker">ДОКУМЕНТЫ</div><h2>Все сметы</h2><p>«Все» показывает все документы, остальные кнопки — фильтры.</p></div><div class="estimates-head-actions"><button class="btn secondary" type="button" data-open-archives>▣ Архивы</button><button class="btn primary" data-action="new">＋ Новая</button></div></section><section class="card status-filter-card"><div id="statusFilters" class="status-filters"></div></section><div id="estimatesList" class="list"></div></div>
+<div id="archiveScreen" class="app screen" hidden><header class="top archive-top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div><div class="eyebrow">Master Group</div><h1 class="archive-heading">Архивы</h1></div></div></header><div class="archive-intro"><div class="archive-mark">▣</div><div><b>Сохранённые черновики</b><span>Незавершённые сметы, которые можно продолжить.</span></div></div><div id="archiveList" class="list"></div></div>
+
+
+<div id="statsScreen" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Аналитика</span></div></div></div><button class="btn secondary" data-action="home">Главный экран</button></header><section class="card stats-hero"><div class="eyebrow" style="color:#6b7280">АНАЛИТИКА</div><h1 class="title" style="color:#fff">Обзор и финансы</h1><p class="muted">Статистика бизнеса и внутренний финансовый учёт.</p></section><section class="analytics-tabs" role="tablist"><button type="button" class="analytics-tab active" data-analytics-tab="overview">📊 Обзор</button><button type="button" class="analytics-tab" data-analytics-tab="finance">💰 Финансы</button></section><div id="analyticsPanelOverview"><section class="card"><div class="stats-grid"><div class="stats-big"><b id="statCount">0</b><span>Всего смет</span></div><div class="stats-big"><b id="statMonth">0 MDL</b><span>Выручка за месяц</span></div><div class="stats-big"><b id="statProfit">0 MDL</b><span>Чистая прибыль</span></div><div class="stats-big"><b id="statExpenses">0 MDL</b><span>Расходы</span></div></div></section><section class="card"><h2>По месяцам</h2><div id="monthStats" class="month-list"></div></section></div><div id="analyticsPanelFinance" hidden><div id="financeOverview"></div><section class="card"><div class="settings-section-head"><div><h2>Финансы по сметам</h2><p class="muted">Все оплаты и расходы привязаны к конкретной смете.</p></div></div><div id="financeEstimates"></div></section></div></div>
+<div id="notificationsScreen" class="app screen" hidden><header class="top archive-top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div><div class="eyebrow">MASTER GROUP</div><h1 class="archive-heading">Уведомления</h1></div></div></header><section class="notifications-hero"><div class="notifications-mark">🔔</div><div><h2>История изменений</h2><p>Здесь отображается, что именно было изменено в сметах и когда.</p></div><div class="notifications-actions"><button class="btn secondary" data-notif-read>Прочитать все</button><button class="btn secondary" data-notif-clear>Очистить</button></div></section><section id="notificationsList" class="notifications-list"></section></div><div id="settingsScreen" class="app screen" hidden>
+<header class="top settings-topbar">
+  <div class="top-left">
+    <button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button>
+    <div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Настройки</span></div></div>
+  </div>
+  <button class="btn secondary settings-done" data-action="home">Готово</button>
+</header>
+<section class="settings-hero-v2">
+  <div><div class="eyebrow">MASTER GROUP</div><h1>Настройки</h1><p>Управляйте каталогом, профилем компании и удалёнными сметами.</p></div>
+</section>
+<nav class="settings-tabs-v2" role="tablist" aria-label="Разделы настроек">
+  <button type="button" class="settings-tab-v2 active" data-settings-tab="catalog" role="tab" aria-selected="true"><span class="settings-tab-icon">⌘</span><span>Каталог</span></button>
+  <button type="button" class="settings-tab-v2" data-settings-tab="company" role="tab" aria-selected="false"><span class="settings-tab-icon">▣</span><span>Компания</span></button>
+  <button type="button" class="settings-tab-v2" data-settings-tab="trash" role="tab" aria-selected="false"><span class="settings-tab-icon">⌫</span><span>Корзина</span></button>
+</nav>
+
+<div id="settingsPanelCatalog" class="settings-panel-v2">
+  <section class="settings-card-v2 settings-add-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">＋</div><div><span class="settings-overline">КАТАЛОГ</span><h2>Новое направление</h2><p>Создайте направление и добавьте в него услуги.</p></div></div>
+    <div class="settings-add-form-v2">
+      <div class="settings-field-v2 settings-field-main"><label for="newDirectionName">Название направления</label><input id="newDirectionName" class="settings-input" placeholder="Например, Электрика"></div>
+      <div class="settings-field-v2 settings-icon-field"><label for="newDirectionIcon">Иконка</label><input id="newDirectionIcon" class="settings-icon-custom" maxlength="2" value="•" aria-label="Иконка нового направления" title="Иконка нового направления"></div>
+      <button type="button" class="btn primary settings-add-btn-v2" data-settings-add-direction><span>＋</span> Добавить</button>
+    </div>
+  </section>
+  <section class="settings-card-v2">
+    <div class="settings-card-head-simple"><div><span class="settings-overline">ВАШ КАТАЛОГ</span><h2>Направления и услуги</h2><p>Редактируйте названия, иконки и услуги без изменения уже созданных смет.</p></div><span id="settingsCount" class="settings-count-v2">0</span></div>
+    <div id="settingsCatalog"></div>
+  </section>
+</div>
+
+<div id="settingsPanelCompany" hidden class="settings-panel-v2">
+  <section class="settings-card-v2 company-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">▣</div><div><span class="settings-overline">ПРОФИЛЬ КОМПАНИИ</span><h2>Данные компании</h2><p>Эти данные используются в клиентских документах.</p></div></div>
+    <div class="settings-group-v2"><div class="settings-group-title">Основная информация</div>
+      <div class="fields company-fields-v2">
+        <div class="field"><label>Название компании</label><input id="companyName" class="settings-input" placeholder="Master Group"></div>
+        <div class="field"><label>Телефон</label><input id="companyPhone" class="settings-input" placeholder="+373 ..."></div>
+      </div>
+    </div>
+    <div class="settings-group-v2"><div class="settings-group-title">Адрес</div>
+      <div class="fields company-fields-v2">
+        <div class="field"><label>Город</label><input id="companyCity" class="settings-input" placeholder="Кишинёв"></div>
+        <div class="field"><label>Адрес</label><input id="companyAddress" class="settings-input" placeholder="Адрес компании"></div>
+      </div>
+    </div>
+    <div class="settings-group-v2"><div class="settings-group-title">Реквизиты и подпись</div>
+      <div class="fields company-fields-v2">
+        <div class="field"><label>Реквизиты</label><textarea id="companyDetails" class="settings-input" rows="3" placeholder="IDNO, IBAN и т. д."></textarea></div>
+        <div class="field"><label>Банковские данные</label><textarea id="companyBank" class="settings-input" rows="3" placeholder="Банк, счёт..."></textarea></div>
+        <div class="field"><label>Подпись</label><input id="companySignature" class="settings-input" placeholder="Директор / Ответственное лицо"></div>
+      </div>
+    </div>
+    <div class="settings-group-v2 settings-logo-group"><div class="settings-group-title">Логотип</div><div class="logo-upload-v2"><label class="logo-upload-button" for="companyLogo">Выбрать изображение</label><input id="companyLogo" type="file" accept="image/*"><div id="companyLogoPreview" class="logo-preview"></div></div></div>
+    <button type="button" class="btn primary full settings-save-company" data-v58="saveCompany">Сохранить профиль</button>
+  </section>
+</div>
+
+<div id="settingsPanelTrash" hidden class="settings-panel-v2">
+  <section class="settings-card-v2 trash-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">⌫</div><div><span class="settings-overline">КОРЗИНА</span><h2>Удалённые сметы</h2><p>Здесь находятся удалённые документы, которые можно восстановить или удалить навсегда.</p></div><span id="trashCount" class="settings-count-v2">0</span></div>
+    <div id="deletedEstimatesList"></div>
+  </section>
+</div>
+
+</div>
+<div id="drawerOverlay" class="drawer-overlay" data-menu="close">
+  <aside class="drawer" data-menu-panel aria-label="Основное меню">
+    <div class="drawer-head">
+      <div class="drawer-brand">
+        <div class="drawer-mg-logo">MG</div>
+        <div class="drawer-brand-copy"><div class="drawer-title">Master Group</div><small>Управление сметами</small></div>
+      </div>
+      <button class="drawer-close" data-menu="close" aria-label="Закрыть меню">×</button>
+    </div>
+
+    <div class="drawer-scroll">
+      <button class="drawer-create" data-menu-action="new">
+        <span class="drawer-create-icon">+</span>
+        <span class="drawer-create-copy"><b>Новая смета</b><small>Создать документ</small></span>
+        <span class="drawer-chevron">›</span>
+      </button>
+
+      <div class="drawer-section-title">РАБОЧЕЕ</div>
+      <nav class="drawer-list">
+        <button class="drawer-item drawer-item-home" data-menu-action="home">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.5l8.5 7.3v9.2a1 1 0 0 1-1 1h-5.2v-6.2H9.7V21H4.5a1 1 0 0 1-1-1z"/></svg></span>
+          <span><b>Главный экран</b><small>Обзор приложения</small></span><i>›</i>
+        </button>
+        <button class="drawer-item" data-menu-action="estimates">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3 3V20.5H6z"/><path d="M14.5 3.5v4h3.5M9 11h6M9 14h6M9 17h4"/></svg></span>
+          <span><b>Все сметы</b><small>Список документов</small></span><i>›</i>
+        </button>
+        <button class="drawer-item" data-menu-action="stats">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11M10 19V7M16 19V13M22 19V4"/><path d="m4 8 5-4 5 3 7-5"/></svg></span>
+          <span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item" data-menu-action="notifications">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <span><b>Уведомления <em id="menuNotifBadge">0</em></b><small>История изменений</small></span><i>›</i>
+        </button>
+      </nav>
+
+      <div class="drawer-section-title drawer-system-title">СИСТЕМА</div>
+      <nav class="drawer-list">
+        <button type="button" class="drawer-item" data-menu-action="settings" aria-label="Открыть настройки">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5h4.6l.7 2.1 1.9 1.1 2.1-.5 2.3 4-1.5 1.6v2.2l1.5 1.6-2.3 4-2.1-.5-1.9 1.1-.7 2.1H9.7L9 20.2l-1.9-1.1-2.1.5-2.3-4 1.5-1.6v-2.2L2.7 10.2l2.3-4 2.1.5L9 5.6z"/><circle cx="12" cy="12.9" r="3.1"/></svg></span>
+          <span><b>Настройки</b><small>Услуги и профиль компании</small></span><i>›</i>
+        </button>
+      </nav>
+
+      <div class="drawer-account" id="mgCloudStatus" hidden>
+        <div class="drawer-cloud-row">
+          <span class="drawer-cloud-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 18.5h10.1a4.2 4.2 0 0 0 .4-8.4A6 6 0 0 0 6.3 8.6a4.1 4.1 0 0 0 .9 9.9Z"/></svg></span>
+          <span><b id="mgCloudStatusText">Облако подключено</b><small>Синхронизация активна</small></span>
+          <span class="drawer-account-dot dot"></span>
+        </div>
+        <div id="mgCloudAccount" class="drawer-account-email"></div>
+        <div class="drawer-account-actions"><button id="mgFirebaseDiagnosticOpen" type="button">Диагностика</button><button id="mgCloudLogout" type="button">Выйти</button></div>
+      </div>
+    </div>
+  </aside>
+</div>
+<div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Своя услуга"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="toast" class="toast"></div><div id="archiveModal" class="modal-overlay"><div class="confirm-modal"><h3>Сохранить смету в архив?</h3><p>Вы сейчас находитесь в процессе создания сметы. Можно сохранить черновик в архив и вернуться к нему позже.</p><div class="confirm-actions"><button class="primary" data-archive-action="save">📦 Поставить в архив</button><button data-archive-action="continue">↩️ Продолжить работу</button><button data-archive-action="discard">Не сохранять</button></div></div></div>
+<script src="js/state.js"></script>
+<script src="js/data-model.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/estimate-engine.js"></script>
+<script src="js/calculations.js"></script>
+<script src="js/finance-service.js"></script>
+<script src="js/estimate-ui.js"></script>
+<script src="js/estimate-core.js"></script>
+<script src="js/finance-ui.js"></script>
+<script src="js/app-core.js"></script>
+
+<!-- extracted JS: v41-fixes-js -->
+<script src="js/ui-refresh-fix.js"></script>
+
+<!-- extracted JS: v49-print-js -->
+<script src="js/print.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/finance-modal-v71.js"></script>
+<script src="js/finance-actions-v70.js"></script>
+
+<script src="js/mobile-webview.js"></script>
+
+
+
+
+
+
+<div id="mgCloudAuth" hidden>
+  <div class="mg-cloud-card">
+    <div class="mg-cloud-brand">
+      <div class="mg-cloud-logo">MG</div>
+      <div class="mg-cloud-brand-copy">
+        <h2>Master Group</h2>
+        <div class="mg-cloud-subtitle">Облачное хранение <span aria-hidden="true">☁️</span></div>
+      </div>
+    </div>
+    <section class="mg-cloud-intro">
+      <h1 id="mgCloudTitle">Вход в аккаунт</h1>
+    </section>
+    <div class="mg-cloud-tabs mg-cloud-tabs-legacy" aria-hidden="true">
+      <button type="button" id="mgCloudLoginTab" class="active" tabindex="-1">Войти</button>
+      <button type="button" id="mgCloudSignupTab" tabindex="-1">Регистрация</button>
+    </div>
+    <form id="mgCloudAuthForm">
+      <div class="mg-cloud-field">
+        <label for="mgCloudEmail">Email</label>
+        <div class="mg-cloud-input-wrap"><span class="mg-cloud-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg></span><input id="mgCloudEmail" type="email" autocomplete="email" required placeholder="Email"></div>
+      </div>
+      <div class="mg-cloud-field">
+        <label for="mgCloudPassword">Пароль</label>
+        <div class="mg-cloud-input-wrap"><span class="mg-cloud-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><circle cx="12" cy="15.5" r="1"></circle></svg></span><input id="mgCloudPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Пароль"><button class="mg-cloud-eye" id="mgCloudPasswordToggle" type="button" aria-label="Показать пароль"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></button></div>
+      </div>
+      <div id="mgCloudMsg" class="mg-cloud-msg"></div>
+      <button id="mgCloudSubmit" class="mg-cloud-primary" type="submit">Войти</button>
+      <div class="mg-cloud-meta">
+        <label class="mg-cloud-check"><input id="mgCloudRemember" type="checkbox" checked><span>Запомнить меня</span></label>
+        <button type="button" class="mg-cloud-link" id="mgCloudForgot" disabled>Забыли пароль?</button>
+      </div>
+      <div class="mg-cloud-or"><span></span><b>или</b><span></span></div>
+      <button id="mgCloudCreate" class="mg-cloud-create" type="button"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5"></path><path d="M17 8v6M14 11h6"></path></svg><span>Создать аккаунт</span></button>
+      <button id="mgCloudLocal" class="mg-cloud-secondary" type="button">Продолжить без облака</button>
+    </form>
+  </div>
+</div>
+<div id="mgFirebaseDiagnostic" class="mg-fd-overlay" hidden>
+  <div class="mg-fd-card" role="dialog" aria-modal="true" aria-labelledby="mgFdTitle">
+    <div class="mg-fd-head">
+      <div><div id="mgFdTitle" class="mg-fd-title">Firebase Diagnostic Center</div><div class="mg-fd-sub">Проверяет именно тот путь, который использует Master Group: Firebase SDK → Auth → UID → Realtime Database → <span class="mg-fd-path">users/{uid}/estimates</span>.</div></div>
+      <button id="mgFdClose" class="mg-fd-close" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div id="mgFdSummary" class="mg-fd-summary"><strong>Готово к проверке.</strong><br>Нажмите «Запустить диагностику».</div>
+    <div class="mg-fd-actions"><button id="mgFdRun" class="mg-fd-btn primary" type="button">Запустить диагностику</button><button id="mgFdCopy" class="mg-fd-btn secondary" type="button" disabled>Скопировать отчёт</button></div>
+    <div id="mgFdGrid" class="mg-fd-grid"></div>
+    <div id="mgFdLog" class="mg-fd-log" hidden></div>
+    <div class="mg-fd-foot">Диагностика создаёт временную тестовую запись с префиксом <span class="mg-fd-path">_diagnostic_</span> внутри вашего собственного раздела и сразу удаляет её после проверки. Пароль, токены и содержимое смет в отчёт не попадают.</div>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="js/offline-engine.js"></script>
+<script src="js/firebase-client.js"></script>
+<script src="js/firebase-repository.js"></script>
+<script src="js/firebase-sync.js"></script>
+<script src="js/direct-interaction-fix.js"></script>
+<script src="js/settings-trash-fix.js"></script>
+<script src="js/status-direct-fix.js"></script>
+<script src="js/filter-direct-fix.js"></script>
+<script src="js/finance-final-fix.js"></script>
+
+
+
+
+
+
+
+
+</body></html>

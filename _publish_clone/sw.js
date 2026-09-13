@@ -1,8 +1,4 @@
-/*
- * The application shell is kept for offline use, while live requests always
- * win. This makes a deployment visible without manually changing a cache
- * version in this file.
- */
+/* Network-first keeps published releases fresh; the cache is offline backup. */
 const CACHE = 'master-group-offline-v1';
 const CORE = [
   './', './index.html', './manifest.webmanifest', './css/styles.css',
@@ -19,48 +15,35 @@ const CORE = [
   './js/finance-final-fix.js', './icons/icon-192.png',
   './icons/icon-512.png', './icons/apple-touch-icon.png'
 ];
-
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE)
-      .then(cache => Promise.allSettled(CORE.map(url => cache.add(url))))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE)
+    .then(cache => Promise.allSettled(CORE.map(url => cache.add(url))))
+    .then(() => self.skipWaiting()));
 });
-
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys
-        .filter(key => key.startsWith('master-group-') && key !== CACHE)
-        .map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys
+    .filter(key => key.startsWith('master-group-') && key !== CACHE)
+    .map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
-
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
-
 self.addEventListener('fetch', event => {
   const { request } = event;
   if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      // Network-first prevents old JavaScript or CSS from masking a freshly
-      // deployed release. The cached copy is only an offline fallback.
-      const response = await fetch(request);
+      // Bypass the browser's HTTP cache after a deployment. The Cache Storage
+      // copy below remains the offline fallback, but it must never mask a new
+      // CSS or JavaScript release.
+      const response = await fetch(request, { cache: 'no-store' });
       if (response.ok) cache.put(request, response.clone());
       return response;
     } catch (_) {
-      if (request.mode === 'navigate') {
-        return (await cache.match('./index.html')) || (await cache.match('./'));
-      }
+      if (request.mode === 'navigate') return (await cache.match('./index.html')) || (await cache.match('./'));
       return (await cache.match(request)) || Response.error();
     }
   })());
