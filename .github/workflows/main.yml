@@ -1,0 +1,31 @@
+name: Deploy Master Group
+
+
+on: push
+
+
+jobs:
+
+
+  deploy:
+
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - uses: actions/checkout@v7
+
+
+      - uses: shipstatic/action@v2
+
+
+        with:
+
+
+          token: ${{ secrets.SHIP_TOKEN }}
+
+
+          path: .
