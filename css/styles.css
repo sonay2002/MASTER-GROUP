@@ -2884,3 +2884,6 @@ input,select,textarea{
 #analyticsPanelFinance>#financeOverview .finance-kpi.profit{background:var(--mg-light-surface)!important;border-color:var(--mg-light-border)!important;color:var(--mg-light-ink)!important}
 #mgCloudAuth .mg-cloud-primary,.mg-cloud-logo{background:var(--mg-light-surface)!important;color:var(--mg-light-ink)!important;border:1px solid var(--mg-light-border)!important;box-shadow:none!important}
 #estimatesScreen .btn.primary,#documentScreen .btn.primary,#editor .btn.primary,#settingsScreen .btn.primary,#statsScreen .btn.primary,#archiveScreen .btn.primary,body .estimate-finance-actions button.primary,body .finance-actions button.primary,body .confirm-actions button.primary{background:var(--mg-light-surface)!important;color:var(--mg-light-ink)!important;border-color:var(--mg-light-border)!important;box-shadow:none!important}
+/* v211 */
+:root{--mg-light-strong:#d7dde5}
+:is(.total,.calc-count,.selection-count,.icon-choice.active,.notifications-mark,.notification-dot,.settings-tab-v2.active,.settings-symbol-v2,.settings-dir-index,.trash-v2 .estimate-badge){background:var(--mg-light-surface)!important;color:var(--mg-light-ink)!important;border-color:var(--mg-light-border)!important;box-shadow:none!important}
