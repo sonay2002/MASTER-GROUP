@@ -18,6 +18,9 @@ jobs:
 
       - uses: actions/checkout@v7
 
+      - name: Write deployment version
+        run: echo '{"version":"${{ github.sha }}"}' > build-info.json
+
 
       - uses: shipstatic/action@v2
 
