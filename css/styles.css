@@ -2864,13 +2864,5 @@ input,select,textarea{
   }
 }
 
-/* v211 — light side menu, used to verify PWA auto-update delivery. */
-.drawer{background:#fff!important;color:#172033!important;border-right:1px solid #dfe5ec!important;box-shadow:22px 0 70px rgba(23,32,51,.18)!important}
-.drawer-head{border-bottom-color:#e4e9f0!important}.drawer-mg-logo{background:#f1f4f7!important;color:#172033!important;border-color:#d8e0e9!important}
-.drawer-title{color:#172033!important}.drawer-brand-copy small,.drawer-create-copy small,.drawer-chevron,.drawer-section-title{color:#69758a!important}
-.drawer-close{background:#f1f4f7!important;color:#172033!important;border-color:#d8e0e9!important}.drawer-create{background:#f7f9fc!important;color:#172033!important;border-color:#dfe5ec!important}.drawer-create-icon{background:#e9f0f7!important;color:#172033!important}
-.drawer-item{background:transparent!important;color:#172033!important}.drawer-item:active{background:#f3f6fa!important}.drawer-item b{color:#172033!important}.drawer-item small,.drawer-item i{color:#69758a!important}.drawer-icon{background:#f1f4f7!important;color:#172033!important;border-color:#dfe5ec!important}.drawer-item-home .drawer-icon{background:#eaf2fb!important}
-.drawer-account{background:#f7f9fc!important;color:#172033!important;border-color:#dfe5ec!important}.drawer-cloud-icon{background:#eaf2fb!important;color:#172033!important}.drawer-cloud-row b{color:#172033!important}.drawer-cloud-row small,.drawer-account-email{color:#69758a!important}.drawer-account-email{border-top-color:#dfe5ec!important}.drawer-account-actions button{background:#fff!important;color:#172033!important;border-color:#d8e0e9!important}
-
 /* PWA update prompt: shown when the deployed release changes. */
 .mg-update-notice{position:fixed;z-index:12000;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:12px;max-width:calc(100% - 32px);padding:12px 12px 12px 16px;border:1px solid #d7e1ec;border-radius:16px;background:#fff;color:#172033;box-shadow:0 12px 34px rgba(23,32,51,.18);font-size:13px;font-weight:700}.mg-update-notice button{min-height:38px;padding:0 13px;border-radius:11px;background:#172033;color:#fff;font:inherit;font-size:12px;font-weight:800;white-space:nowrap}
