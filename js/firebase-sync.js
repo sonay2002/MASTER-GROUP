@@ -9,14 +9,14 @@
      with the monolithic core. They must live here now that the app is modular. */
   const KEY='master_group_estimates_v8',CAT='master_group_catalog_v1',COMP='master_group_company_v1';
   const DEL='master_group_cloud_deleted_v1',DIRTY='master_group_cloud_dirty_v3',CATDIRTY='master_group_cloud_catalog_dirty_v2',PROFDIRTY='master_group_cloud_profile_dirty_v2';
-  const SYNC_VER='master_group_firebase_v20';
+  const SYNC_VER='master_group_firebase_v22';
   const $=id=>document.getElementById(id);
   const read=(k,fb)=>{try{const x=JSON.parse(localStorage.getItem(k)||'null');return x==null?fb:x}catch(e){return fb}};
   const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
   const uid=()=>{try{if(window.crypto?.randomUUID)return window.crypto.randomUUID()}catch(e){}return 'mg_'+Date.now()+'_'+Math.random().toString(36).slice(2)};
   const newId=uid;
   const toast=(t)=>{try{if(typeof window.__mgToast==='function')return window.__mgToast(t)}catch(e){}try{const x=$('toast');if(x){x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1700)}}catch(e){}};
-  let user=null,cloudMode=false,busy=false,pending=false,db=null,auth=null,root=null,estimateListener=null,catalogListener=null,companyListener=null,metaListener=null,starting=false;
+  let user=null,cloudMode=false,busy=false,pending=false,db=null,auth=null,root=null,estimateListener=null,catalogListener=null,companyListener=null,metaListener=null,starting=false,authAttempt=false;
   function msg(t,error){if(!$('mgCloudMsg'))return;$('mgCloudMsg').textContent=t||'';$('mgCloudMsg').classList.toggle('error',!!error)}
   const firebaseFriendlyError=(err,context)=>window.MGFirebaseClient?.friendlyError(err,context)||'Произошла ошибка облачного сервиса. Попробуйте ещё раз.';
   function cloudError(err,context){
@@ -44,7 +44,10 @@
     if($('mgCloudLocal'))$('mgCloudLocal').hidden=signup;
     msg('');
   }
-  function hideAuth(){ $('mgCloudAuth').hidden=true }
+  function hideAuth(){ const el=$('mgCloudAuth'); if(!el)return; if(!user || !cloudMode)return; el.hidden=true; authAttempt=false }
+  function keepAuthVisible(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
+  function lockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
+  function unlockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=true;el.style.display='none'} authAttempt=false }
   function localEstimates(){const a=read(KEY,[]);return Array.isArray(a)?a:[]}
   function localCatalog(){const a=read(CAT,[]);return Array.isArray(a)?a:[]}
   function dirtyIds(){const a=read(DIRTY,[]);return new Set(Array.isArray(a)?a.map(String):[])}
@@ -188,7 +191,12 @@
     for(const id of ids) await uploadEstimate(id);
     const ts=tombstones();
     for(const [id,at] of ts){await FIREBASE_REPO.markDeleted(user.uid,id,at);clearDeleted(id)}
-    if(read(CATDIRTY,false)===true){await FIREBASE_REPO.writeCatalog(user.uid,localCatalog());write(CATDIRTY,false)}
+    if(read(CATDIRTY,false)===true){
+      const savedCatalog=await FIREBASE_REPO.writeCatalog(user.uid,localCatalog());
+      write(CATDIRTY,false);
+      const cloudAt=Number(savedCatalog?._cloudUpdatedAt)||Date.now();
+      try{localStorage.setItem('master_group_catalog_sync_at',String(cloudAt))}catch(_){}
+    }
     if(read(PROFDIRTY,false)===true){await FIREBASE_REPO.writeCompany(user.uid,read(COMP,{}));write(PROFDIRTY,false)}
     await FIREBASE_REPO.acknowledge(user.uid,{appVersion:SYNC_VER})
   }
@@ -214,8 +222,11 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
         catch(err){if(SYNC_ENGINE)SYNC_ENGINE.fail('delete',id,err);throw err}
       }
       if(read(CATDIRTY,false)===true){
-        await FIREBASE_REPO.writeCatalog(user.uid,localCatalog());
+        const savedCatalog=await FIREBASE_REPO.writeCatalog(user.uid,localCatalog());
         write(CATDIRTY,false);
+        try{localStorage.removeItem('master_group_catalog_local_updated_at')}catch(_){}
+        const cloudAt=Number(savedCatalog?._cloudUpdatedAt)||Date.now();
+        try{localStorage.setItem('master_group_catalog_sync_at',String(cloudAt))}catch(_){}
       }
       if(read(PROFDIRTY,false)===true){
         await FIREBASE_REPO.writeCompany(user.uid,read(COMP,{}));
@@ -254,7 +265,23 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
         }
         continue;
       }applyRemoteEstimate(id,v)}
-    if(read(CATDIRTY,false)!==true){const c=await root.child('catalog').once('value');const v=c.val();if(v?.data&&localCatalog().length===0)write(CAT,v.data)}
+    const catalogSnap=await root.child('catalog').once('value');
+    const remoteCatalog=catalogSnap.val();
+    // Never overwrite a catalog that was changed locally but whose dirty marker is
+    // missing or was created during startup. Local directions must survive the first sync.
+    const catalogDirty=read(CATDIRTY,false)===true;
+    const catalogLocalChangedAt=Number(localStorage.getItem('master_group_catalog_local_updated_at')||0);
+    if(!catalogDirty && !catalogLocalChangedAt && Array.isArray(remoteCatalog?.data)){
+      // Cloud catalog is authoritative only when there are no local catalog changes.
+      // Do not require localCatalog().length===0: that condition made newly-created
+      // or default local directions survive only until a refresh on another device.
+      const cloudAt=Number(remoteCatalog?._cloudUpdatedAt)||0;
+      const localAt=Number(localStorage.getItem('master_group_catalog_sync_at')||0);
+      if(cloudAt>=localAt || !localAt){
+        write(CAT,remoteCatalog.data);
+        try{localStorage.setItem('master_group_catalog_sync_at',String(cloudAt||Date.now()))}catch(_){}
+      }
+    }
     if(read(PROFDIRTY,false)!==true){const c=await root.child('company').once('value');const v=c.val();if(v?.data&&Object.keys(read(COMP,{})).length===0)write(COMP,v.data)}
     cloudMode=true;
     listen();
@@ -266,9 +293,9 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     if(!ok)throw Object.assign(new Error('Initial cloud sync failed'),{code:'database/unavailable'});
     status('Firebase подключён • Все данные сохранены',false);
     msg('Аккаунт подключён. Данные загружены и проверены в облаке.');
-    hideAuth();
+    unlockAuthGate();
     refreshUi();
-  }catch(e){cloudMode=false;stopListeners();const code=String(e?.code||'').toLowerCase(),text=String(e?.message||'').toLowerCase();const denied=code.includes('permission-denied')||text.includes('permission_denied')||text.includes('permission denied');const friendly=firebaseFriendlyError(e,'startup');console.error('Firebase sync:',e?.code||'unknown',e);if(denied){status('Облако не подключено',true);msg('Не удалось подключить облако. Откройте «Диагностика Firebase» — там будет точный этап и код ошибки.',true);try{if(typeof toast==='function')toast('Облако не подключено — проверьте правила Firebase.')}catch(x){}hideAuth();return}msg(friendly,true);status('Облако не подключено',true);hideAuth()}finally{starting=false;busy=false}}
+  }catch(e){cloudMode=false;stopListeners();const code=String(e?.code||'').toLowerCase(),text=String(e?.message||'').toLowerCase();const denied=code.includes('permission-denied')||text.includes('permission_denied')||text.includes('permission denied');const friendly=firebaseFriendlyError(e,'startup');console.error('Firebase sync:',e?.code||'unknown',e);if(denied){status('Облако не подключено',true);msg('Не удалось подключить облако. Откройте «Диагностика Firebase» — там будет точный этап и код ошибки.',true);keepAuthVisible();try{if(typeof toast==='function')toast('Облако не подключено — проверьте правила Firebase.')}catch(x){}return}msg(friendly,true);status('Облако не подключено',true);keepAuthVisible()}finally{starting=false;busy=false}}
 
   /* Firebase Diagnostic Center: deterministic, non-destructive cloud test. */
   let mgFdLastReport='';
@@ -420,7 +447,35 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
   }
   mgFdInit();
 
-  function boot(){if(!initFirebase()){showAuth('login');return}auth.onAuthStateChanged(async u=>{user=u||null;if(!u){cloudMode=false;stopListeners();$('mgCloudStatus').hidden=true;showAuth('login');return}try{await initialSync()}catch(e){}})}
+  function boot(){
+    // Keep the login overlay hidden while Firebase restores a saved session.
+    // Showing it before onAuthStateChanged resolves caused a visible flash on refresh.
+    const gate=$('mgCloudAuth');
+    if(gate){gate.hidden=true;gate.style.display='none'}
+    if(!initFirebase()){showAuth('login');return}
+    auth.onAuthStateChanged(async u=>{
+      user=u||null;
+      if(!u){
+        cloudMode=false;
+        stopListeners();
+        if($('mgCloudStatus'))$('mgCloudStatus').hidden=true;
+        // Never hide the authentication gate while Firebase is resolving or after a failed attempt.
+        keepAuthVisible();
+        if(authAttempt)msg('Подключение…');
+        else if(!$('mgCloudMsg')?.textContent)showAuth('login');
+        return;
+      }
+      try{
+        // For a restored session, do not reveal the login overlay during startup.
+        // The overlay is only kept visible for a user-initiated login attempt.
+        if(authAttempt) keepAuthVisible();
+        await initialSync();
+      }catch(e){
+        // Authentication UI stays mounted until cloud initialization really succeeds.
+        keepAuthVisible();
+      }
+    });
+  }
   $('mgCloudLoginTab').onclick=()=>showAuth('login');
   $('mgCloudSignupTab').onclick=()=>showAuth('signup');
   $('mgCloudCreate').onclick=()=>showAuth($('mgCloudSignupTab').classList.contains('active')?'login':'signup');
@@ -443,7 +498,7 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     finally{setTimeout(()=>{if($('mgCloudSignupTab').classList.contains('active'))$('mgCloudForgot').disabled=true;else $('mgCloudForgot').disabled=false},800)}
   };
   $('mgCloudLogout').onclick=async()=>{if(confirm('Выйти из Firebase аккаунта?'))await auth.signOut()};
-  $('mgCloudAuthForm').addEventListener('submit',async e=>{e.preventDefault();if(!auth||busy)return;const email=$('mgCloudEmail').value.trim(),password=$('mgCloudPassword').value,signup=$('mgCloudSignupTab').classList.contains('active');msg('Подключение…');$('mgCloudSubmit').disabled=true;try{if(signup)await auth.createUserWithEmailAndPassword(email,password);else await auth.signInWithEmailAndPassword(email,password)}catch(err){cloudError(err,'auth')}finally{$('mgCloudSubmit').disabled=false}});
+  $('mgCloudAuthForm').addEventListener('submit',async e=>{e.preventDefault();if(!auth||busy||authAttempt)return;const email=$('mgCloudEmail').value.trim(),password=$('mgCloudPassword').value,signup=$('mgCloudSignupTab').classList.contains('active');authAttempt=true;keepAuthVisible();msg('Подключение…');$('mgCloudSubmit').disabled=true;try{if(signup)await auth.createUserWithEmailAndPassword(email,password);else await auth.signInWithEmailAndPassword(email,password)}catch(err){authAttempt=false;keepAuthVisible();cloudError(err,'auth')}finally{$('mgCloudSubmit').disabled=false}});
   window.__mgFirebaseSyncNow=syncNow;
   window.__mgFirebaseRetry=async function(){if(!user){showAuth('login');return false}return await initialSync()};
   window.addEventListener('online',()=>{if(user&&!cloudMode){setTimeout(()=>initialSync(),500)}else if(user&&cloudMode)scheduleUpload();if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOnlineAt:Date.now()})});

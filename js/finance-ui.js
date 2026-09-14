@@ -58,7 +58,7 @@ function v59RenderFinance(){const a=saved().map(v59Normalize),rev=a.reduce((s,e)
 function v59SetAnalyticsTab(tab){localStorage.setItem(V59_ANALYTICS_TAB,tab);document.querySelectorAll('[data-analytics-tab]').forEach(b=>b.classList.toggle('active',b.dataset.analyticsTab===tab));if($('analyticsPanelOverview'))$('analyticsPanelOverview').hidden=tab!=='overview';if($('analyticsPanelFinance'))$('analyticsPanelFinance').hidden=tab!=='finance';if(tab==='finance')v59RenderFinance()}
 function v59SetSettingsTab(tab){localStorage.setItem(V59_SETTINGS_TAB,tab);document.querySelectorAll('[data-settings-tab]').forEach(b=>b.classList.toggle('active',b.dataset.settingsTab===tab));if($('settingsPanelCatalog'))$('settingsPanelCatalog').hidden=tab!=='catalog';if($('settingsPanelCompany'))$('settingsPanelCompany').hidden=tab!=='company';if(tab==='company')v58RenderCompany()}
 function v59ShowStats(){screen('statsScreen');v59RenderOverview();v59SetAnalyticsTab(localStorage.getItem(V59_ANALYTICS_TAB)||'overview');if((localStorage.getItem(V59_ANALYTICS_TAB)||'overview')==='finance')v59RenderFinance()}
-function v59ShowSettings(){renderSettings();screen('settingsScreen');v59SetSettingsTab(localStorage.getItem(V59_SETTINGS_TAB)||'catalog')}
+function v59ShowSettings(){renderSettings();if(typeof renderNewDirectionIconPicker==='function')renderNewDirectionIconPicker();screen('settingsScreen');v59SetSettingsTab(localStorage.getItem(V59_SETTINGS_TAB)||'catalog')}
 /* internal finance must never be rendered in the client document */
 v58Document=function(e){
  e=v59Normalize({...e}); const c=v58Company();

@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v193"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v193"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v193</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v223"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v199"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v199</title>
 
 
 
@@ -46,7 +46,7 @@
 </div>
 
 <div id="editor" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span id="mode">Новая смета</span></div></div></div><button class="btn secondary" data-action="home">Сметы</button></header><div class="stepbar" id="stepbar"></div><div id="flowNote" class="flow-note"></div>
-<section id="step1" class="step-screen"><div class="card direction-card-shell"><div class="section-kicker">01 · Направления</div><div class="title-row"><div><h1 class="title">Что делаем на объекте?</h1><p class="subtitle">Выберите одно или несколько направлений.</p></div><div class="selection-count" id="selectionCount">0</div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="nav-actions"><button class="btn primary full" data-action="step2">Перейти к услугам <span>→</span></button></div></div></section>
+<section id="step1" class="step-screen"><div class="direction-screen"><div class="section-kicker">01 · НАПРАВЛЕНИЯ</div><div class="direction-heading"><div><h1 class="direction-title">Направления работ</h1><p class="direction-subtitle">Выберите одно или несколько направлений для этой сметы.</p></div><div class="selection-count direction-count" id="selectionCount"><b>0</b><small>выбрано</small></div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="direction-bottom"><div class="direction-selected-note"><span class="direction-selected-icon">✓</span><div><b id="directionSelectedLabel">Выбрано: 0</b><small id="directionSelectedHint">Выберите хотя бы одно направление</small></div></div><button class="btn primary direction-continue" data-action="step2">Продолжить <span>→</span></button></div></div></section>
 <section id="step2" class="step-screen" hidden><div class="card services-shell"><div class="section-kicker">02 · Услуги</div><div class="title-row"><div><h1 class="title">Соберите работы</h1><p class="subtitle">Выберите услуги для каждого направления.</p></div></div><div id="serviceDirections" class="service-directions"></div><div id="services" class="service-list"></div><div class="nav-actions"><button class="btn secondary full" data-action="step1">← Направления</button><button class="btn primary full" data-action="step3">Далее →</button></div></div></section>
 <section id="step3" class="step-screen" hidden><div class="card"><div class="calc-head"><div class="calc-total-header"><span>ИТОГО</span><b id="total">0.00 MDL</b></div><div class="calc-count" id="calcCount">0 позиций</div></div><div id="items" class="calc-groups"></div><div class="calc-add-actions"><button type="button" class="btn secondary calc-add" data-calc-add>＋ Добавить услугу</button><button type="button" class="btn primary calc-add-direction" data-calc-add-direction>＋ Добавить направление</button></div><div class="nav-actions"><button class="btn secondary full" data-action="step2">← Услуги</button><button class="btn primary full" data-action="step4">Далее →</button></div></div></section>
 <section id="step4" class="step-screen" hidden><div class="card"><div class="section-kicker">04 · Контакты</div><h1 class="title">Контактная информация</h1><p class="subtitle">Укажите данные клиента и адрес объекта.</p><div class="fields"><div class="field"><label>Имя клиента</label><input id="client" autocomplete="name" placeholder="Имя или название компании"></div><div class="field"><label>Номер телефона</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+373 ..."></div><div class="field"><label>Город</label><input id="city" autocomplete="address-level2" placeholder="Введите город"></div><div class="field"><label>Адрес</label><input id="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step3">← Назад</button><button class="btn primary full" data-action="step5">Далее →</button></div></div></section>
@@ -74,19 +74,23 @@
   <button type="button" class="settings-tab-v2 active" data-settings-tab="catalog" role="tab" aria-selected="true"><span class="settings-tab-icon">⌘</span><span>Каталог</span></button>
   <button type="button" class="settings-tab-v2" data-settings-tab="company" role="tab" aria-selected="false"><span class="settings-tab-icon">▣</span><span>Компания</span></button>
   <button type="button" class="settings-tab-v2" data-settings-tab="trash" role="tab" aria-selected="false"><span class="settings-tab-icon">⌫</span><span>Корзина</span></button>
+  <button type="button" class="settings-tab-v2" data-settings-tab="updates" role="tab" aria-selected="false"><span class="settings-tab-icon">↻</span><span>Обновления</span></button>
 </nav>
 
-<section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
-  <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v193 · приложение проверяет обновления автоматически.</p></div></div>
-  <div class="mg-update-settings-row"><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v193 · актуально</span><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
-</section>
+
 
 <div id="settingsPanelCatalog" class="settings-panel-v2">
   <section class="settings-card-v2 settings-add-v2">
     <div class="settings-card-head-v2"><div class="settings-symbol-v2">＋</div><div><span class="settings-overline">КАТАЛОГ</span><h2>Новое направление</h2><p>Создайте направление и добавьте в него услуги.</p></div></div>
     <div class="settings-add-form-v2">
       <div class="settings-field-v2 settings-field-main"><label for="newDirectionName">Название направления</label><input id="newDirectionName" class="settings-input" placeholder="Например, Электрика"></div>
-      <div class="settings-field-v2 settings-icon-field"><label for="newDirectionIcon">Иконка</label><input id="newDirectionIcon" class="settings-icon-custom" maxlength="2" value="•" aria-label="Иконка нового направления" title="Иконка нового направления"></div>
+      <div class="settings-field-v2 settings-icon-field-v3">
+        <label>Иконка направления</label>
+        <input type="hidden" id="newDirectionIcon" value="other">
+        <div class="new-direction-icon-picker" role="listbox" aria-label="Выберите иконку направления">
+          ${''}
+        </div>
+      </div>
       <button type="button" class="btn primary settings-add-btn-v2" data-settings-add-direction><span>＋</span> Добавить</button>
     </div>
   </section>
@@ -127,6 +131,13 @@
   <section class="settings-card-v2 trash-v2">
     <div class="settings-card-head-v2"><div class="settings-symbol-v2">⌫</div><div><span class="settings-overline">КОРЗИНА</span><h2>Удалённые сметы</h2><p>Здесь находятся удалённые документы, которые можно восстановить или удалить навсегда.</p></div><span id="trashCount" class="settings-count-v2">0</span></div>
     <div id="deletedEstimatesList"></div>
+  </section>
+</div>
+
+<div id="settingsPanelUpdates" hidden class="settings-panel-v2">
+  <section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v199 · приложение автоматически проверяет новые версии.</p></div></div>
+    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v199 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
   </section>
 </div>
 
@@ -188,7 +199,7 @@
     </div>
   </aside>
 </div>
-<div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Своя услуга"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="status" aria-live="polite"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong>Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div>
+<div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Своя услуга"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="dialog" aria-modal="true" aria-labelledby="mgUpdateNoticeTitle"><div class="mg-update-notice-card"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong id="mgUpdateNoticeTitle">Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div></div>
 <div id="toast" class="toast"></div><div id="archiveModal" class="modal-overlay"><div class="confirm-modal"><h3>Сохранить смету в архив?</h3><p>Вы сейчас находитесь в процессе создания сметы. Можно сохранить черновик в архив и вернуться к нему позже.</p><div class="confirm-actions"><button class="primary" data-archive-action="save">📦 Поставить в архив</button><button data-archive-action="continue">↩️ Продолжить работу</button><button data-archive-action="discard">Не сохранять</button></div></div></div>
 <script src="js/state.js"></script>
 <script src="js/data-model.js"></script>
@@ -288,4 +299,5 @@
 
 
 
+<script src="./js/mg-icons-v208.js"></script><script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=213"></script>
 </body></html>

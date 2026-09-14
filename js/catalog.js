@@ -24,9 +24,20 @@
     api.svc=Object.fromEntries(data.map(d=>[d.name,d.services.map(x=>[x.name,x.unit])]));
   };
   api.save=()=>{
-    localStorage.setItem(KEY,JSON.stringify(data));
-    try{if(window.__mgCloudMarkCatalogDirty)window.__mgCloudMarkCatalogDirty()}catch(e){}
+    // Save locally first. The catalog is the source of truth for newly created directions.
+    const payload=JSON.stringify(normalize(data));
+    try{ localStorage.setItem(KEY,payload); }catch(e){ console.error('MG catalog local save failed',e); return false; }
+    // Verify the write so a direction can never be reported as saved when it was not.
+    try{ if(localStorage.getItem(KEY)!==payload) throw new Error('Catalog storage verification failed'); }catch(e){ console.error('MG catalog verify failed',e); return false; }
     sync();
+    try{ localStorage.setItem('master_group_catalog_local_updated_at',String(Date.now())); }catch(e){}
+    try{
+      if(window.__mgCloudMarkCatalogDirty) window.__mgCloudMarkCatalogDirty();
+      // Upload is secondary: local save must remain valid even if cloud is temporarily unavailable.
+      if(window.__mgFirebaseSyncNow) setTimeout(()=>window.__mgFirebaseSyncNow(),60);
+    }catch(e){ console.warn('MG catalog cloud queue failed',e); }
+    try{ window.dispatchEvent(new CustomEvent('mg:catalog-saved',{detail:{count:data.length}})); }catch(e){}
+    return true;
   };
   sync();
   if(!localStorage.getItem(KEY))api.save();

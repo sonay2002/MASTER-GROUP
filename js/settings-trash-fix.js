@@ -15,11 +15,11 @@
     catch(e){ console.warn(e); document.querySelectorAll('.screen').forEach(x=>x.hidden=x.id!=='settingsScreen'); }
   }
   function setTab(tab){
-    if(!['catalog','company','trash'].includes(tab))tab='catalog';
+    if(!['catalog','company','trash','updates'].includes(tab))tab='catalog';
     localStorage.setItem(TAB,tab);
     document.querySelectorAll('[data-settings-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.settingsTab===tab);b.setAttribute('aria-selected',b.dataset.settingsTab===tab?'true':'false')});
-    const c=$('settingsPanelCatalog'), co=$('settingsPanelCompany'), t=$('settingsPanelTrash');
-    if(c)c.hidden=tab!=='catalog'; if(co)co.hidden=tab!=='company'; if(t)t.hidden=tab!=='trash';
+    const c=$('settingsPanelCatalog'), co=$('settingsPanelCompany'), t=$('settingsPanelTrash'), u=$('settingsPanelUpdates');
+    if(c)c.hidden=tab!=='catalog'; if(co)co.hidden=tab!=='company'; if(t)t.hidden=tab!=='trash'; if(u)u.hidden=tab!=='updates';
     if(tab==='company') window.v58RenderCompany?.();
     if(tab==='trash') renderTrash();
   }

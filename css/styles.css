@@ -2014,7 +2014,7 @@ input,select,textarea{
 .status-pill{border-radius:999px!important;background:#eef0f2!important;color:#4b5563!important;border:1px solid #e0e4e8!important}
 .finance-actions button{min-height:44px!important;border-radius:13px!important}
 
-/* v198 — Finance screen visual language aligned with the rest of Master Group.
+/* v199 — Finance screen visual language aligned with the rest of Master Group.
    Visual-only layer: existing IDs, tabs, buttons and finance data flow remain unchanged. */
 #statsScreen{padding-top:12px!important}
 #statsScreen .stats-hero{
@@ -2413,7 +2413,7 @@ input,select,textarea{
 }
 
 
-/* v203 — Master Group iOS login redesign */
+/* v204 — Master Group iOS login redesign */
 #mgCloudAuth{
   background:rgba(242,243,247,.96)!important;
   backdrop-filter:blur(24px)!important;
@@ -2863,5 +2863,516 @@ input,select,textarea{
   }
 }
 
-/* v192 — in-app update notice and Settings update control */
-.mg-update-notice{position:fixed;z-index:10050;left:50%;bottom:max(18px,env(safe-area-inset-bottom,18px));transform:translateX(-50%);width:min(720px,calc(100% - 28px));box-sizing:border-box;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:15px 16px;border:1px solid #d9dde4;border-radius:20px;background:rgba(255,255,255,.98);box-shadow:0 18px 55px rgba(0,0,0,.18);color:#111827;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.mg-update-notice[hidden]{display:none!important}.mg-update-notice-icon{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:#111827;color:#fff;font-size:22px;font-weight:800}.mg-update-notice-copy{min-width:0;display:flex;flex-direction:column;gap:3px}.mg-update-notice-copy strong{font-size:15px;line-height:1.2}.mg-update-notice-copy span{font-size:13px;line-height:1.35;color:#6b7280}.mg-update-notice-actions{display:flex;align-items:center;gap:8px}.mg-update-notice-actions button{border:0;cursor:pointer;font:inherit;font-weight:750;border-radius:12px;padding:10px 13px;white-space:nowrap}.mg-update-later{background:#f1f3f5;color:#374151}.mg-update-now{background:#111827;color:#fff}.mg-update-now:disabled{opacity:.65;cursor:wait}.mg-update-settings-card{margin-top:18px}.mg-update-settings-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:16px;padding-top:15px;border-top:1px solid #eceff3}.mg-update-settings-status{font-size:14px;font-weight:750;color:#374151}#mgCheckUpdateBtn{min-height:44px}@media(max-width:600px){.mg-update-notice{grid-template-columns:auto 1fr;gap:11px;padding:13px;border-radius:18px}.mg-update-notice-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1.4fr}.mg-update-notice-actions button{width:100%;padding:11px 10px}.mg-update-settings-row{align-items:stretch;flex-direction:column}#mgCheckUpdateBtn{width:100%}}
+/* v194 — dedicated Updates settings tab + persistent update dialog */
+.mg-update-notice{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(15,23,42,.38);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.mg-update-notice[hidden]{display:none!important}.mg-update-notice-card{width:min(480px,100%);box-sizing:border-box;padding:26px;border:1px solid #e2e5e9;border-radius:24px;background:#fff;color:#111827;box-shadow:0 30px 90px rgba(0,0,0,.24);animation:mgUpdateIn .22s ease-out}.mg-update-notice-icon{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:#111827;color:#fff;font-size:25px;font-weight:800;margin-bottom:18px}.mg-update-notice-copy{display:flex;flex-direction:column;gap:8px}.mg-update-notice-copy strong{font-size:21px;line-height:1.2}.mg-update-notice-copy span{font-size:14px;line-height:1.5;color:#626b78}.mg-update-notice-actions{display:grid;grid-template-columns:1fr 1.25fr;gap:10px;margin-top:22px}.mg-update-notice-actions button{min-height:46px;border:0;cursor:pointer;font:inherit;font-weight:750;border-radius:13px;padding:11px 14px}.mg-update-later{background:#eef0f3;color:#252b33}.mg-update-now{background:#111827;color:#fff}.mg-update-now:disabled{opacity:.6;cursor:wait}.mg-update-settings-card{margin-top:0}.mg-update-settings-row{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:18px;padding-top:17px;border-top:1px solid #eceff3}.mg-update-settings-status{display:block;font-size:14px;font-weight:750;color:#374151}.mg-update-settings-hint{display:block;margin-top:5px;font-size:12px;color:#8a919b;line-height:1.4}#mgCheckUpdateBtn{min-height:44px;white-space:nowrap}.settings-tabs-v2{overflow-x:auto}@keyframes mgUpdateIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}@media(max-width:600px){.mg-update-notice{padding:16px}.mg-update-notice-card{padding:22px;border-radius:21px}.mg-update-notice-copy strong{font-size:19px}.mg-update-notice-actions{grid-template-columns:1fr 1.35fr}.mg-update-settings-row{align-items:stretch;flex-direction:column}#mgCheckUpdateBtn{width:100%}}
+
+
+/* Master Group v195 — polished 4-tab Settings navigation */
+.settings-tabs-v2{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:6px!important;
+  padding:5px!important;
+  background:#e9edf2!important;
+  border:1px solid #dfe4e9!important;
+  border-radius:18px!important;
+  margin:4px 0 14px!important;
+  overflow:visible!important;
+}
+.settings-tabs-v2 .settings-tab-v2{
+  min-width:0!important;
+  min-height:52px!important;
+  padding:8px 7px!important;
+  border-radius:13px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  font-size:12px!important;
+  line-height:1!important;
+}
+.settings-tabs-v2 .settings-tab-icon{
+  flex:0 0 23px!important;
+  width:23px!important;
+  height:23px!important;
+  border-radius:7px!important;
+}
+.settings-tabs-v2 .settings-tab-v2.active{
+  box-shadow:0 5px 16px rgba(24,33,47,.16)!important;
+}
+@media(max-width:700px){
+  .settings-tabs-v2{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    padding:5px!important;
+    border-radius:18px!important;
+  }
+  .settings-tabs-v2 .settings-tab-v2{
+    min-height:50px!important;
+    font-size:12px!important;
+    gap:8px!important;
+  }
+}
+@media(max-width:390px){
+  .settings-tabs-v2{gap:5px!important;padding:4px!important}
+  .settings-tabs-v2 .settings-tab-v2{min-height:48px!important;font-size:11px!important}
+  .settings-tabs-v2 .settings-tab-icon{flex-basis:21px!important;width:21px!important;height:21px!important;font-size:12px!important}
+}
+
+/* v196 — Settings tabs in one horizontal row on mobile */
+.settings-tabs-v2{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:6px!important;
+  padding:5px!important;
+  overflow:hidden!important;
+}
+.settings-tabs-v2 .settings-tab-v2{
+  min-width:0!important;
+  min-height:66px!important;
+  padding:7px 3px!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  border-radius:13px!important;
+  white-space:nowrap!important;
+  font-size:11px!important;
+  line-height:1.05!important;
+}
+.settings-tabs-v2 .settings-tab-icon{
+  flex:0 0 22px!important;
+  width:22px!important;
+  height:22px!important;
+  border-radius:7px!important;
+  font-size:12px!important;
+}
+@media(max-width:390px){
+  .settings-tabs-v2{gap:4px!important;padding:4px!important}
+  .settings-tabs-v2 .settings-tab-v2{min-height:62px!important;font-size:10px!important;padding:6px 2px!important}
+  .settings-tabs-v2 .settings-tab-icon{width:21px!important;height:21px!important;flex-basis:21px!important}
+}
+
+/* v197 — Directions screen redesigned to match the approved mobile mockup. */
+#step1 .direction-screen{padding:2px 0 0!important}
+#step1 .direction-heading{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:14px!important;margin:4px 0 18px!important}
+#step1 .direction-title{margin:0!important;color:#111827!important;font-size:30px!important;line-height:1.06!important;letter-spacing:-.8px!important;font-weight:800!important}
+#step1 .direction-subtitle{margin:7px 0 0!important;max-width:430px!important;color:#8a94a2!important;font-size:13px!important;line-height:1.45!important;font-weight:600!important}
+#step1 .direction-count{flex:0 0 70px!important;width:70px!important;height:70px!important;padding:0!important;border:0!important;border-radius:22px!important;background:#f0f2f5!important;color:#111827!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important}
+#step1 .direction-count b{font-size:25px!important;line-height:1!important;font-weight:850!important}
+#step1 .direction-count small{margin-top:4px!important;font-size:10px!important;color:#8a94a2!important;font-weight:750!important}
+#step1 .category-grid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;overflow:visible!important}
+#step1 .category{position:relative!important;display:grid!important;grid-template-columns:50px minmax(0,1fr) 16px 34px!important;grid-template-rows:1fr!important;align-items:center!important;column-gap:12px!important;min-height:108px!important;padding:14px 14px 14px 14px!important;border:1px solid #e3e7eb!important;border-radius:20px!important;background:#fff!important;color:#111827!important;box-shadow:0 5px 16px rgba(24,33,47,.045)!important;text-align:left!important;box-sizing:border-box!important;transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease,background .14s ease!important}
+#step1 .category:active{transform:scale(.995)!important;background:#f8f9fa!important}
+#step1 .category .cat-icon{grid-column:1!important;grid-row:1!important;width:50px!important;height:50px!important;margin:0!important;border-radius:15px!important;display:grid!important;place-items:center!important;background:#f0f2f5!important;color:#53606f!important;font-size:24px!important;filter:grayscale(1)!important}
+#step1 .category-copy{grid-column:2!important;grid-row:1!important;min-width:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important}
+#step1 .category small{display:block!important;margin:0 0 5px!important;padding:0!important;color:#98a1ad!important;font-size:9px!important;line-height:1!important;letter-spacing:.11em!important;font-weight:850!important;text-transform:uppercase!important}
+#step1 .category strong{display:block!important;margin:0!important;padding:0!important;color:#111827!important;font-size:16px!important;line-height:1.2!important;font-weight:780!important;overflow-wrap:anywhere!important}
+#step1 .category em{display:block!important;margin:6px 0 0!important;color:#8b95a2!important;font-size:11px!important;line-height:1.3!important;font-style:normal!important;font-weight:600!important;overflow-wrap:anywhere!important}
+#step1 .category-chevron{grid-column:3!important;grid-row:1!important;color:#a1aab5!important;font-size:28px!important;font-weight:400!important;line-height:1!important;justify-self:center!important}
+#step1 .category .mark{grid-column:4!important;grid-row:1!important;position:static!important;width:34px!important;height:34px!important;margin:0!important;border-radius:50%!important;background:#f0f2f5!important;color:#8e99a6!important;display:grid!important;place-items:center!important;font-size:17px!important;font-weight:850!important;line-height:1!important}
+#step1 .category.selected{background:#f7f8fa!important;border-color:#d9dee4!important;box-shadow:0 7px 20px rgba(24,33,47,.08)!important}
+#step1 .category.selected .cat-icon{background:#111827!important;color:#fff!important}
+#step1 .category.selected .mark{background:#111827!important;color:#fff!important}
+#step1 .category.selected .category-chevron{color:#111827!important}
+#step1 .selected-directions{display:none!important}
+#step1 .direction-bottom{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin-top:16px!important;padding:10px 10px 10px 12px!important;border:1px solid #e2e6eb!important;border-radius:20px!important;background:#fff!important;box-shadow:0 5px 16px rgba(24,33,47,.035)!important}
+#step1 .direction-selected-note{display:flex!important;align-items:center!important;gap:10px!important;min-width:0!important}
+#step1 .direction-selected-icon{width:38px!important;height:38px!important;flex:0 0 38px!important;border-radius:50%!important;background:#f0f2f5!important;color:#687382!important;display:grid!important;place-items:center!important;font-size:17px!important;font-weight:850!important}
+#step1 .direction-selected-note b{display:block!important;color:#111827!important;font-size:13px!important;line-height:1.15!important}
+#step1 .direction-selected-note small{display:block!important;margin-top:4px!important;color:#8b95a2!important;font-size:10px!important;line-height:1.25!important;font-weight:600!important}
+#step1 .direction-continue{flex:0 0 190px!important;min-height:54px!important;margin:0!important;border-radius:16px!important;background:#111!important;color:#fff!important;border:1px solid #111!important;font-size:16px!important;font-weight:800!important}
+#step1 .direction-continue span{margin-left:8px!important;font-size:22px!important;vertical-align:-1px!important}
+#step1 .direction-continue.is-disabled{opacity:.45!important;pointer-events:none!important}
+@media(max-width:600px){
+ #step1 .direction-heading{gap:10px!important;margin-bottom:14px!important}
+ #step1 .direction-title{font-size:28px!important}
+ #step1 .direction-subtitle{font-size:12px!important;max-width:285px!important}
+ #step1 .direction-count{flex-basis:64px!important;width:64px!important;height:64px!important;border-radius:19px!important}
+ #step1 .direction-count b{font-size:23px!important}
+ #step1 .category{grid-template-columns:48px minmax(0,1fr) 12px 34px!important;column-gap:10px!important;min-height:100px!important;padding:12px!important;border-radius:18px!important}
+ #step1 .category .cat-icon{width:48px!important;height:48px!important;border-radius:14px!important;font-size:22px!important}
+ #step1 .category strong{font-size:14px!important}
+ #step1 .category em{font-size:10px!important;margin-top:5px!important}
+ #step1 .category-chevron{font-size:24px!important}
+ #step1 .category .mark{width:32px!important;height:32px!important;font-size:16px!important}
+ #step1 .direction-bottom{padding:9px!important;border-radius:17px!important}
+ #step1 .direction-selected-icon{width:34px!important;height:34px!important;flex-basis:34px!important;font-size:15px!important}
+ #step1 .direction-selected-note b{font-size:12px!important}
+ #step1 .direction-selected-note small{font-size:9px!important}
+ #step1 .direction-continue{flex-basis:148px!important;min-height:48px!important;border-radius:14px!important;font-size:14px!important}
+}
+@media(max-width:390px){
+ #step1 .direction-title{font-size:25px!important}
+ #step1 .direction-subtitle{font-size:11px!important}
+ #step1 .category{grid-template-columns:43px minmax(0,1fr) 10px 31px!important;column-gap:9px!important;min-height:94px!important}
+ #step1 .category .cat-icon{width:43px!important;height:43px!important;font-size:20px!important}
+ #step1 .category strong{font-size:13px!important}
+ #step1 .category em{font-size:9px!important}
+ #step1 .direction-continue{flex-basis:132px!important;font-size:13px!important}
+}
+
+
+/* v199 — Directions screen: compact rows + unified line icons */
+#step1 .direction-screen{padding:0!important}
+#step1 .section-kicker{display:none!important}
+#step1 .direction-heading{margin:10px 0 14px!important;gap:12px!important}
+#step1 .direction-title{font-size:30px!important;letter-spacing:-1px!important}
+#step1 .direction-subtitle{font-size:13px!important;line-height:1.35!important;max-width:470px!important}
+#step1 .direction-count{width:64px!important;height:64px!important;flex-basis:64px!important;border-radius:18px!important}
+#step1 .direction-count b{font-size:23px!important}
+#step1 .category-grid{gap:8px!important}
+#step1 .category{
+  grid-template-columns:48px minmax(0,1fr) 14px 32px!important;
+  column-gap:11px!important;
+  min-height:92px!important;
+  padding:10px 12px!important;
+  border-radius:18px!important;
+  box-shadow:0 3px 12px rgba(24,33,47,.035)!important;
+}
+#step1 .category .cat-icon{
+  width:48px!important;height:48px!important;border-radius:14px!important;
+  margin:0!important;background:#f1f3f5!important;color:#17202c!important;
+  display:grid!important;place-items:center!important;filter:none!important;
+}
+#step1 .category .cat-icon svg{width:30px!important;height:30px!important;fill:none!important;stroke:currentColor!important;stroke-width:2.1!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#step1 .category .icon-fallback{font-size:22px!important;filter:grayscale(1)!important}
+#step1 .category-copy{gap:0!important}
+#step1 .category small{display:none!important}
+#step1 .category strong{font-size:15px!important;line-height:1.18!important;font-weight:800!important}
+#step1 .category em{font-size:10.5px!important;line-height:1.25!important;margin-top:5px!important;color:#8a94a2!important}
+#step1 .category-chevron{font-size:25px!important;color:#a6afbb!important}
+#step1 .category .mark{width:31px!important;height:31px!important;background:#fff!important;border:2px solid #d7dce3!important;color:#111827!important;font-size:15px!important}
+#step1 .category.selected{background:#f8f9fa!important;border-color:#d6dce3!important}
+#step1 .category.selected .cat-icon{background:#111827!important;color:#fff!important}
+#step1 .category.selected .mark{background:#111827!important;border-color:#111827!important;color:#fff!important}
+#step1 .direction-bottom{margin-top:12px!important;padding:8px 9px 8px 10px!important;border-radius:18px!important}
+#step1 .direction-selected-icon{width:34px!important;height:34px!important;flex-basis:34px!important}
+#step1 .direction-continue{min-height:48px!important;flex-basis:180px!important;border-radius:14px!important;font-size:15px!important}
+@media(max-width:600px){
+  #step1 .direction-heading{margin-bottom:12px!important}
+  #step1 .direction-title{font-size:25px!important}
+  #step1 .direction-subtitle{font-size:11px!important;max-width:275px!important}
+  #step1 .direction-count{width:60px!important;height:60px!important;flex-basis:60px!important;border-radius:17px!important}
+  #step1 .category{grid-template-columns:44px minmax(0,1fr) 10px 30px!important;column-gap:9px!important;min-height:82px!important;padding:9px 10px!important;border-radius:16px!important}
+  #step1 .category .cat-icon{width:44px!important;height:44px!important;border-radius:13px!important}
+  #step1 .category .cat-icon svg{width:27px!important;height:27px!important}
+  #step1 .category strong{font-size:13px!important}
+  #step1 .category em{font-size:9px!important;margin-top:4px!important}
+  #step1 .category-chevron{font-size:22px!important}
+  #step1 .category .mark{width:29px!important;height:29px!important;font-size:14px!important}
+  #step1 .direction-bottom{margin-top:10px!important}
+  #step1 .direction-continue{flex-basis:145px!important;min-height:46px!important;font-size:14px!important}
+}
+@media(max-width:390px){
+  #step1 .direction-title{font-size:23px!important}
+  #step1 .direction-subtitle{font-size:10px!important}
+  #step1 .category{grid-template-columns:40px minmax(0,1fr) 9px 28px!important;column-gap:8px!important;min-height:76px!important}
+  #step1 .category .cat-icon{width:40px!important;height:40px!important}
+  #step1 .category .cat-icon svg{width:24px!important;height:24px!important}
+  #step1 .category strong{font-size:12.5px!important}
+  #step1 .category em{font-size:8.5px!important}
+  #step1 .category .mark{width:27px!important;height:27px!important}
+}
+
+
+/* v201 — unified direction icon picker */
+.settings-picker-icon{display:grid;place-items:center;width:34px;height:34px;font-size:0;color:#17202c}
+.settings-icon-row .icon-picker{grid-template-columns:repeat(auto-fill,minmax(44px,1fr))!important;gap:7px!important}
+.settings-icon-row .icon-choice{height:44px!important;border-radius:13px!important}
+
+/* v200 semantic icon system */
+.mg-work-icon{width:72%;height:72%;display:block;overflow:visible}.settings-dir-icon .mg-work-icon{width:26px;height:26px}.settings-picker-icon .mg-work-icon{width:30px;height:30px}.mini-icon .mg-work-icon{width:20px;height:20px}.cat-icon .mg-work-icon{width:26px;height:26px}
+
+/* v205 — approved image icons: only in Settings > Directions > Add direction */
+.settings-field-v3{grid-column:1/-1!important}
+.settings-field-v3 label,.settings-icon-field-v3 label{display:block;margin-bottom:8px;font-weight:700;color:#1a2430}
+.new-direction-icon-picker{display:grid;grid-template-columns:repeat(6,minmax(72px,1fr));gap:10px;padding:2px 0}
+.new-direction-icon-choice{min-width:0;height:94px;border:1px solid #e1e6eb;border-radius:16px;background:#f6f8fa;color:#17202c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:7px 4px}
+.new-direction-icon-choice .approved-icon-box{width:54px;height:54px;display:grid;place-items:center}.new-direction-icon-choice .approved-icon-box img{width:48px;height:48px;object-fit:contain;display:block}.new-direction-icon-choice .mg-work-icon{width:38px;height:38px}
+.new-direction-icon-choice small{font-size:9px;line-height:1.05;text-align:center;color:#1d2733;font-weight:600}
+.new-direction-icon-choice.active{background:#111820;color:#fff;border-color:#111820;box-shadow:0 5px 14px rgba(17,24,32,.16)}
+.new-direction-icon-choice.active small{color:#fff}
+.settings-current-icon{display:flex;align-items:center;gap:10px;color:#17202c}
+.settings-current-icon .mg-work-icon{width:34px;height:34px}
+.settings-current-icon span{font-size:12px;font-weight:600;color:#687587}
+@media(max-width:700px){.new-direction-icon-picker{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.new-direction-icon-choice{height:92px;border-radius:14px}.new-direction-icon-choice .approved-icon-box{width:52px;height:52px}.new-direction-icon-choice .approved-icon-box img{width:46px;height:46px}.new-direction-icon-choice .mg-work-icon{width:34px;height:34px}.new-direction-icon-choice small{font-size:8px}}
+
+/* v206 — approved direction icon images: exact same artwork everywhere */
+.mg-work-icon-image{width:34px!important;height:34px!important;display:block!important;object-fit:contain!important;user-select:none!important;-webkit-user-drag:none!important;}
+.settings-dir-icon .mg-work-icon-image{width:36px!important;height:36px!important}
+.settings-current-icon .mg-work-icon-image{width:38px!important;height:38px!important}
+.new-direction-icon-choice .approved-icon-box img{width:54px;height:54px;object-fit:contain;display:block;}
+.category .cat-icon .mg-work-icon-image{width:32px!important;height:32px!important}
+.direction-picker-item .mini-icon .mg-work-icon-image{width:30px!important;height:30px!important}
+
+/* v207 — selected direction icons + collapsible icon picker */
+#step1 .category .cat-icon, #step1 .category.selected .cat-icon{background:#f0f2f5!important;color:#111827!important;border:1px solid #d9dde2!important;filter:none!important;}
+#step1 .category.selected .cat-icon{background:#fff!important;}
+#step1 .cat-icon .mg-work-icon-image{width:30px!important;height:30px!important;object-fit:contain!important;filter:none!important;}
+.new-direction-icon-toggle{width:100%;min-height:64px;border:1px solid #dfe4ea;border-radius:15px;background:#f7f8fa;color:#172033;display:flex;align-items:center;gap:12px;padding:8px 12px;text-align:left;cursor:pointer;}
+.new-direction-current-icon{width:48px;height:48px;border-radius:13px;background:#fff;border:1px solid #e0e5ea;display:grid;place-items:center;flex:0 0 auto;}
+.new-direction-current-icon img{width:40px;height:40px;object-fit:contain;display:block;}
+.new-direction-icon-toggle>span:nth-child(2){display:flex;flex-direction:column;gap:2px;min-width:0;}
+.new-direction-icon-toggle b{font-size:13px;line-height:1.15;}
+.new-direction-icon-toggle small{font-size:10px;color:#8a94a3;}
+.new-direction-current-chevron{margin-left:auto;font-size:22px;color:#667085;transition:transform .18s ease;}
+.icon-picker-open .new-direction-current-chevron{transform:rotate(180deg);}
+.new-direction-icon-grid-collapsible{display:grid;grid-template-rows:0fr;overflow:hidden;transition:grid-template-rows .2s ease,margin-top .2s ease; margin-top:0;}
+.new-direction-icon-grid-collapsible>*{min-height:0;}
+.icon-picker-open .new-direction-icon-grid-collapsible{grid-template-rows:1fr;margin-top:8px;}
+.icon-picker-open .new-direction-icon-grid-collapsible{overflow:visible;}
+.icon-picker-open .new-direction-icon-grid-collapsible{display:grid;grid-template-columns:repeat(6,minmax(72px,1fr));gap:10px;padding:2px 0;}
+@media(max-width:700px){.icon-picker-open .new-direction-icon-grid-collapsible{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.new-direction-current-icon{width:44px;height:44px}.new-direction-current-icon img{width:36px;height:36px;}}
+
+/* v208 — fix icon picker layout and keep selected direction tiles light */
+.new-direction-icon-grid-collapsible{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:10px!important;
+  max-height:0!important;
+  overflow:hidden!important;
+  opacity:0;
+  margin-top:0!important;
+  padding:0!important;
+  transition:max-height .22s ease,opacity .18s ease,margin-top .22s ease,padding .22s ease;
+}
+.icon-picker-open .new-direction-icon-grid-collapsible{
+  max-height:1200px!important;
+  overflow:visible!important;
+  opacity:1;
+  margin-top:8px!important;
+  padding:2px 0!important;
+}
+.new-direction-icon-grid-collapsible .new-direction-icon-choice{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+#step1 .category.selected .cat-icon,
+#step1 .category.selected .cat-icon:hover,
+#step1 .category.selected .cat-icon:active{
+  background:#f0f2f5!important;
+  background-color:#f0f2f5!important;
+  border-color:#d9dde2!important;
+  color:#111827!important;
+  filter:none!important;
+}
+#step1 .category.selected .cat-icon img,
+#step1 .category.selected .cat-icon .mg-work-icon-image{
+  filter:none!important;
+  opacity:1!important;
+}
+@media(max-width:700px){
+  .icon-picker-open .new-direction-icon-grid-collapsible{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+}
+
+
+/* Master Group v209 — mobile direction icon picker layout/accordion fix.
+   The picker itself is a vertical component: current selection first, icon grid below.
+   Prevent the parent settings grid from squeezing the picker into a narrow column. */
+.settings-icon-field-v3{
+  width:100%;
+  min-width:0;
+}
+.new-direction-icon-picker{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  padding:0!important;
+}
+.new-direction-icon-toggle{
+  position:relative;
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  min-height:64px!important;
+}
+.new-direction-icon-grid-collapsible{
+  width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+}
+.new-direction-icon-choice{
+  min-width:0!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden;
+}
+.new-direction-icon-choice .approved-icon-box{
+  flex:0 0 auto;
+}
+.new-direction-icon-choice .approved-icon-box img{
+  max-width:100%!important;
+  max-height:100%!important;
+}
+@media(max-width:700px){
+  .settings-add-form-v2{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+  .settings-add-form-v2>.settings-field-v2,
+  .settings-add-form-v2>.settings-icon-field-v3,
+  .settings-add-form-v2>.settings-add-btn-v2{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  .settings-add-form-v2>.settings-add-btn-v2{
+    margin-top:2px!important;
+  }
+  .new-direction-icon-grid-collapsible{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  .new-direction-icon-choice{
+    height:92px!important;
+    min-height:92px!important;
+    padding:6px 3px!important;
+    border-radius:14px!important;
+  }
+  .new-direction-icon-choice .approved-icon-box{
+    width:48px!important;
+    height:48px!important;
+  }
+  .new-direction-icon-choice .approved-icon-box img{
+    width:44px!important;
+    height:44px!important;
+  }
+  .new-direction-icon-choice small{
+    display:block!important;
+    width:100%!important;
+    min-height:18px;
+    font-size:9px!important;
+    line-height:1.08!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+  }
+}
+
+/* Master Group v211 — completely new, standalone first-open icon picker. */
+.new-direction-icon-picker-v211{width:100%;box-sizing:border-box;position:relative;}
+.mg211-icon-button{width:100%;min-height:68px;border:1px solid #dfe4ea;border-radius:16px;background:#f7f8fa;color:#172033;display:flex;align-items:center;gap:12px;padding:9px 12px;text-align:left;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.mg211-current-icon{width:48px;height:48px;flex:0 0 48px;border-radius:13px;background:#fff;border:1px solid #e0e5ea;display:grid;place-items:center;}
+.mg211-current-icon img{width:38px;height:38px;object-fit:contain;display:block;}
+.mg211-current-text{min-width:0;display:flex;flex-direction:column;gap:3px;}
+.mg211-current-text b{font-size:13px;line-height:1.15;white-space:normal;}
+.mg211-current-text small{font-size:10px;line-height:1.2;color:#8a94a3;}
+.mg211-chevron{margin-left:auto;font-size:22px;line-height:1;color:#667085;transition:transform .18s ease;}
+.new-direction-icon-picker-v211.open .mg211-chevron{transform:rotate(180deg);}
+.mg211-icon-list{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin-top:9px;padding:2px 0;}
+/* v212: the hidden attribute must always win over the grid display rule. */
+.mg211-icon-list[hidden]{display:none!important;}
+.new-direction-icon-picker-v211.open .mg211-icon-list:not([hidden]){display:grid;}
+.mg211-icon-choice{min-width:0;height:92px;border:1px solid #e1e6eb;border-radius:14px;background:#f7f8fa;color:#17202c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:6px 4px;cursor:pointer;touch-action:manipulation;}
+.mg211-icon-choice.active{background:#18212f;color:#fff;border-color:#18212f;}
+.mg211-icon-box{width:50px;height:50px;display:grid;place-items:center;flex:0 0 auto;}
+.mg211-icon-box img{width:46px;height:46px;object-fit:contain;display:block;}
+.mg211-icon-choice>span:last-child{font-size:8px;line-height:1.08;text-align:center;font-weight:650;overflow-wrap:anywhere;}
+@media(max-width:700px){
+  .mg211-icon-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}
+  .mg211-icon-choice{height:88px;border-radius:13px;}
+  .mg211-icon-box{width:46px;height:46px;}
+  .mg211-icon-box img{width:42px;height:42px;}
+  .mg211-icon-choice>span:last-child{font-size:8px;}
+}
+
+/* Master Group v213 — desktop settings polish.
+   Keep the icon picker as a real wide component on desktop instead of squeezing it into the old 86px icon column. */
+@media (min-width: 901px){
+  #settingsScreen.app{
+    width:min(1500px,calc(100% - 48px))!important;
+    max-width:1500px!important;
+    padding:28px 24px 48px!important;
+  }
+  #settingsScreen .settings-topbar{
+    margin-bottom:18px!important;
+  }
+  #settingsScreen .settings-hero-v2{
+    padding:24px 6px 20px!important;
+  }
+  #settingsScreen .settings-hero-v2 h1{
+    font-size:38px!important;
+    letter-spacing:-1.5px!important;
+  }
+  #settingsScreen .settings-hero-v2 p{
+    max-width:760px!important;
+    font-size:14px!important;
+  }
+  #settingsScreen .settings-tabs-v2{
+    max-width:900px!important;
+    margin:4px 0 18px!important;
+  }
+  #settingsScreen .settings-card-v2{
+    border-radius:24px!important;
+    padding:24px!important;
+    margin-bottom:18px!important;
+    box-shadow:0 12px 34px rgba(24,33,47,.06)!important;
+  }
+  #settingsScreen .settings-add-v2{
+    overflow:visible!important;
+  }
+  #settingsScreen .settings-add-form-v2{
+    grid-template-columns:minmax(280px,0.8fr) minmax(520px,1.8fr) auto!important;
+    align-items:end!important;
+    gap:16px!important;
+  }
+  #settingsScreen .settings-icon-field-v3{
+    min-width:0!important;
+    width:100%!important;
+  }
+  #settingsScreen .new-direction-icon-picker-v211{
+    width:100%!important;
+    min-width:0!important;
+  }
+  #settingsScreen .mg211-icon-button{
+    min-height:64px!important;
+    background:#f7f9fb!important;
+  }
+  #settingsScreen .mg211-icon-list{
+    grid-template-columns:repeat(8,minmax(72px,1fr))!important;
+    gap:10px!important;
+    padding:3px 0 1px!important;
+  }
+  #settingsScreen .mg211-icon-choice{
+    height:96px!important;
+    border-radius:15px!important;
+  }
+  #settingsScreen .mg211-icon-choice:hover{
+    border-color:#b9c2cc!important;
+    background:#fff!important;
+    transform:translateY(-1px);
+  }
+  #settingsScreen .mg211-icon-choice.active:hover{
+    background:#18212f!important;
+    border-color:#18212f!important;
+  }
+  #settingsScreen .settings-add-btn-v2{
+    min-width:132px!important;
+  }
+  #settingsPanelCatalog > .settings-card-v2:nth-child(2){
+    overflow:visible!important;
+  }
+  #settingsCatalog{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:14px!important;
+    align-items:start!important;
+  }
+  #settingsCatalog > *{
+    min-width:0!important;
+  }
+  #settingsScreen .settings-card-head-simple{
+    margin-bottom:18px!important;
+  }
+}
