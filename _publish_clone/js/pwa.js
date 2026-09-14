@@ -1,4 +1,4 @@
-/* Master Group v192 — in-app PWA update flow */
+/* Master Group v193 — in-app PWA update flow */
 (()=>{
 const APP_VERSION=document.querySelector('meta[name="app-version"]')?.content||'unknown';let registration=null,waitingWorker=null;
 const $=id=>document.getElementById(id),notice=$('mgUpdateNotice'),noticeText=$('mgUpdateNoticeText'),later=$('mgUpdateLaterBtn'),now=$('mgUpdateNowBtn'),check=$('mgCheckUpdateBtn'),status=$('mgUpdateSettingsStatus'),settingsText=$('mgUpdateSettingsText');
