@@ -1,4 +1,4 @@
-const CACHE='master-group-v176';
+const CACHE='master-group-v192';
 const CORE=[
   './','./index.html','./manifest.webmanifest','./css/styles.css',
   './js/state.js','./js/data-model.js','./js/storage.js','./js/catalog.js','./js/estimate-engine.js','./js/calculations.js','./js/finance-service.js','./js/estimate-ui.js','./js/zoom-lock.js','./js/estimate-core.js','./js/finance-ui.js','./js/app-core.js','./js/ui-refresh-fix.js','./js/print.js',
@@ -8,6 +8,7 @@ const CORE=[
 ];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting();});
 self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET')return;
   const u=new URL(e.request.url);

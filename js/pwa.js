@@ -1,1 +1,11 @@
-if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+/* Master Group v192 — in-app PWA update flow */
+(()=>{
+const APP_VERSION=document.querySelector('meta[name="app-version"]')?.content||'unknown';let registration=null,waitingWorker=null;
+const $=id=>document.getElementById(id),notice=$('mgUpdateNotice'),noticeText=$('mgUpdateNoticeText'),later=$('mgUpdateLaterBtn'),now=$('mgUpdateNowBtn'),check=$('mgCheckUpdateBtn'),status=$('mgUpdateSettingsStatus'),settingsText=$('mgUpdateSettingsText');
+function showUpdate(w){if(!w)return;waitingWorker=w;if(noticeText)noticeText.textContent='Вышла новая версия Master Group. Обновите приложение одним нажатием.';if(status)status.textContent='Доступно новое обновление';if(settingsText)settingsText.textContent=`Текущая версия ${APP_VERSION}. Новая версия уже готова.`;if(notice)notice.hidden=false;}
+function apply(){const w=waitingWorker||registration?.waiting;if(!w){registration?.update().catch(()=>{});return;}now?.setAttribute('disabled','disabled');if(now)now.textContent='Обновление…';w.postMessage({type:'SKIP_WAITING'});}
+function bind(reg){registration=reg;if(reg.waiting)showUpdate(reg.waiting);reg.addEventListener('updatefound',()=>{const w=reg.installing;if(!w)return;w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)showUpdate(w);});});navigator.serviceWorker.addEventListener('controllerchange',()=>{if(window.__mgUpdateReloading)return;window.__mgUpdateReloading=true;window.location.reload();});}
+async function checkUpdate(manual=false){if(!registration)return;if(manual&&status)status.textContent='Проверяем…';try{await registration.update();if(registration.waiting)showUpdate(registration.waiting);else if(manual&&status)status.textContent=`Версия ${APP_VERSION} · актуально`;}catch(_){if(manual&&status)status.textContent='Не удалось проверить · попробуйте ещё раз';}}
+later?.addEventListener('click',()=>{if(notice)notice.hidden=true;if(status)status.textContent='Обновление доступно · можно установить позже';});now?.addEventListener('click',apply);check?.addEventListener('click',()=>checkUpdate(true));
+if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const reg=await navigator.serviceWorker.register(`sw.js?v=${encodeURIComponent(APP_VERSION)}`);bind(reg);setTimeout(()=>checkUpdate(false),500);}catch(_){}});document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate(false);});}
+})();
