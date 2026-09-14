@@ -24,11 +24,26 @@
     company(uid){return repo.path(uid).child('company')},
     notifications(uid){return repo.path(uid).child('notifications')},
     meta(uid){return repo.path(uid).child('_meta')},
+    async nextEstimateNumber(uid){
+      const ref=repo.meta(uid).child('estimateNumber');
+      const snap=await repo.estimates(uid).once('value');
+      let max=0;
+      snap.forEach(ch=>{const n=Number(String(ch.val()?.number||'').replace(/^MG-/i,''));if(Number.isFinite(n)&&n>max)max=n});
+      const r=await ref.transaction(v=>{const n=Math.max(Number(v)||0,max);return n+1});
+      if(!r.committed)throw new Error('Номер сметы не подтверждён');
+      return Number(r.snapshot.val());
+    },
     sanitize:value=>safe(value),
     async writeEstimate(uid,estimate){return repo.estimate(uid,estimate.id).set(safe(estimate))},
     async readEstimate(uid,id){const s=await repo.estimate(uid,id).once('value');return s.val()},
     async confirmEstimate(uid,id){const v=await repo.readEstimate(uid,id);if(!v||v._deleted||String(v.id)!==String(id))throw Object.assign(new Error('Cloud write was not confirmed'),{code:'database/unavailable'});return v},
-    async markDeleted(uid,id,at){await repo.estimate(uid,id).set({_deleted:true,_cloudUpdatedAt:C.serverTimestamp(),_deletedAt:at});const v=await repo.readEstimate(uid,id);if(!v||v._deleted!==true||String(v._deletedAt)!==String(at))throw Object.assign(new Error('Delete write was not confirmed'),{code:'database/unavailable'});return v},
+    async hardDelete(uid,id){await repo.estimate(uid,id).remove();const s=await repo.readEstimate(uid,id);if(s!==null)throw Object.assign(new Error('Permanent delete was not confirmed'),{code:'database/unavailable'});return true},
+    async markDeleted(uid,id,at){
+      const existing=await repo.readEstimate(uid,id);
+      const payload=safe(existing||{id:String(id)});
+      payload.id=payload.id||String(id); payload._deleted=true; payload._cloudUpdatedAt=C.serverTimestamp(); payload._deletedAt=at;
+      await repo.estimate(uid,id).set(payload);
+      const v=await repo.readEstimate(uid,id);if(!v||v._deleted!==true||String(v._deletedAt)!==String(at))throw Object.assign(new Error('Delete write was not confirmed'),{code:'database/unavailable'});return v},
     async writeCatalog(uid,data){await repo.catalog(uid).set({data:safe(data),_cloudUpdatedAt:C.serverTimestamp()});const s=await repo.catalog(uid).once('value');if(!s.exists()||!Array.isArray(s.val()?.data))throw Object.assign(new Error('Catalog write not confirmed'),{code:'database/unavailable'});return s.val()},
     async writeCompany(uid,data){await repo.company(uid).set({data:safe(data),_cloudUpdatedAt:C.serverTimestamp()});const s=await repo.company(uid).once('value');if(!s.exists())throw Object.assign(new Error('Company write not confirmed'),{code:'database/unavailable'});return s.val()},
     async verify(uid){const probe=repo.meta(uid).child('lastClientCheck');await probe.set(C.serverTimestamp());const s=await probe.once('value');if(!s.exists())throw Object.assign(new Error('Cloud verification failed'),{code:'database/unavailable'});return true},

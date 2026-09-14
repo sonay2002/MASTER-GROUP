@@ -9,7 +9,7 @@
      with the monolithic core. They must live here now that the app is modular. */
   const KEY='master_group_estimates_v8',CAT='master_group_catalog_v1',COMP='master_group_company_v1';
   const DEL='master_group_cloud_deleted_v1',DIRTY='master_group_cloud_dirty_v3',CATDIRTY='master_group_cloud_catalog_dirty_v2',PROFDIRTY='master_group_cloud_profile_dirty_v2';
-  const SYNC_VER='master_group_firebase_v18';
+  const SYNC_VER='master_group_firebase_v19';
   const $=id=>document.getElementById(id);
   const read=(k,fb)=>{try{const x=JSON.parse(localStorage.getItem(k)||'null');return x==null?fb:x}catch(e){return fb}};
   const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
@@ -148,6 +148,14 @@
     const saved=await FIREBASE_REPO.confirmEstimate(user.uid,id);
     clearDirty(id);return saved;
   }
+  window.__mgCloudHardDelete=async function(id){
+    try{
+      id=String(id||'');
+      if(!id||!root||!user||!cloudMode)return false;
+      await FIREBASE_REPO.hardDelete(user.uid,id);
+      return true;
+    }catch(e){console.warn('Firebase permanent delete sync:',e?.code||'unknown',e);return false}
+  };
   window.__mgCloudFlushDelete=async function(id,at){
     try{
       id=String(id||'');
@@ -185,8 +193,8 @@
     await FIREBASE_REPO.acknowledge(user.uid,{appVersion:SYNC_VER})
   }
   async function verifyCloudAccess(){if(!root||!user)throw Object.assign(new Error('Cloud access unavailable'),{code:'database/permission-denied'});return FIREBASE_REPO.verify(user.uid)}
-  function applyRemoteEstimate(id,v){id=String(id||'');if(!id||!v)return;const local=localEstimates();const idx=local.findIndex(x=>String(x.id)===id);if(v._deleted===true){if(idx>=0&&dirtyIds().has(id))return;if(idx>=0){const before=local[idx];local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);refreshUi();if(!starting)addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'deleted',title:estimateDisplay(before)+' удалена',body:'Смета удалена на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}return}const remoteAt=Number(v._cloudUpdatedAt)||0;const remoteClientAt=Number(v._clientUpdatedAt)||0;const oldAt=Math.max(Number(idx>=0?local[idx]._syncUpdatedAt:0)||0,Number(idx>=0?local[idx]._clientUpdatedAt:0)||0);if(idx>=0&&dirtyIds().has(id)){if(remoteAt>oldAt||remoteClientAt>oldAt){addNotification({id:'n_conflict_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'change',title:estimateDisplay(local[idx])+' — конфликт синхронизации',body:'Локальные изменения сохранены на устройстве и будут отправлены в облако. Облачная версия не перезаписала их.',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true});}return;}if(idx>=0&&remoteAt<=oldAt&&remoteClientAt<=oldAt)return;const before=idx>=0?JSON.parse(JSON.stringify(local[idx])):null;let copy=JSON.parse(JSON.stringify(v));delete copy._cloudUpdatedAt;delete copy._deleted;delete copy._deletedAt;if(window.MGDataModel?.normalizeEstimate)copy=window.MGDataModel.normalizeEstimate(copy);copy._syncUpdatedAt=Math.max(remoteAt,remoteClientAt);if(idx>=0)local[idx]=copy;else local.unshift(copy);write(KEY,local);refreshUi();if(!starting){const changes=estimateChanges(before,copy);if(changes.length){const details=changes.map(c=>c.body).filter(Boolean);const kind=changes.some(c=>c.type==='payment')?'payment':changes.some(c=>c.type==='expense')?'expense':changes.some(c=>c.type==='status')?'status':'change';addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:kind,title:estimateDisplay(copy)+' изменена',body:details.length===1?details[0]:(details.length+' изменений: '+details.slice(0,4).join(' • ')+(details.length>4?' • и ещё '+(details.length-4):'')),at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}else if(idx<0){addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:'created',title:estimateDisplay(copy)+' создана',body:'Новая смета создана на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}}}
-function listen(){stopListeners();if(!root)return;const onListenerError=e=>cloudError(e,'sync');const er=root.child('estimates');const onAdded=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onChanged=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onRemoved=s=>{try{if(starting||dirtyIds().has(String(s.key)))return;const a=localEstimates().filter(x=>String(x.id)!==String(s.key));write(KEY,a);refreshUi();if(!starting)notify('Смета удалена','Изменение пришло с другого устройства')}catch(e){onListenerError(e)}};estimateListener={er,onAdded,onChanged,onRemoved};er.on('child_added',onAdded,onListenerError);er.on('child_changed',onChanged,onListenerError);er.on('child_removed',onRemoved,onListenerError);catalogListener=root.child('catalog').on('value',s=>{const v=s.val();if(!v||read(CATDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_catalog_sync_at')||0);if(at>localAt&&Array.isArray(v.data)){write(CAT,v.data);localStorage.setItem('master_group_catalog_sync_at',String(at));refreshUi();notify('Каталог обновлён','Направления и услуги синхронизированы')}},onListenerError);companyListener=root.child('company').on('value',s=>{const v=s.val();if(!v||read(PROFDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_company_sync_at')||0);if(at>localAt&&v.data){write(COMP,v.data);localStorage.setItem('master_group_company_sync_at',String(at));refreshUi();notify('Профиль обновлён','Данные компании синхронизированы')}},onListenerError);notificationListener=root.child('notifications').on('child_added',s=>{const n=s.val();if(!n||String(n.sourceClientId||'')===notificationClientId())return;addNotification(n,{cloud:false,toastIt:true})},onListenerError)}
+  function applyRemoteEstimate(id,v){id=String(id||'');if(!id||!v)return;const local=localEstimates();const idx=local.findIndex(x=>String(x.id)===id);if(v._deleted===true){if(idx>=0&&dirtyIds().has(id))return;try{const tk='master_group_deleted_estimates_v1';const ta=JSON.parse(localStorage.getItem(tk)||'[]').filter(x=>x&&String(x.id)!==id);const tomb=JSON.parse(JSON.stringify(v));tomb.id=tomb.id||id;tomb._deletedAt=Number(v._deletedAt)||Date.now();tomb._deletedFrom='estimates';delete tomb._deleted;delete tomb._cloudUpdatedAt;ta.unshift(tomb);localStorage.setItem(tk,JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}}catch(err){console.warn('MG remote trash save failed',err)}if(idx>=0){const before=local[idx];local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);refreshUi();if(!starting)addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'deleted',title:estimateDisplay(before)+' удалена',body:'Смета удалена на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}return}const remoteAt=Number(v._cloudUpdatedAt)||0;const remoteClientAt=Number(v._clientUpdatedAt)||0;const oldAt=Math.max(Number(idx>=0?local[idx]._syncUpdatedAt:0)||0,Number(idx>=0?local[idx]._clientUpdatedAt:0)||0);if(idx>=0&&dirtyIds().has(id)){if(remoteAt>oldAt||remoteClientAt>oldAt){addNotification({id:'n_conflict_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'change',title:estimateDisplay(local[idx])+' — конфликт синхронизации',body:'Локальные изменения сохранены на устройстве и будут отправлены в облако. Облачная версия не перезаписала их.',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true});}return;}if(idx>=0&&remoteAt<=oldAt&&remoteClientAt<=oldAt)return;const before=idx>=0?JSON.parse(JSON.stringify(local[idx])):null;let copy=JSON.parse(JSON.stringify(v));delete copy._cloudUpdatedAt;delete copy._deleted;delete copy._deletedAt;if(window.MGDataModel?.normalizeEstimate)copy=window.MGDataModel.normalizeEstimate(copy);copy._syncUpdatedAt=Math.max(remoteAt,remoteClientAt);if(idx>=0)local[idx]=copy;else local.unshift(copy);write(KEY,local);refreshUi();if(!starting){const changes=estimateChanges(before,copy);if(changes.length){const details=changes.map(c=>c.body).filter(Boolean);const kind=changes.some(c=>c.type==='payment')?'payment':changes.some(c=>c.type==='expense')?'expense':changes.some(c=>c.type==='status')?'status':'change';addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:kind,title:estimateDisplay(copy)+' изменена',body:details.length===1?details[0]:(details.length+' изменений: '+details.slice(0,4).join(' • ')+(details.length>4?' • и ещё '+(details.length-4):'')),at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}else if(idx<0){addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:'created',title:estimateDisplay(copy)+' создана',body:'Новая смета создана на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}}}
+function listen(){stopListeners();if(!root)return;const onListenerError=e=>cloudError(e,'sync');const er=root.child('estimates');const onAdded=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onChanged=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onRemoved=s=>{try{const id=String(s.key);if(!starting&&!dirtyIds().has(id)){const a=localEstimates().filter(x=>String(x.id)!==id);write(KEY,a);}const tk='master_group_deleted_estimates_v1';const trash=read(tk,[]).filter(x=>String(x?.id)!==id);write(tk,trash);try{window.__mgRenderTrash?.()}catch(_){}refreshUi();if(!starting)notify('Смета удалена навсегда','Изменение пришло с другого устройства')}catch(e){onListenerError(e)}};estimateListener={er,onAdded,onChanged,onRemoved};er.on('child_added',onAdded,onListenerError);er.on('child_changed',onChanged,onListenerError);er.on('child_removed',onRemoved,onListenerError);catalogListener=root.child('catalog').on('value',s=>{const v=s.val();if(!v||read(CATDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_catalog_sync_at')||0);if(at>localAt&&Array.isArray(v.data)){write(CAT,v.data);localStorage.setItem('master_group_catalog_sync_at',String(at));refreshUi();notify('Каталог обновлён','Направления и услуги синхронизированы')}},onListenerError);companyListener=root.child('company').on('value',s=>{const v=s.val();if(!v||read(PROFDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_company_sync_at')||0);if(at>localAt&&v.data){write(COMP,v.data);localStorage.setItem('master_group_company_sync_at',String(at));refreshUi();notify('Профиль обновлён','Данные компании синхронизированы')}},onListenerError);notificationListener=root.child('notifications').on('child_added',s=>{const n=s.val();if(!n||String(n.sourceClientId||'')===notificationClientId())return;addNotification(n,{cloud:false,toastIt:true})},onListenerError)}
 function stopListeners(){try{if(root){if(estimateListener){const er=estimateListener.er;er.off('child_added',estimateListener.onAdded);er.off('child_changed',estimateListener.onChanged);er.off('child_removed',estimateListener.onRemoved)}if(catalogListener)root.child('catalog').off('value',catalogListener);if(companyListener)root.child('company').off('value',companyListener);if(notificationListener)root.child('notifications').off('child_added',notificationListener)}}catch(e){}estimateListener=catalogListener=companyListener=notificationListener=null}
   async function syncNow(){
     if(!cloudMode||busy||!root||!user)return;
@@ -230,11 +238,21 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     const snap=await root.child('estimates').once('value');const remote=snap.val()||{};const local=localEstimates();
     for(const e of local){if(!remote[e.id]||Number(e._syncUpdatedAt||0)>Number(remote[e.id]?._cloudUpdatedAt||0))markDirty([e.id])}
     for(const id of Object.keys(remote)){const v=remote[id];if(v?._deleted){
-        const remoteAt=Number(v._cloudUpdatedAt)||Number(v._deletedAt)||0;
         const localMatch=localEstimates().find(e=>String(e.id)===String(id));
+        const remoteAt=Number(v._cloudUpdatedAt)||Number(v._deletedAt)||0;
         const localAt=Number(localMatch?._syncUpdatedAt||0);
-        if(!localMatch || remoteAt>=localAt){const a=localEstimates().filter(e=>String(e.id)!==String(id));write(KEY,a)}
-        continue
+        if(!localMatch || remoteAt>=localAt){
+          try{
+            const tk='master_group_deleted_estimates_v1';
+            const ta=JSON.parse(localStorage.getItem(tk)||'[]').filter(x=>x&&String(x.id)!==String(id));
+            const tomb=JSON.parse(JSON.stringify(v));
+            tomb.id=tomb.id||id; tomb._deletedAt=Number(v._deletedAt)||Date.now(); tomb._deletedFrom='estimates';
+            delete tomb._deleted; delete tomb._cloudUpdatedAt;
+            ta.unshift(tomb); localStorage.setItem(tk,JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}
+          }catch(err){console.warn('MG startup trash save failed',err)}
+          const a=localEstimates().filter(e=>String(e.id)!==String(id));write(KEY,a);clearDirty(id);clearDeleted(id);
+        }
+        continue;
       }applyRemoteEstimate(id,v)}
     if(read(CATDIRTY,false)!==true){const c=await root.child('catalog').once('value');const v=c.val();if(v?.data&&localCatalog().length===0)write(CAT,v.data)}
     if(read(PROFDIRTY,false)!==true){const c=await root.child('company').once('value');const v=c.val();if(v?.data&&Object.keys(read(COMP,{})).length===0)write(COMP,v.data)}
@@ -431,4 +449,15 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
   window.addEventListener('online',()=>{if(user&&!cloudMode){setTimeout(()=>initialSync(),500)}else if(user&&cloudMode)scheduleUpload();if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOnlineAt:Date.now()})});
   window.addEventListener('offline',()=>{if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOfflineAt:Date.now()});status('Нет интернета — данные сохраняются на устройстве',true)});
   window.__mgFirebaseVersion=SYNC_VER;try{renderNotifications();updateNotificationBadge()}catch(e){}boot();
+  /* Global estimate-number allocator. It intentionally lives inside the Firebase
+     closure so it uses the authenticated account and the shared transactional counter. */
+  window.__mgAllocateEstimateNumber=async function(){
+    if(!user||!cloudMode||!FIREBASE_REPO?.nextEstimateNumber) return null;
+    const n=await FIREBASE_REPO.nextEstimateNumber(user.uid);
+    if(!Number.isFinite(Number(n))||Number(n)<1) throw new Error('Некорректный номер сметы');
+    const out='MG-'+String(n).padStart(4,'0');
+    try{localStorage.setItem('mg_counter',String(n))}catch(_){ }
+    return out;
+  };
+
 })();

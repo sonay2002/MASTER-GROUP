@@ -85,9 +85,22 @@ function selectCategory(n){const i=state.directions.findIndex(d=>d.name===n);if(
  renderCats();renderServiceDirections();renderServices();renderItems();
 }
 
-function build(){const e={id:state.id||uid(),number:state.estimate?.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,city:contactData().city,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:new Date().toLocaleDateString('ru-RU')};if(window.MGDataModel?.normalizeEstimate)Object.assign(e,window.MGDataModel.normalizeEstimate(e));if(!state.id)localStorage.setItem('mg_counter',String(Number(localStorage.getItem('mg_counter')||0)+1));return e}
+function build(){const e={id:state.id||uid(),number:state.estimate?.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,city:contactData().city,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:new Date().toLocaleDateString('ru-RU')};if(window.MGDataModel?.normalizeEstimate)Object.assign(e,window.MGDataModel.normalizeEstimate(e));return e}
 async function create(){
-  const e=build(),a=saved(),i=a.findIndex(x=>String(x.id)===String(e.id));
+  const e=build();
+  if(!state.id&&window.__mgAllocateEstimateNumber){
+    try{
+      const n=await window.__mgAllocateEstimateNumber();
+      if(!n) throw new Error('Не удалось получить номер сметы из облачного счётчика');
+      e.number=n;
+      try{localStorage.setItem('mg_counter',String(Number(String(n).replace(/^MG-/i,''))||0))}catch(_){ }
+    }catch(err){
+      console.error('MG number allocation:',err);
+      toast('Не удалось получить номер сметы. Проверьте синхронизацию и интернет.');
+      return;
+    }
+  }
+  const a=saved(),i=a.findIndex(x=>String(x.id)===String(e.id));
   if(i>=0)a[i]=e;else a.unshift(e);
   if(persist(a)===false)return;
   state.id=e.id;state.estimate=e;documentBody(e);toast('Смета сохранена на устройстве');
