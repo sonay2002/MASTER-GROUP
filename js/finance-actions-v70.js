@@ -37,7 +37,7 @@ window.v60AskSent=window.__mg70_v60AskSent;
 window.shareTo=async function(kind){
  const e=v59Normalize(state.estimate||{});
  if(!e.id){toast('Сначала сохраните смету');return}
- const text='Master Group — Смета '+e.number+'\nКлиент: '+(e.client||'—')+'\nТелефон: '+(e.phone||'—')+'\nГород: '+(e.city||'—')+'\nАдрес: '+(e.address||e.object||'—')+'\n\n'+allItemsFromEstimate(e).map((x,i)=>(i+1)+'. '+(x.direction?x.direction+' — ':'')+x.name+' — '+x.qty+' '+x.unit+' × '+money(x.price)+' = '+money(x.qty*x.price)+' MDL').join('\n')+'\n\nИТОГО: '+money(e.total)+' MDL';
+ const text='Master Group — Смета '+e.number+'\nКлиент: '+(e.client||'—')+'\nТелефон: '+(e.phone||'—')+'\nАдрес: '+(e.address||e.object||'—')+'\n\n'+allItemsFromEstimate(e).map((x,i)=>(i+1)+'. '+(x.direction?x.direction+' — ':'')+x.name+' — '+x.qty+' '+x.unit+' × '+money(x.price)+' = '+money(x.qty*x.price)+' MDL').join('\n')+'\n\nИТОГО: '+money(e.total)+' MDL';
  const markSentSafe=()=>{try{if(v58st(e)==='Черновик')v58SetStatus(e.id,'Отправлена')}catch(err){console.warn('status update failed',err)}};
  if(kind==='wa'||kind==='tg'){
    const url=kind==='wa'?'https://wa.me/?text='+encodeURIComponent(text):'https://t.me/share/url?url=&text='+encodeURIComponent(text);

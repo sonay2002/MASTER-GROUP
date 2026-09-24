@@ -1,0 +1,441 @@
+  -webkit-backdrop-filter:blur(24px)!important;
+  padding:20px 16px!important;
+  overflow:auto;
+}
+#mgCloudAuth .mg-cloud-card{
+  width:min(560px,100%)!important;
+  box-sizing:border-box;
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid rgba(60,60,67,.16)!important;
+  border-radius:30px!important;
+  box-shadow:0 18px 55px rgba(0,0,0,.12)!important;
+  padding:34px 32px 30px!important;
+}
+#mgCloudAuth .mg-cloud-brand{
+  justify-content:center!important;
+  text-align:center;
+  flex-direction:column;
+  gap:10px!important;
+  margin:0 0 28px!important;
+}
+#mgCloudAuth .mg-cloud-logo{
+  width:72px!important;height:72px!important;
+  border-radius:23px!important;
+  font-size:28px!important;
+  letter-spacing:-1px;
+  box-shadow:0 7px 18px rgba(0,0,0,.13);
+}
+#mgCloudAuth .mg-cloud-brand-copy h2{
+  margin:0!important;
+  font-size:31px!important;
+  line-height:1.05!important;
+  letter-spacing:-1.3px!important;
+  color:#111318!important;
+}
+#mgCloudAuth .mg-cloud-subtitle{
+  margin-top:7px;
+  font-size:17px!important;
+  line-height:1.2!important;
+  font-weight:600!important;
+  color:#77808f!important;
+}
+#mgCloudAuth .mg-cloud-intro{margin:0 0 25px!important}
+#mgCloudAuth .mg-cloud-intro h1{
+  margin:0 0 8px!important;
+  font-size:34px!important;
+  line-height:1.08!important;
+  letter-spacing:-1.2px!important;
+  color:#111827!important;
+}
+#mgCloudAuth .mg-cloud-intro p{
+  margin:0!important;
+  color:#7a8493!important;
+  font-size:17px!important;
+  line-height:1.42!important;
+  font-weight:500!important;
+}
+#mgCloudAuth .mg-cloud-tabs-legacy{display:none!important}
+#mgCloudAuth .mg-cloud-field{margin:0 0 17px!important}
+#mgCloudAuth .mg-cloud-field label{
+  font-size:14px!important;
+  line-height:1.2!important;
+  margin:0 0 7px!important;
+  color:#171b23!important;
+}
+#mgCloudAuth .mg-cloud-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  min-height:58px;
+  background:#f7f8fa;
+  border:1px solid #dfe3e9;
+  border-radius:18px;
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+#mgCloudAuth .mg-cloud-input-wrap:focus-within{
+  background:#fff;
+  border-color:#aeb6c2;
+  box-shadow:0 0 0 4px rgba(0,0,0,.055);
+}
+#mgCloudAuth .mg-cloud-input-icon{
+  width:48px;
+  flex:0 0 48px;
+  text-align:center;
+  font-size:23px;
+  color:#667181;
+  line-height:1;
+}
+#mgCloudAuth .mg-cloud-field input{
+  min-width:0;
+  width:100%!important;
+  height:56px!important;
+  padding:0 46px 0 0!important;
+  border:0!important;
+  background:transparent!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+  font-size:17px!important;
+  color:#151922!important;
+}
+#mgCloudAuth .mg-cloud-field input::placeholder{color:#9aa3b1;opacity:1}
+#mgCloudAuth .mg-cloud-eye{
+  position:absolute;
+  right:10px;
+  width:38px;height:38px;
+  border:0;background:transparent;
+  border-radius:50%;
+  color:#5e6877;
+  font-size:20px;
+  cursor:pointer;
+}
+#mgCloudAuth .mg-cloud-msg{
+  min-height:18px!important;
+  margin:0 0 8px!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+}
+#mgCloudAuth .mg-cloud-primary{
+  width:100%;
+  min-height:58px;
+  border:0!important;
+  border-radius:18px!important;
+  background:#111!important;
+  color:#fff!important;
+  font-size:18px!important;
+  font-weight:800!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.13);
+  cursor:pointer;
+}
+#mgCloudAuth .mg-cloud-primary:active{transform:scale(.99)}
+#mgCloudAuth .mg-cloud-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:14px 2px 0;
+}
+#mgCloudAuth .mg-cloud-check{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#6f7988;
+  font-size:14px;
+  font-weight:600;
+}
+#mgCloudAuth .mg-cloud-check input{
+  appearance:none;
+  -webkit-appearance:none;
+  width:22px;height:22px;
+  margin:0;
+  border-radius:7px;
+  border:1px solid #d0d5dd;
+  background:#f2f4f7;
+  position:relative;
+}
+#mgCloudAuth .mg-cloud-check input:checked{background:#e8ebef;border-color:#cbd1d9}
+#mgCloudAuth .mg-cloud-check input:checked:after{
+  content:"✓";
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  color:#4d5968;font-size:15px;font-weight:900;
+}
+#mgCloudAuth .mg-cloud-link{
+  border:0;background:transparent;padding:0;
+  color:#536173;
+  font-size:14px;font-weight:650;
+  text-decoration:underline;
+  cursor:pointer;
+}
+#mgCloudAuth .mg-cloud-link:disabled{opacity:1}
+#mgCloudAuth .mg-cloud-or{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  margin:27px 0 17px;
+  color:#b0b7c2;
+  font-size:13px;
+  text-transform:lowercase;
+}
+#mgCloudAuth .mg-cloud-or span{height:1px;flex:1;background:#e5e8ed}
+#mgCloudAuth .mg-cloud-or b{font-weight:700}
+#mgCloudAuth .mg-cloud-create{
+  width:100%;
+  min-height:55px;
+  border:1px solid #dbe0e7;
+  background:#f8f9fb;
+  color:#4b5666;
+  border-radius:18px;
+  font-size:17px;
+  font-weight:750;
+  cursor:pointer;
+}
+#mgCloudAuth .mg-cloud-create:active{transform:scale(.99)}
+#mgCloudAuth .mg-cloud-secondary{
+  width:100%;
+  margin-top:10px;
+  min-height:48px;
+  border:0!important;
+  background:transparent!important;
+  color:#6e7785!important;
+  font-size:14px!important;
+  font-weight:650!important;
+  cursor:pointer;
+}
+@media(max-width:600px){
+  #mgCloudAuth{padding:14px 10px!important}
+  #mgCloudAuth .mg-cloud-card{
+    border-radius:27px!important;
+    padding:28px 22px 22px!important;
+  }
+  #mgCloudAuth .mg-cloud-brand{margin-bottom:23px!important}
+  #mgCloudAuth .mg-cloud-logo{width:64px!important;height:64px!important;border-radius:20px!important;font-size:25px!important}
+  #mgCloudAuth .mg-cloud-brand-copy h2{font-size:27px!important}
+  #mgCloudAuth .mg-cloud-subtitle{font-size:15px!important}
+  #mgCloudAuth .mg-cloud-intro h1{font-size:30px!important}
+  #mgCloudAuth .mg-cloud-intro p{font-size:16px!important}
+  #mgCloudAuth .mg-cloud-field{margin-bottom:14px!important}
+  #mgCloudAuth .mg-cloud-meta{margin-top:11px}
+}
+
+
+/* v204 — login screen copied to the supplied iOS reference */
+#mgCloudAuth{
+  position:fixed!important;
+  inset:0!important;
+  z-index:200000!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  padding:0 12px 28px!important;
+  overflow:auto!important;
+  background:#f2f3f7!important;
+  background-image:
+    radial-gradient(75% 34% at 102% 2%,rgba(255,255,255,.98) 0 48%,rgba(255,255,255,0) 49%),
+    radial-gradient(70% 34% at -2% 38%,rgba(255,255,255,.96) 0 45%,rgba(255,255,255,0) 46%),
+    radial-gradient(70% 35% at 52% 103%,rgba(255,255,255,.95) 0 46%,rgba(255,255,255,0) 47%)!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#mgCloudAuth .mg-cloud-card{
+  width:min(626px,100%)!important;
+  margin-top:500px!important;
+  flex:0 0 auto!important;
+  box-sizing:border-box!important;
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid rgba(60,60,67,.10)!important;
+  border-radius:28px!important;
+  box-shadow:0 12px 35px rgba(0,0,0,.055)!important;
+  padding:38px 36px 34px!important;
+}
+#mgCloudAuth .mg-cloud-brand{
+  justify-content:center!important;
+  text-align:center!important;
+  flex-direction:column!important;
+  gap:9px!important;
+  margin:0 0 31px!important;
+}
+#mgCloudAuth .mg-cloud-logo{
+  width:64px!important;height:64px!important;
+  border-radius:19px!important;
+  font-size:24px!important;
+  box-shadow:none!important;
+}
+#mgCloudAuth .mg-cloud-brand-copy h2{
+  font-size:27px!important;
+  line-height:1.05!important;
+  letter-spacing:-.9px!important;
+}
+#mgCloudAuth .mg-cloud-subtitle{
+  margin-top:6px!important;
+  font-size:15px!important;
+  color:#7c8796!important;
+}
+#mgCloudAuth .mg-cloud-intro{margin:0 0 23px!important}
+#mgCloudAuth .mg-cloud-intro h1{
+  font-size:28px!important;
+  line-height:1.08!important;
+  letter-spacing:-.8px!important;
+  margin:0 0 7px!important;
+}
+#mgCloudAuth .mg-cloud-intro p{
+  font-size:16px!important;
+  line-height:1.42!important;
+  color:#7c8796!important;
+}
+#mgCloudAuth .mg-cloud-tabs-legacy{display:none!important}
+#mgCloudAuth .mg-cloud-field{margin:0 0 12px!important}
+#mgCloudAuth .mg-cloud-field label{display:none!important}
+#mgCloudAuth .mg-cloud-input-wrap{
+  min-height:58px!important;
+  height:58px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:#f2f4f8!important;
+  box-shadow:none!important;
+}
+#mgCloudAuth .mg-cloud-input-wrap:focus-within{
+  background:#edf0f4!important;
+  box-shadow:0 0 0 2px rgba(17,17,17,.07)!important;
+}
+#mgCloudAuth .mg-cloud-input-icon{
+  width:56px!important;
+  flex:0 0 56px!important;
+  display:grid!important;
+  place-items:center!important;
+  color:#263342!important;
+}
+#mgCloudAuth .mg-cloud-input-icon svg{
+  width:24px!important;height:24px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.7!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#mgCloudAuth .mg-cloud-field input{
+  height:58px!important;
+  padding:0 48px 0 0!important;
+  font-size:17px!important;
+  color:#1b2430!important;
+}
+#mgCloudAuth .mg-cloud-field input::placeholder{color:#8e99a8!important}
+#mgCloudAuth .mg-cloud-eye{
+  right:12px!important;
+  width:38px!important;height:38px!important;
+  display:grid!important;place-items:center!important;
+  color:#344252!important;
+}
+#mgCloudAuth .mg-cloud-eye svg{
+  width:24px!important;height:24px!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+#mgCloudAuth .mg-cloud-msg{min-height:0!important;margin:0 0 8px!important}
+#mgCloudAuth .mg-cloud-primary{
+  min-height:56px!important;
+  border-radius:18px!important;
+  background:#111!important;
+  box-shadow:none!important;
+  font-size:17px!important;
+  font-weight:800!important;
+}
+#mgCloudAuth .mg-cloud-meta{
+  margin:11px 1px 0!important;
+  gap:10px!important;
+}
+#mgCloudAuth .mg-cloud-check{font-size:14px!important;color:#778394!important}
+#mgCloudAuth .mg-cloud-check input{width:22px!important;height:22px!important;border-radius:7px!important}
+#mgCloudAuth .mg-cloud-link{font-size:14px!important;color:#526172!important}
+#mgCloudAuth .mg-cloud-or{
+  margin:25px 0 15px!important;
+  gap:12px!important;
+  color:#b1b9c5!important;
+  font-size:13px!important;
+}
+#mgCloudAuth .mg-cloud-create{
+  min-height:53px!important;
+  border-radius:18px!important;
+  background:#f8f9fb!important;
+  border:1px solid #dfe3e9!important;
+  color:#4d5968!important;
+  font-size:16px!important;
+  font-weight:750!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+}
+#mgCloudAuth .mg-cloud-create svg{width:25px!important;height:25px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+/* The reference screen has no local/offline action visible; the handler remains intact. */
+#mgCloudAuth #mgCloudLocal{display:none!important}
+@media(max-width:600px){
+  #mgCloudAuth{padding:0 22px 24px!important}
+  #mgCloudAuth .mg-cloud-card{
+    width:100%!important;
+    margin-top:500px!important;
+    border-radius:27px!important;
+    padding:34px 22px 24px!important;
+  }
+  #mgCloudAuth .mg-cloud-brand{margin-bottom:28px!important}
+  #mgCloudAuth .mg-cloud-logo{width:64px!important;height:64px!important;border-radius:19px!important}
+  #mgCloudAuth .mg-cloud-brand-copy h2{font-size:27px!important}
+  #mgCloudAuth .mg-cloud-subtitle{font-size:15px!important}
+  #mgCloudAuth .mg-cloud-intro h1{font-size:28px!important}
+  #mgCloudAuth .mg-cloud-intro p{font-size:16px!important}
+}
+@media(max-height:850px){
+  #mgCloudAuth .mg-cloud-card{margin-top:300px!important}
+}
+
+/* v205 — fix iPhone viewport positioning for the exact iOS login design */
+#mgCloudAuth{
+  align-items:center!important;
+  justify-content:center!important;
+  padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+#mgCloudAuth .mg-cloud-card{
+  margin:0 auto!important;
+  width:min(626px,100%)!important;
+  max-height:none!important;
+  flex:0 0 auto!important;
+}
+@media(max-width:600px){
+  #mgCloudAuth{
+    padding-left:22px!important;
+    padding-right:22px!important;
+  }
+  #mgCloudAuth .mg-cloud-card{
+    margin:0 auto!important;
+  }
+}
+/* Short iPhone/webview heights: keep the card reachable instead of pushing it below the viewport. */
+@media(max-height:850px){
+  #mgCloudAuth{
+    align-items:flex-start!important;
+    padding-top:max(18px, env(safe-area-inset-top, 0px))!important;
+    padding-bottom:max(18px, env(safe-area-inset-bottom, 0px))!important;
+  }
+  #mgCloudAuth .mg-cloud-card{
+    margin-top:0!important;
+  }
+}
+
+/* v210 — desktop home screen width fix: match the responsive width used by the other screens */
+@media (min-width: 901px){
+  .dashboard-v3{
+    box-sizing:border-box!important;
+    width:min(1500px,calc(100% - 48px))!important;
+    max-width:1500px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding:28px 0 44px!important;
+  }
+  .dashboard-v3 .home-head,
+  .dashboard-v3 .home-create,
+  .dashboard-v3 .home-quick,
+  .dashboard-v3 .home-recent{

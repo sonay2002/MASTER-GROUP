@@ -64,7 +64,7 @@
   let notificationListener=null;
   function notificationClientId(){let id=read(NOTIF_READ+'_client','');if(!id){id=uid();write(NOTIF_READ+'_client',id)}return id}
   function localNotifications(){const a=read(NOTIF_KEY,[]);return Array.isArray(a)?a:[]}
-  function saveNotifications(a){write(NOTIF_KEY,a.slice(0,300));renderNotifications();updateNotificationBadge()}
+  function saveNotifications(a){write(NOTIF_KEY,a.slice(0,300));renderNotifications();updateNotificationBadge();try{window.dispatchEvent(new Event('mg:notifications-updated'))}catch(e){}}
   function notificationIcon(type){return type==='created'?'➕':type==='deleted'?'🗑️':type==='payment'?'💳':type==='status'?'🔄':type==='expense'?'💸':'📝'}
   function addNotification(n,{cloud=true,toastIt=false}={}){
     try{if(!n||!n.id)return;const a=localNotifications();if(a.some(x=>String(x.id)===String(n.id)))return;const item={id:String(n.id),estimateId:n.estimateId?String(n.estimateId):'',title:String(n.title||'Изменение сметы'),body:String(n.body||''),type:String(n.type||'change'),at:Number(n.at)||Date.now(),read:!!n.read,sourceClientId:String(n.sourceClientId||notificationClientId())};a.unshift(item);saveNotifications(a);if(toastIt)notify(item.title,item.body);if(cloud&&root&&user&&cloudMode){root.child('notifications').child(item.id).set(firebaseSafe(item)).catch(()=>{})}}catch(e){console.warn('notification:',e)}}
@@ -76,7 +76,7 @@
     if(!before||!after)return out;
     if(String(before.client||'')!==String(after.client||''))out.push({type:'change',title:name+' изменена',body:'Изменён клиент: «'+(before.client||'—')+'» → «'+(after.client||'—')+'»'});
     if(String(before.phone||'')!==String(after.phone||''))out.push({type:'change',title:name+' изменена',body:'Изменён телефон клиента'});
-    if(String(before.city||'')!==String(after.city||'')||String(before.address||'')!==String(after.address||''))out.push({type:'change',title:name+' изменена',body:'Изменён город или адрес объекта'});
+    if(String(before.city||'')!==String(after.city||'')||String(before.address||'')!==String(after.address||''))out.push({type:'change',title:name+' изменена',body:'Изменён адрес объекта'});
     if(String(before.status||'')!==String(after.status||''))out.push({type:'status',title:name+' — статус изменён',body:'«'+(before.status||'—')+'» → «'+(after.status||'—')+'»'});
     const bm=itemMap(before),am=itemMap(after);for(const [id,x] of am){const y=bm.get(id);if(!y){out.push({type:'change',title:name+' — добавлена услуга',body:'Добавлена «'+(x.name||'Услуга')+'» — '+(Number(x.qty)||0)+' '+(x.unit||'шт.')});continue}if(Number(x.qty)!==Number(y.qty))out.push({type:'change',title:name+' — изменено количество',body:'«'+(x.name||'Услуга')+'»: '+(Number(y.qty)||0)+' → '+(Number(x.qty)||0)+' '+(x.unit||y.unit||'шт.')});if(Number(x.price)!==Number(y.price))out.push({type:'change',title:name+' — изменена цена',body:'«'+(x.name||'Услуга')+'»: '+(Number(y.price)||0)+' → '+(Number(x.price)||0)});}
     for(const [id,x] of bm)if(!am.has(id))out.push({type:'change',title:name+' — удалена услуга',body:'Удалена «'+(x.name||'Услуга')+'»'});
@@ -476,6 +476,13 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       }
     });
   }
+  $('mgCloudClose').onclick=()=>{
+    const el=$('mgCloudAuth');
+    if(!el)return;
+    el.hidden=true;
+    el.style.display='none';
+    authAttempt=false;
+  };
   $('mgCloudLoginTab').onclick=()=>showAuth('login');
   $('mgCloudSignupTab').onclick=()=>showAuth('signup');
   $('mgCloudCreate').onclick=()=>showAuth($('mgCloudSignupTab').classList.contains('active')?'login':'signup');

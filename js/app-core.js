@@ -4,6 +4,6 @@
 (()=>{
   'use strict';
   const C=window.MGAppCore||{};
-  window.MGApp={version:154,core:C,finance:window.MGAppFinance||{}};
+  window.MGApp={version:240,core:C,finance:window.MGAppFinance||{}};
   window.__mgAppReady=true;
 })();

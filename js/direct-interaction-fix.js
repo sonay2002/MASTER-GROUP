@@ -53,7 +53,6 @@
       const text='Master Group — Смета '+(e0.number||'')+'\n'
         +'Клиент: '+(e0.client||'—')+'\n'
         +'Телефон: '+(e0.phone||'—')+'\n'
-        +'Город: '+(e0.city||'—')+'\n'
         +'Адрес: '+(e0.address||e0.object||'—')+'\n\n'
         +items.map((x,i)=>(i+1)+'. '+(x.direction?x.direction+' — ':'')+(x.name||'Услуга')
           +' — '+(x.qty||0)+' '+(x.unit||'шт')+' × '+moneyFn(x.price)+' = '+moneyFn((Number(x.qty)||0)*(Number(x.price)||0))+' MDL').join('\n')

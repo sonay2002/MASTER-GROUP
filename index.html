@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v223"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v199"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v199</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v330"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v330"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v330</title>
 
 
 
@@ -17,12 +17,352 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css">
-</head><body>
+<link rel="stylesheet" href="css/styles.css?v=352">
+
+<style id="mg-analytics-tabs-v307">
+/* v307 — Finance / Overview tabs: visible below the fixed header, compact and monochrome. */
+#statsScreen{padding-top:60px!important;box-sizing:border-box!important;}
+#statsScreen .analytics-tabs-v3{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:9px!important;
+  width:calc(100% - 44px)!important;
+  margin:0 22px 14px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-sizing:border-box!important;
+  position:relative!important;
+  z-index:2!important;
+}
+#statsScreen .analytics-tab-v3{
+  min-width:0!important;
+  min-height:62px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  padding:9px 12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #d8dce1!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#171b23!important;
+  box-shadow:0 1px 3px rgba(17,24,39,.045)!important;
+  text-align:center!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+#statsScreen .analytics-tab-v3:active{transform:scale(.985)!important;}
+#statsScreen .analytics-tab-v3.active{
+  background:#151515!important;
+  border-color:#151515!important;
+  color:#fff!important;
+  box-shadow:0 4px 12px rgba(0,0,0,.09)!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:30px!important;height:30px!important;min-width:30px!important;
+  display:grid!important;place-items:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#151515!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon{color:#fff!important;background:transparent!important;border:0!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  display:block!important;width:20px!important;height:20px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy{display:block!important;min-width:0!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  display:block!important;font-size:15px!important;line-height:1.05!important;
+  font-weight:800!important;color:#171b23!important;white-space:nowrap!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-copy b{color:#fff!important;}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg,
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg *{stroke:#fff!important;color:#fff!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy small{display:none!important;}
+@media(max-width:430px){
+  #statsScreen{padding-top:60px!important;}
+  #statsScreen .analytics-tabs-v3{gap:8px!important;width:calc(100% - 44px)!important;margin:0 22px 13px!important;}
+  #statsScreen .analytics-tab-v3{min-height:60px!important;border-radius:17px!important;padding:8px 10px!important;gap:8px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{width:28px!important;height:28px!important;min-width:28px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{width:19px!important;height:19px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{font-size:15px!important;}
+}
+</style>
+
+<style id="mg-analytics-tabs-v310">
+/* v310 — clean two-button Overview / Finance switcher. Removes the old clipped tab styling. */
+#statsScreen{padding-top:16px!important;box-sizing:border-box!important;}
+#statsScreen .analytics-tabs-v3{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+  width:calc(100% - 44px)!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0 22px 16px!important;
+  padding:6px!important;
+  box-sizing:border-box!important;
+  background:#f1f3f5!important;
+  border:1px solid #e0e3e7!important;
+  border-radius:24px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;
+  position:relative!important;
+  overflow:visible!important;
+  z-index:3!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:100%!important;
+  min-width:0!important;
+  height:64px!important;
+  min-height:64px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  margin:0!important;
+  padding:0 12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #dfe3e7!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  color:#171a1f!important;
+  box-shadow:0 1px 2px rgba(17,24,39,.035)!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+#statsScreen .analytics-tab-v3.active{
+  background:#151515!important;
+  border-color:#151515!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.10)!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:28px!important;height:28px!important;min-width:28px!important;
+  display:grid!important;place-items:center!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  color:#151515!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon{color:#fff!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  display:block!important;width:23px!important;height:23px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy{display:block!important;min-width:0!important;margin:0!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  display:block!important;margin:0!important;
+  font-size:16px!important;line-height:1!important;
+  font-weight:800!important;color:#171a1f!important;
+  white-space:nowrap!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-copy b{color:#fff!important;}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg,
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg *{stroke:#fff!important;color:#fff!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy small{display:none!important;}
+@media(max-width:430px){
+  #statsScreen{padding-top:14px!important;}
+  #statsScreen .analytics-tabs-v3{width:calc(100% - 32px)!important;margin:0 16px 14px!important;gap:8px!important;padding:5px!important;border-radius:22px!important;}
+  #statsScreen .analytics-tab-v3{height:60px!important;min-height:60px!important;border-radius:18px!important;gap:8px!important;padding:0 8px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{width:25px!important;height:25px!important;min-width:25px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{width:21px!important;height:21px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{font-size:15px!important;}
+}
+</style>
+
+<style id="mg-analytics-tabs-v312">
+/* v312 — compact Overview / Finance tabs on mobile.
+   Reduce the switcher to roughly half its previous height and remove
+   the safe-area/padding gap above Analytics. */
+#statsScreen{
+  padding-top:0!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tabs-v3{
+  width:calc(100% - 32px)!important;
+  margin:0 16px 8px!important;
+  padding:3px!important;
+  gap:4px!important;
+  border-radius:14px!important;
+}
+#statsScreen .analytics-tab-v3{
+  height:32px!important;
+  min-height:32px!important;
+  padding:0 7px!important;
+  gap:5px!important;
+  border-radius:10px!important;
+  font-size:13px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:16px!important;
+  height:16px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:13px!important;
+  line-height:1!important;
+}
+@media(max-width:430px){
+  #statsScreen{
+    padding-top:0!important;
+  }
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 32px)!important;
+    margin:0 16px 8px!important;
+    padding:3px!important;
+    gap:4px!important;
+    border-radius:14px!important;
+  }
+  #statsScreen .analytics-tab-v3{
+    height:32px!important;
+    min-height:32px!important;
+    padding:0 7px!important;
+    gap:5px!important;
+    border-radius:10px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+    width:16px!important;
+    height:16px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+    font-size:13px!important;
+  }
+}
+<style id="mg-analytics-tabs-v313">
+/* v313 — enlarge Overview / Finance buttons 2x and halve the top gap. */
+#statsScreen .analytics-tabs-v3{
+  margin-top:-28px!important;
+}
+#statsScreen .analytics-tab-v3{
+  height:64px!important;
+  min-height:64px!important;
+  padding:0 12px!important;
+  gap:10px!important;
+  border-radius:18px!important;
+  font-size:16px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:23px!important;
+  height:23px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:16px!important;
+}
+@media(max-width:430px){
+  #statsScreen .analytics-tabs-v3{
+    margin-top:-28px!important;
+  }
+  #statsScreen .analytics-tab-v3{
+    height:64px!important;
+    min-height:64px!important;
+    padding:0 10px!important;
+    gap:8px!important;
+    border-radius:18px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{
+    width:28px!important;
+    height:28px!important;
+    min-width:28px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+    width:23px!important;
+    height:23px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+    font-size:16px!important;
+  }
+}
+</style>
+</style>
+<style id="mg-analytics-tabs-v314">
+/* v314 — Analytics: exact 178px button width, 58px height, slightly tighter top spacing. */
+#statsScreen .analytics-tabs-v3{
+  width:366px!important;
+  max-width:calc(100% - 24px)!important;
+  grid-template-columns:178px 178px!important;
+  margin:0 auto 8px!important;
+  gap:4px!important;
+  padding:3px!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:178px!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+  padding:0 10px!important;
+  gap:8px!important;
+  border-radius:16px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:26px!important;
+  height:26px!important;
+  min-width:26px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:21px!important;
+  height:21px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:15px!important;
+}
+@media(max-width:390px){
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 24px)!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #statsScreen .analytics-tab-v3{
+    width:100%!important;
+  }
+}
+</style>
+
+</head><body><!-- v296 slim fixed edge-to-edge top navigation -->
+<div id="mgFixedTopNav" class="mg-fixed-top-nav" aria-label="Верхняя навигация">
+  <button type="button" class="mg-fixed-nav-btn" data-menu="open" aria-label="Открыть меню" title="Меню"><span class="mg-menu-icon" aria-hidden="true">☰</span></button>
+  <div id="mgEditorStepIndicator" class="mg-editor-step-indicator" hidden aria-live="polite" aria-label="Текущий этап создания сметы">
+    <span class="mg-editor-step-label">Направления</span>
+  </div>
+  <div class="mg-fixed-nav-actions" aria-label="Быстрые действия">
+    <button type="button" class="mg-fixed-nav-btn mg-new-estimate-btn" data-action="new" aria-label="Новая смета" title="Новая смета">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h8.2L19 7.8v12.7H6.5z"/><path d="M14.5 3.5v4.3H19M12.7 11.2v5.6M9.9 14h5.6"/></svg>
+    </button>
+    <button type="button" class="mg-fixed-nav-btn mg-notification-btn" aria-label="Открыть уведомления" title="Уведомления" onclick="return window.openNotificationsScreen ? window.openNotificationsScreen() : false;">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      <span class="mg-notification-dot" id="mgFixedNotifBadge" hidden></span>
+    </button>
+  </div>
+</div>
+
 <!-- Master Group v105: responsive notification controls -->
 <div id="dashboard" class="app screen dashboard-v3">
 <header class="home-head">
-  <button class="home-menu menu-btn" data-menu="open" aria-label="Открыть меню">☰</button>
+  <button class="home-menu menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
   <div class="home-brand"><span class="home-mark">MG</span><div><b>Master Group</b><small>Рабочее пространство</small></div></div>
 
 </header>
@@ -45,24 +385,59 @@
 <div id="count" hidden>0</div><div id="sum" hidden>0</div>
 </div>
 
-<div id="editor" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span id="mode">Новая смета</span></div></div></div><button class="btn secondary" data-action="home">Сметы</button></header><div class="stepbar" id="stepbar"></div><div id="flowNote" class="flow-note"></div>
+<div id="editor" class="app screen" hidden>
+<header class="top editor-default-top" id="editorDefaultTop"><div class="top-left"><button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span id="mode">Новая смета</span></div></div></div><button class="btn secondary" data-action="home" hidden aria-hidden="true">Сметы</button></header>
+<header class="top calc-editor-top" id="calcEditorTop" hidden><button type="button" class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><button type="button" class="btn secondary" data-action="home" hidden aria-hidden="true">Сметы</button></header>
+<div class="stepbar" id="stepbar"></div><div id="flowNote" class="flow-note"></div>
 <section id="step1" class="step-screen"><div class="direction-screen"><div class="section-kicker">01 · НАПРАВЛЕНИЯ</div><div class="direction-heading"><div><h1 class="direction-title">Направления работ</h1><p class="direction-subtitle">Выберите одно или несколько направлений для этой сметы.</p></div><div class="selection-count direction-count" id="selectionCount"><b>0</b><small>выбрано</small></div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="direction-bottom"><div class="direction-selected-note"><span class="direction-selected-icon">✓</span><div><b id="directionSelectedLabel">Выбрано: 0</b><small id="directionSelectedHint">Выберите хотя бы одно направление</small></div></div><button class="btn primary direction-continue" data-action="step2">Продолжить <span>→</span></button></div></div></section>
-<section id="step2" class="step-screen" hidden><div class="card services-shell"><div class="section-kicker">02 · Услуги</div><div class="title-row"><div><h1 class="title">Соберите работы</h1><p class="subtitle">Выберите услуги для каждого направления.</p></div></div><div id="serviceDirections" class="service-directions"></div><div id="services" class="service-list"></div><div class="nav-actions"><button class="btn secondary full" data-action="step1">← Направления</button><button class="btn primary full" data-action="step3">Далее →</button></div></div></section>
-<section id="step3" class="step-screen" hidden><div class="card"><div class="calc-head"><div class="calc-total-header"><span>ИТОГО</span><b id="total">0.00 MDL</b></div><div class="calc-count" id="calcCount">0 позиций</div></div><div id="items" class="calc-groups"></div><div class="calc-add-actions"><button type="button" class="btn secondary calc-add" data-calc-add>＋ Добавить услугу</button><button type="button" class="btn primary calc-add-direction" data-calc-add-direction>＋ Добавить направление</button></div><div class="nav-actions"><button class="btn secondary full" data-action="step2">← Услуги</button><button class="btn primary full" data-action="step4">Далее →</button></div></div></section>
-<section id="step4" class="step-screen" hidden><div class="card"><div class="section-kicker">04 · Контакты</div><h1 class="title">Контактная информация</h1><p class="subtitle">Укажите данные клиента и адрес объекта.</p><div class="fields"><div class="field"><label>Имя клиента</label><input id="client" autocomplete="name" placeholder="Имя или название компании"></div><div class="field"><label>Номер телефона</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+373 ..."></div><div class="field"><label>Город</label><input id="city" autocomplete="address-level2" placeholder="Введите город"></div><div class="field"><label>Адрес</label><input id="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step3">← Назад</button><button class="btn primary full" data-action="step5">Далее →</button></div></div></section>
-<section id="step5" class="step-screen" hidden><div class="card"><h1 class="title">Проверка</h1><p class="subtitle">Проверьте данные перед сохранением.</p><div id="review" class="review"></div><div class="finance-box"><div class="section-kicker">ФИНАНСЫ</div><div class="finance-grid"><div class="field"><label>Предоплата, MDL</label><input id="prepayment" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Материалы, MDL</label><input id="expenseMaterial" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Транспорт, MDL</label><input id="expenseTransport" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Зарплата, MDL</label><input id="expenseSalary" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Другие расходы, MDL</label><input id="expenseOther" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div></div><div id="financeSummary" class="finance-summary"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step4">← Изменить</button><button class="btn primary full" data-action="create">Создать смету</button></div></div></section></div>
+<section id="step3" class="step-screen calc-step-screen" hidden>
+  <div class="calc-summary-card">
+    <div class="calc-summary-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="10" y="5" width="28" height="38" rx="6"></rect><path d="M16 12h16M16 21h5M27 21h5M16 29h5M27 29h5M16 37h5M27 37h5"></path></svg></div>
+    <div class="calc-summary-copy"><span>ИТОГО</span><b id="total">0.00 MDL</b><small id="calcCount">0 позиций · 0 категорий</small></div>
+    <button type="button" class="calc-add-main" data-calc-open-add-menu aria-label="Добавить">＋ Добавить</button>
+  </div>
+  <div id="items" class="calc-groups"></div>
+  <div class="nav-actions calc-nav-actions"><button class="btn secondary full" data-action="step1">← Назад</button><button class="btn primary full" data-action="step3">Далее →</button></div>
+</section>
+<section id="step4" class="step-screen" hidden><div class="card contact-card-v2"><div class="contact-heading-v2"><div class="contact-heading-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-3.3 3.2-5 7-5s6.2 1.7 7 5"></path></svg></div><div><h1 class="title">Контактная информация</h1></div></div><div class="contact-fields-v2"><div class="contact-field-v2"><div class="contact-field-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-3.3 3.2-5 7-5s6.2 1.7 7 5"></path></svg></div><div class="contact-field-body-v2"><label>Имя и фамилия</label><input id="client" autocomplete="name" placeholder="Иван Иванов"></div></div><div class="contact-field-v2"><div class="contact-field-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.8 9.8 3l2 4.5-2 1.7c1 2.1 2.8 4 4.9 4.9l1.7-2 4.5 2-0.8 2.6c-.4 1.4-1.8 2.2-3.2 1.8C10.8 17.2 6.8 13.2 5.5 7c-.4-1.4.4-2.8 1.7-3.2Z"></path></svg></div><div class="contact-field-body-v2"><label>Номер телефона</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+373 XX XXX XXX"></div></div><div class="contact-field-v2"><div class="contact-field-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.4 6-11a6 6 0 1 0-12 0c0 5.6 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></div><div class="contact-field-body-v2"><label>Адрес</label><input id="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></div></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step2">← Назад</button><button class="btn primary full" data-action="step4">Далее →</button></div></div></section>
+<section id="step5" class="step-screen" hidden><div class="card"><h1 class="title">Проверка</h1><p class="subtitle">Проверьте данные перед сохранением.</p><div id="review" class="review"></div><div class="finance-box"><div class="section-kicker">ФИНАНСЫ</div><div class="finance-grid"><div class="field"><label>Предоплата, MDL</label><input id="prepayment" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Материалы, MDL</label><input id="expenseMaterial" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Транспорт, MDL</label><input id="expenseTransport" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Зарплата, MDL</label><input id="expenseSalary" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Другие расходы, MDL</label><input id="expenseOther" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div></div><div id="financeSummary" class="finance-summary"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step3">← Изменить</button><button class="btn primary full" data-action="create">Создать смету</button></div></div></section>
+<div id="directionServiceOverlay" class="direction-service-overlay" hidden>
+  <div class="direction-service-modal" role="dialog" aria-modal="true" aria-labelledby="directionServiceTitle">
+    <div class="direction-service-head">
+      <div class="direction-service-heading">
+        <span id="directionServiceIcon" class="direction-service-icon"></span>
+        <div><h2 id="directionServiceTitle">Услуги</h2><p id="directionServiceSubtitle">Выберите нужные услуги.</p></div>
+      </div>
+      <button type="button" class="direction-service-close" data-direction-service-close aria-label="Закрыть">×</button>
+    </div>
+    <div id="directionServiceList" class="direction-service-list"></div>
+    <div class="direction-service-actions">
+      <button type="button" class="btn secondary" data-direction-service-remove>Удалить направление</button>
+      <button type="button" class="btn primary" data-direction-service-ok>Окей</button>
+    </div>
+  </div>
+</div></div>
 
-<div id="documentScreen" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Готовая смета</span></div></div></div><button class="btn secondary" data-action="edit">Изменить</button></header><section class="card doc" id="document"></section><section class="actions no-print"><button type="button" class="btn primary" data-action="share" onclick="return window.__mgDirectShare ? window.__mgDirectShare() : false;">Поделиться</button><button class="btn secondary" data-action="wa">WhatsApp</button><button class="btn secondary" data-action="tg">Telegram</button><button class="btn secondary" data-action="print">Печать / PDF</button></section></div>
+<div id="documentScreen" class="app screen" hidden><section class="card doc" id="document"></section><section class="actions no-print"><button type="button" class="btn primary" data-action="share" onclick="return window.__mgDirectShare ? window.__mgDirectShare() : false;">Поделиться</button><button class="btn secondary" data-action="wa">WhatsApp</button><button class="btn secondary" data-action="tg">Telegram</button><button class="btn secondary" data-action="print">Печать / PDF</button></section></div>
 
-<div id="estimatesScreen" class="app screen" hidden><header class="top archive-top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div><div class="eyebrow">Master Group</div><h1 class="archive-heading">Сметы</h1></div></div></header><section class="card estimates-intro"><div><div class="section-kicker">ДОКУМЕНТЫ</div><h2>Все сметы</h2><p>«Все» показывает все документы, остальные кнопки — фильтры.</p></div><div class="estimates-head-actions"><button class="btn secondary" type="button" data-open-archives>▣ Архивы</button><button class="btn primary" data-action="new">＋ Новая</button></div></section><section class="card status-filter-card"><div id="statusFilters" class="status-filters"></div></section><div id="estimatesList" class="list"></div></div>
-<div id="archiveScreen" class="app screen" hidden><header class="top archive-top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div><div class="eyebrow">Master Group</div><h1 class="archive-heading">Архивы</h1></div></div></header><div class="archive-intro"><div class="archive-mark">▣</div><div><b>Сохранённые черновики</b><span>Незавершённые сметы, которые можно продолжить.</span></div></div><div id="archiveList" class="list"></div></div>
+<div id="estimatesScreen" class="app screen" hidden><section class="card estimates-intro"><div><div class="section-kicker">ДОКУМЕНТЫ</div><h2>Все сметы</h2><p>«Все» показывает все документы, остальные кнопки — фильтры.</p></div><div class="estimates-head-actions"><button class="btn secondary" type="button" data-open-archives>▣ Архивы</button><button class="btn primary" data-action="new">＋ Новая</button></div></section><section class="card status-filter-card"><div id="statusFilters" class="status-filters"></div></section><div id="estimatesList" class="list"></div></div>
+<div id="archiveScreen" class="app screen" hidden><div class="archive-intro"><div class="archive-mark">▣</div><div><b>Сохранённые черновики</b><span>Незавершённые сметы, которые можно продолжить.</span></div></div><div id="archiveList" class="list"></div></div>
 
 
-<div id="statsScreen" class="app screen" hidden><header class="top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Аналитика</span></div></div></div><button class="btn secondary" data-action="home">Главный экран</button></header><section class="card stats-hero"><div class="eyebrow" style="color:#6b7280">АНАЛИТИКА</div><h1 class="title" style="color:#fff">Обзор и финансы</h1><p class="muted">Статистика бизнеса и внутренний финансовый учёт.</p></section><section class="analytics-tabs" role="tablist"><button type="button" class="analytics-tab active" data-analytics-tab="overview">📊 Обзор</button><button type="button" class="analytics-tab" data-analytics-tab="finance">💰 Финансы</button></section><div id="analyticsPanelOverview"><section class="card"><div class="stats-grid"><div class="stats-big"><b id="statCount">0</b><span>Всего смет</span></div><div class="stats-big"><b id="statMonth">0 MDL</b><span>Выручка за месяц</span></div><div class="stats-big"><b id="statProfit">0 MDL</b><span>Чистая прибыль</span></div><div class="stats-big"><b id="statExpenses">0 MDL</b><span>Расходы</span></div></div></section><section class="card"><h2>По месяцам</h2><div id="monthStats" class="month-list"></div></section></div><div id="analyticsPanelFinance" hidden><div id="financeOverview"></div><section class="card"><div class="settings-section-head"><div><h2>Финансы по сметам</h2><p class="muted">Все оплаты и расходы привязаны к конкретной смете.</p></div></div><div id="financeEstimates"></div></section></div></div>
-<div id="notificationsScreen" class="app screen" hidden><header class="top archive-top"><div class="top-left"><button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><div><div class="eyebrow">MASTER GROUP</div><h1 class="archive-heading">Уведомления</h1></div></div></header><section class="notifications-hero"><div class="notifications-mark">🔔</div><div><h2>История изменений</h2><p>Здесь отображается, что именно было изменено в сметах и когда.</p></div><div class="notifications-actions"><button class="btn secondary" data-notif-read>Прочитать все</button><button class="btn secondary" data-notif-clear>Очистить</button></div></section><section id="notificationsList" class="notifications-list"></section></div><div id="settingsScreen" class="app screen" hidden>
+<div id="statsScreen" class="app screen" hidden><section class="analytics-tabs analytics-tabs-v3" role="tablist" aria-label="Разделы финансов и обзора">
+<button type="button" class="analytics-tab analytics-tab-v3 active" data-analytics-tab="overview" aria-selected="true">
+  <span class="analytics-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19V10"/><path d="M12 19V5"/><path d="M19 19v-7"/><path d="M3.5 19.5h17"/></svg></span>
+  <span class="analytics-tab-copy"><b>Обзор</b></span>
+</button>
+<button type="button" class="analytics-tab analytics-tab-v3" data-analytics-tab="finance" aria-selected="false">
+  <span class="analytics-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M3.5 10h17"/><path d="M15.5 14.5h2.5"/></svg></span>
+  <span class="analytics-tab-copy"><b>Финансы</b></span>
+</button>
+</section><div id="analyticsPanelOverview"><section class="card"><div class="stats-grid"><div class="stats-big"><b id="statCount">0</b><span>Всего смет</span></div><div class="stats-big"><b id="statMonth">0 MDL</b><span>Выручка за месяц</span></div><div class="stats-big"><b id="statProfit">0 MDL</b><span>Чистая прибыль</span></div><div class="stats-big"><b id="statExpenses">0 MDL</b><span>Расходы</span></div></div></section><section class="card"><h2>По месяцам</h2><div id="monthStats" class="month-list"></div></section></div><div id="analyticsPanelFinance" hidden><div id="financeOverview"></div><section class="card"><div class="settings-section-head"><div><h2>Финансы по сметам</h2><p class="muted">Все оплаты и расходы привязаны к конкретной смете.</p></div></div><div id="financeEstimates"></div></section></div></div>
+<div id="notificationsScreen" class="app screen" hidden><section class="notifications-hero"><div class="notifications-mark">🔔</div><div><h2>История изменений</h2><p>Здесь отображается, что именно было изменено в сметах и когда.</p></div><div class="notifications-actions"><button class="btn secondary" data-notif-read>Прочитать все</button><button class="btn secondary" data-notif-clear>Очистить</button></div></section><section id="notificationsList" class="notifications-list"></section></div><div id="settingsScreen" class="app screen" hidden>
 <header class="top settings-topbar">
   <div class="top-left">
-    <button class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button>
+    <button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
     <div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Настройки</span></div></div>
   </div>
   <button class="btn secondary settings-done" data-action="home">Готово</button>
@@ -70,12 +445,35 @@
 <section class="settings-hero-v2">
   <div><div class="eyebrow">MASTER GROUP</div><h1>Настройки</h1><p>Управляйте каталогом, профилем компании и удалёнными сметами.</p></div>
 </section>
-<nav class="settings-tabs-v2" role="tablist" aria-label="Разделы настроек">
-  <button type="button" class="settings-tab-v2 active" data-settings-tab="catalog" role="tab" aria-selected="true"><span class="settings-tab-icon">⌘</span><span>Каталог</span></button>
-  <button type="button" class="settings-tab-v2" data-settings-tab="company" role="tab" aria-selected="false"><span class="settings-tab-icon">▣</span><span>Компания</span></button>
-  <button type="button" class="settings-tab-v2" data-settings-tab="trash" role="tab" aria-selected="false"><span class="settings-tab-icon">⌫</span><span>Корзина</span></button>
-  <button type="button" class="settings-tab-v2" data-settings-tab="updates" role="tab" aria-selected="false"><span class="settings-tab-icon">↻</span><span>Обновления</span></button>
-</nav>
+<section id="settingsHub" class="settings-hub-v357" aria-label="Все настройки">
+  <div class="settings-hub-head">
+    <span class="settings-overline">MASTER GROUP</span>
+    <h1>Настройки</h1>
+    <p>Выберите раздел, который хотите настроить.</p>
+  </div>
+  <div class="settings-hub-grid">
+    <button type="button" class="settings-hub-card" data-settings-hub="catalog">
+      <span class="settings-hub-icon">⌘</span><span class="settings-hub-copy"><b>Каталог</b><small>Направления и услуги</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="company">
+      <span class="settings-hub-icon">▣</span><span class="settings-hub-copy"><b>Компания</b><small>Данные и реквизиты</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="trash">
+      <span class="settings-hub-icon">⌫</span><span class="settings-hub-copy"><b>Корзина</b><small>Удалённые сметы</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="updates">
+      <span class="settings-hub-icon">↻</span><span class="settings-hub-copy"><b>Обновления</b><small>Версия приложения</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="estimates">
+      <span class="settings-hub-icon">▤</span><span class="settings-hub-copy"><b>Сметы</b><small>Шаблоны документов</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+  </div>
+</section>
+<div id="settingsSectionNav" class="settings-section-nav-v357" hidden>
+  <button type="button" class="settings-back-v357" data-settings-back aria-label="Вернуться к настройкам">‹</button>
+  <div><span>НАСТРОЙКИ</span><b id="settingsSectionTitle">Раздел</b></div>
+</div>
+
 
 
 
@@ -134,6 +532,139 @@
   </section>
 </div>
 
+<div id="settingsPanelEstimates" hidden class="settings-panel-v2" aria-label="Настройка сметы">
+  <section class="estimate-template-settings">
+    <div id="estimateTemplateList" class="estimate-template-list">
+    <article class="estimate-template-card" data-estimate-template="neo">
+      <div class="estimate-template-card-head">
+        <div><span class="estimate-template-number">01</span><div><b>Нео</b><small>Современный и чистый формат</small></div></div>
+        <button type="button" class="estimate-template-select" data-select-estimate-template="neo">Выбрать</button>
+      </div>
+      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Нео">
+        <div class="estimate-template-page etp-neo">
+          <div class="etp-header">
+            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
+            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
+          </div>
+          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
+          <div class="etp-title">Смета на услуги</div>
+          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
+            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
+            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
+            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
+            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
+          </tbody></table>
+          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
+          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
+        </div>
+      </div>
+    </article>
+    <article class="estimate-template-card" data-estimate-template="corporate">
+      <div class="estimate-template-card-head">
+        <div><span class="estimate-template-number">02</span><div><b>Корпоративный</b><small>Строгий деловой документ</small></div></div>
+        <button type="button" class="estimate-template-select" data-select-estimate-template="corporate">Выбрать</button>
+      </div>
+      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Корпоративный">
+        <div class="estimate-template-page etp-corporate">
+          <div class="etp-header">
+            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
+            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
+          </div>
+          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
+          <div class="etp-title">Смета на услуги</div>
+          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
+            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
+            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
+            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
+            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
+          </tbody></table>
+          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
+          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
+        </div>
+      </div>
+    </article>
+    <article class="estimate-template-card is-selected" data-estimate-template="minimal">
+      <div class="estimate-template-card-head">
+        <div><span class="estimate-template-number">03</span><div><b>Минималистичный</b><small>Тот самый шаблон №3</small></div></div>
+        <button type="button" class="estimate-template-select" data-select-estimate-template="minimal">Выбран</button>
+      </div>
+      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Минималистичный">
+        <div class="estimate-template-page etp-minimal">
+          <div class="etp-header">
+            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
+            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
+          </div>
+          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
+          <div class="etp-title">Смета на услуги</div>
+          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
+            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
+            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
+            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
+            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
+          </tbody></table>
+          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
+          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
+        </div>
+      </div>
+    </article>
+    <article class="estimate-template-card" data-estimate-template="premium">
+      <div class="estimate-template-card-head">
+        <div><span class="estimate-template-number">04</span><div><b>Премиум</b><small>Элегантный формат для клиента</small></div></div>
+        <button type="button" class="estimate-template-select" data-select-estimate-template="premium">Выбрать</button>
+      </div>
+      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Премиум">
+        <div class="estimate-template-page etp-premium">
+          <div class="etp-header">
+            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
+            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
+          </div>
+          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
+          <div class="etp-title">Смета на услуги</div>
+          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
+            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
+            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
+            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
+            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
+          </tbody></table>
+          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
+          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
+        </div>
+      </div>
+    </article>
+    <article class="estimate-template-card" data-estimate-template="accent">
+      <div class="estimate-template-card-head">
+        <div><span class="estimate-template-number">05</span><div><b>Акцент</b><small>Выразительная шапка и сильный итог</small></div></div>
+        <button type="button" class="estimate-template-select" data-select-estimate-template="accent">Выбрать</button>
+      </div>
+      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Акцент">
+        <div class="estimate-template-page etp-accent">
+          <div class="etp-header">
+            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
+            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
+          </div>
+          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
+          <div class="etp-title">Смета на услуги</div>
+          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
+            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
+            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
+            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
+            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
+          </tbody></table>
+          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
+          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
+        </div>
+      </div>
+    </article>
+    <div class="estimate-template-dots" id="estimateTemplateDots" aria-label="Навигация по шаблонам">
+      <button type="button" data-template-dot="0" aria-label="Шаблон 1"></button>
+      <button type="button" data-template-dot="1" aria-label="Шаблон 2"></button>
+      <button type="button" data-template-dot="2" aria-label="Шаблон 3"></button>
+      <button type="button" data-template-dot="3" aria-label="Шаблон 4"></button>
+      <button type="button" data-template-dot="4" aria-label="Шаблон 5"></button>
+    </div>
+  </section>
+</div>
+
 <div id="settingsPanelUpdates" hidden class="settings-panel-v2">
   <section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
     <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v199 · приложение автоматически проверяет новые версии.</p></div></div>
@@ -173,10 +704,7 @@
           <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11M10 19V7M16 19V13M22 19V4"/><path d="m4 8 5-4 5 3 7-5"/></svg></span>
           <span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i>
         </button>
-        <button type="button" class="drawer-item" data-menu-action="notifications">
-          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
-          <span><b>Уведомления <em id="menuNotifBadge">0</em></b><small>История изменений</small></span><i>›</i>
-        </button>
+        
       </nav>
 
       <div class="drawer-section-title drawer-system-title">СИСТЕМА</div>
@@ -199,11 +727,24 @@
     </div>
   </aside>
 </div>
+<div id="calcAddMenuOverlay" class="calc-add-menu-overlay" hidden>
+  <div class="calc-add-menu" role="dialog" aria-modal="true" aria-labelledby="calcAddMenuTitle">
+    <div class="calc-add-menu-head">
+      <h3 id="calcAddMenuTitle">Добавить</h3>
+      <button type="button" class="calc-add-menu-control" data-calc-add-menu-close aria-label="Закрыть">×</button>
+    </div>
+    <div class="calc-add-menu-buttons">
+      <button type="button" class="calc-add-menu-option" data-calc-add-direction><span>＋</span><b>Направление</b></button>
+      <button type="button" class="calc-add-menu-option" data-calc-add><span>＋</span><b>Категория</b></button>
+    </div>
+  </div>
+</div>
 <div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Своя услуга"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="dialog" aria-modal="true" aria-labelledby="mgUpdateNoticeTitle"><div class="mg-update-notice-card"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong id="mgUpdateNoticeTitle">Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div></div>
 <div id="toast" class="toast"></div><div id="archiveModal" class="modal-overlay"><div class="confirm-modal"><h3>Сохранить смету в архив?</h3><p>Вы сейчас находитесь в процессе создания сметы. Можно сохранить черновик в архив и вернуться к нему позже.</p><div class="confirm-actions"><button class="primary" data-archive-action="save">📦 Поставить в архив</button><button data-archive-action="continue">↩️ Продолжить работу</button><button data-archive-action="discard">Не сохранять</button></div></div></div>
 <script src="js/state.js"></script>
 <script src="js/data-model.js"></script>
 <script src="js/storage.js"></script>
+<script src="js/responsive-runtime-v351.js"></script>
 <script src="js/catalog.js"></script>
 <script src="js/estimate-engine.js"></script>
 <script src="js/calculations.js"></script>
@@ -211,6 +752,7 @@
 <script src="js/estimate-ui.js"></script>
 <script src="js/estimate-core.js"></script>
 <script src="js/finance-ui.js"></script>
+<script src="js/estimate-templates.js"></script>
 <script src="js/app-core.js"></script>
 
 <!-- extracted JS: v41-fixes-js -->
@@ -231,13 +773,7 @@
 
 <div id="mgCloudAuth" hidden>
   <div class="mg-cloud-card">
-    <div class="mg-cloud-brand">
-      <div class="mg-cloud-logo">MG</div>
-      <div class="mg-cloud-brand-copy">
-        <h2>Master Group</h2>
-        <div class="mg-cloud-subtitle">Облачное хранение <span aria-hidden="true">☁️</span></div>
-      </div>
-    </div>
+    <button type="button" id="mgCloudClose" class="mg-cloud-close" aria-label="Закрыть окно входа">×</button>
     <section class="mg-cloud-intro">
       <h1 id="mgCloudTitle">Вход в аккаунт</h1>
     </section>
@@ -291,6 +827,8 @@
 <script src="js/status-direct-fix.js"></script>
 <script src="js/filter-direct-fix.js"></script>
 <script src="js/finance-final-fix.js"></script>
+<script src="js/analytics-tabs-v310.js?v=310"></script>
+
 
 
 
@@ -300,4 +838,102 @@
 
 
 <script src="./js/mg-icons-v208.js"></script><script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=213"></script>
+<script src="js/v280-fixed-top-nav.js"></script>
+<script src="js/v282-fixed-top-nav-visibility.js"></script>
+
+
+<script src="js/v284-settings-cleanup.js"></script>
+<script src="js/settings-hub-v357.js"></script>
 </body></html>
+
+<style id="mg-analytics-layout-v311">
+/* v311 — move the entire analytics content below the fixed top bar. Button design is unchanged. */
+#statsScreen{
+  padding-top:124px!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:430px){
+  #statsScreen{
+    padding-top:124px!important;
+  }
+}
+</style>
+<style id="mg-analytics-tabs-v315">
+/* v315 — match the supplied template: tabs sit immediately below the fixed top panel. */
+#statsScreen{
+  padding-top:67px!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tabs-v3{
+  width:366px!important;
+  max-width:calc(100% - 24px)!important;
+  grid-template-columns:178px 178px!important;
+  gap:4px!important;
+  margin:0 auto 8px!important;
+  padding:3px!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:178px!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+}
+@media(max-width:390px){
+  #statsScreen{
+    padding-top:67px!important;
+  }
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 24px)!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #statsScreen .analytics-tab-v3{width:100%!important;}
+}
+</style>
+
+<style id="mg-analytics-tabs-v316">
+/* v316 — Analytics: exact 178×48 px tabs and slightly tighter clearance below the top panel. */
+#statsScreen{
+  padding-top:62px!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tabs-v3{
+  width:366px!important;
+  max-width:calc(100% - 24px)!important;
+  grid-template-columns:178px 178px!important;
+  gap:4px!important;
+  margin:0 auto 8px!important;
+  padding:3px!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:178px!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  padding:0 10px!important;
+  gap:7px!important;
+  border-radius:14px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:23px!important;
+  height:23px!important;
+  min-width:23px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:19px!important;
+  height:19px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:15px!important;
+}
+@media(max-width:390px){
+  #statsScreen{padding-top:62px!important;}
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 24px)!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #statsScreen .analytics-tab-v3{width:100%!important;}
+}
+</style>

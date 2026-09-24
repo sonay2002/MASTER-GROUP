@@ -45,7 +45,7 @@
     const e=clone(input||{});
     if(!e.id) e.id=stableId('estimate','legacy',Date.now());
     e.number=text(e.number||('MG-'+String(e.id).slice(-8).toUpperCase()));
-    e.client=text(e.client);e.phone=text(e.phone);e.city=text(e.city);e.address=text(e.address||e.object);e.object=e.address;
+    e.client=text(e.client);e.phone=text(e.phone);e.address=text(e.address||e.object);e.object=e.address;delete e.city;
     e.date=text(e.date||new Date().toLocaleDateString('ru-RU'));
     e.directions=normalizeDirections(e);
     e.category=e.directions.map(d=>d.name).join(', ');
@@ -64,7 +64,7 @@
   }
   function normalizeDraft(d,i){
     const e=normalizeEstimate({...d,id:d?.id||stableId('draft','legacy',i)});
-    return {...d,id:e.id,directions:e.directions,items:e.items,category:e.category,client:e.client,phone:e.phone,city:e.city,address:e.address,object:e.address,dataModelVersion:2};
+    return {...d,id:e.id,directions:e.directions,items:e.items,category:e.category,client:e.client,phone:e.phone,address:e.address,object:e.address,dataModelVersion:2};
   }
   function readJson(key, fallback){try{const v=JSON.parse(localStorage.getItem(key)||'null');return v==null?fallback:v}catch{return fallback}}
   function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch{return false}}
