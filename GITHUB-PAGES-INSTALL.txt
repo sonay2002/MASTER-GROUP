@@ -1,0 +1,7 @@
+MASTER GROUP v369 — GitHub Pages
+
+Upload the contents of this ZIP to the repository root (branch main).
+Do not put the folder itself inside another folder.
+
+The package includes a GitHub Pages-safe Service Worker with a new cache name
+and network-first handling for JS/CSS so old cached builds are not reused.
