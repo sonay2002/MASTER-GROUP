@@ -1,5 +1,5 @@
-/* Master Group v369 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v23-smart-dictionary-bundled';
+/* Master Group v370 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v26-smart-dictionary-500k';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -47,6 +47,9 @@ const CORE = [
   "./js/mg-dict/dictionary-01.js",
   "./js/mg-dict/dictionary-02.js",
   "./js/mg-dict/dictionary-03.js",
+  "./js/mg-dict/dictionary-04.js",
+  "./js/mg-dict/dictionary-05.js",
+  "./js/mg-dict/smart-search.js",
 
 
 

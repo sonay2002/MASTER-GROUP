@@ -1,5 +1,5 @@
-// Master Group — профессиональный общий словарь действий.
-window.MG_DICTIONARY_ACTIONS = [
+// Master Group v26 — расширенный словарь действий.
+window.MG_DICTIONARY_ACTIONS=[
   "восстановление",
   "вывоз",
   "герметизация",
@@ -185,4 +185,3 @@ window.MG_DICTIONARY_ACTIONS = [
   "записи",
   "смазка"
 ];
-window.MG_DICTIONARY_ACTIONS_SET = new Set(window.MG_DICTIONARY_ACTIONS.map(x=>x.toLocaleLowerCase('ru')));

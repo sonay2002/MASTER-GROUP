@@ -1,0 +1,8 @@
+Master Group — GitHub-friendly professional dictionary
+
+Exactly 1,000,000 unique service entries.
+The original 40 dictionary chunks are bundled into 3 JavaScript files, each below 25 MiB.
+The app still uses window.MG_MASTER_SERVICE_ALL and loads bundles before estimate-core.js.
+Search behavior remains action first, then object/material after a space, with contextual tokens afterward.
+Examples include Покраска Пластик and Штробление Стена/Бетон/Кабель/Проводка.
+No estimate/navigation/directions/client/storage/Firebase application architecture was intentionally changed.

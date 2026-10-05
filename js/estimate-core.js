@@ -200,36 +200,7 @@ function serviceWordSuggestions(){
   const input=$('directionServiceQuickInput'),strip=$('directionServiceWordSuggestions');
   if(!input||!strip)return;
   const value=String(input.value||'');
-  const trailingSpace=/\s$/.test(value);
-  const trimmed=value.trim();
-  const tokens=trimmed?trimmed.split(/\s+/).filter(Boolean):[];
-  const current=trailingSpace?'':(tokens.pop()||'');
-  const prefix=mgLower(current);
-  let items=[];
-
-  if(tokens.length===0){
-    // Первый этап — только действия. Никаких случайных слов из 500k.
-    items=mgPrefix([...MG_ACTION_WORDS],current,60);
-  }else{
-    const first=mgLower(tokens[0]);
-    const action=MG_ACTION_FORMS.get(first);
-    if(action){
-      if(tokens.length===1){
-        // Второй этап — общий словарь объектов. Сначала показываем
-        // объекты, связанные с действием, затем остальные общие слова.
-        items=mgPrefix(mgWorkCandidates(action),current,60);
-      }else if(tokens.length===2){
-        // Третий этап — характеристика выбранного объекта.
-        items=mgPrefix(mgAttributeCandidates(tokens[1]),current,60);
-        if(!items.length)items=mgPrefix(mgPreviousCandidates(tokens),current,60);
-      }else{
-        // Дальше продолжаем по контексту предыдущего слова.
-        items=mgPrefix(mgPreviousCandidates(tokens),current,60);
-      }
-    }
-  }
-
-  items=mgSortContext(mgUnique(items),current).slice(0,60);
+  const items=window.MG_SMART_DICT ? window.MG_SMART_DICT.suggest(value,60) : [];
   strip.innerHTML=items.map(word=>`<button type="button" class="direction-service-word-suggestion" data-service-word="${esc(word)}">${esc(word)}</button>`).join('');
   strip.hidden=!items.length;
 }
