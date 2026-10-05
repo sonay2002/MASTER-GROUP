@@ -17,7 +17,7 @@ const allItems=window.MGEstimate.allItems;
 const total=window.MGEstimate.total;
 const normalizeDirections=window.MGEstimate.normalizeDirections;
 const allItemsFromEstimate=window.MGEstimate.allItemsFromEstimate;
-document.addEventListener('input',e=>{if(e.target?.id==='directionServiceQuickInput')serviceWordSuggestions();});
+document.addEventListener('input',e=>{if(e.target?.id==='directionServiceQuickInput'){try{serviceWordSuggestions()}catch(err){console.warn('MG smart suggestions failed',err)}}});
 window.MGEstimateUI.init({state,catalog,cats,allItems,total,activeDir:()=>state.directions[state.activeDirection]||null,contactData,money,esc,$});
 function hasDraft(){return state.screen==='editor' && (state.directions.length||contactData().client||contactData().phone||contactData().address)}
 function draftBuild(){return {id:state.id||uid(),step:state.step,directions:JSON.parse(JSON.stringify(state.directions)),activeDirection:state.activeDirection,client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,savedAt:new Date().toLocaleString('ru-RU')}}
