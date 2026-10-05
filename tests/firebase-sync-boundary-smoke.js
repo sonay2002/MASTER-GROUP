@@ -7,7 +7,7 @@ for(const token of [
   "DIRTY='master_group_cloud_dirty_v3'",
   "CATDIRTY='master_group_cloud_catalog_dirty_v2'",
   "PROFDIRTY='master_group_cloud_profile_dirty_v2'",
-  "const SYNC_VER='master_group_firebase_v18'",
+  "const SYNC_VER='master_group_firebase_v22'",
   'const read=', 'const write=', 'const uid=', 'const newId=uid'
 ]) if(!s.includes(token)) throw Error('missing firebase sync boundary: '+token);
 if(!s.includes("F.v58RenderEstimates") || !s.includes("F.dashboard")) throw Error('missing modular UI refresh boundary');

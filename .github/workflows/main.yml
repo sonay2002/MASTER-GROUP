@@ -1,4 +1,4 @@
-name: Deploy Master Group
+name: Validate and Deploy Master Group
 
 on:
   push:
@@ -15,7 +15,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find js tests -type f -name '*.js' -print0)
+
+      - name: Run smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/calculations-smoke.js
+          node tests/data-model-smoke.js
+          node tests/finance-sync-smoke.js
+          node tests/firebase-sync-boundary-smoke.js
+          node tests/offline-engine-smoke.js
+          node tests/smart-dictionary-load-order-smoke.js
+          node tests/smart-dictionary-smoke.js
+          node tests/smart-dictionary-v29-input-smoke.js
+
   deploy:
+    needs: validate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
