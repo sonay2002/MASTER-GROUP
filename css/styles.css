@@ -4436,6 +4436,29 @@ body:before{display:none!important}
   #step2 .nav-actions .btn{height:46px!important;min-height:46px!important;font-size:13px!important}
 }
 
+/* v371 — permanent service-list scrolling for every direction, present and future */
+#step2 .mg-direction-services{
+  height:176px!important;
+  min-height:176px!important;
+  max-height:176px!important;
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+  touch-action:pan-y!important;
+  scrollbar-width:thin!important;
+}
+#step2 .mg-direction-services::-webkit-scrollbar{width:6px!important;height:6px!important}#step2 .mg-direction-services::-webkit-scrollbar-thumb{background:#c8cdd4!important;border-radius:99px!important}
+@media(max-width:600px){
+  #step2 .mg-direction-services{
+    height:176px!important;
+    min-height:176px!important;
+    max-height:176px!important;
+    overflow-y:scroll!important;
+    overflow-x:hidden!important;
+  }
+}
+
 /* v245 — exact compact reference match for Step 2 */
 :root{
   --bg:#f5f6f8!important;
@@ -4984,6 +5007,7 @@ body{background:#f5f6f8!important}
 .direction-service-check{width:28px!important;height:28px!important;flex:0 0 28px!important;border-radius:9px!important;background:#f0f2f5!important;color:#fff!important;display:grid!important;place-items:center!important;font-size:17px!important;font-weight:800!important}
 .direction-service-row.selected .direction-service-check{background:#111827!important}
 .direction-service-empty{padding:22px 4px!important;text-align:center!important;color:#8b94a0!important;font-size:12px!important}
+.direction-service-quick-add{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:9px!important;padding:10px 16px!important;margin-bottom:40px!important;border-top:1px solid #edf0f3!important;background:#fff!important}.direction-service-quick-add input{width:100%!important;height:48px!important;min-height:48px!important;border:1px solid #dfe3e8!important;border-radius:14px!important;background:#fff!important;color:#111827!important;padding:0 14px!important;font:inherit!important;font-size:14px!important;outline:none!important;box-sizing:border-box!important}.direction-service-quick-add input:focus{border-color:#111827!important;box-shadow:0 0 0 3px rgba(17,24,39,.08)!important}.direction-service-quick-add .btn{min-height:48px!important;height:48px!important;border-radius:14px!important;padding:0 18px!important;font-size:13px!important;font-weight:800!important}.direction-service-quick-add .btn.primary{background:#111!important;color:#fff!important}
 .direction-service-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important;padding:10px 16px 16px!important;border-top:1px solid #edf0f3!important;background:#fff!important}
 .direction-service-actions .btn{min-height:48px!important;height:48px!important;border-radius:14px!important;font-size:13px!important;font-weight:800!important}
 .direction-service-actions .btn.primary{background:#111!important;color:#fff!important}
@@ -4995,7 +5019,7 @@ body{background:#f5f6f8!important}
   .direction-service-heading h2{font-size:18px!important}
   .direction-service-list{padding:6px 13px 8px!important}
   .direction-service-row{min-height:54px!important}
-  .direction-service-actions{padding:9px 13px 13px!important}
+  .direction-service-quick-add{padding:9px 13px!important;grid-template-columns:minmax(0,1fr) auto!important;margin-bottom:40px!important}.direction-service-actions{padding:9px 13px 13px!important}
 }
 
 /* v280 fixed white top navigation: menu left, notifications right */
@@ -7024,25 +7048,73 @@ html,body,#app,.app,.screen{
   min-height:0!important;
 }
 .direction-service-list{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow-y:auto!important;
+  flex:0 0 250px!important;
+  height:250px!important;
+  min-height:250px!important;
+  max-height:250px!important;
+  overflow-y:scroll!important;
   overflow-x:hidden!important;
   -webkit-overflow-scrolling:touch!important;
   overscroll-behavior:contain!important;
   touch-action:pan-y!important;
-  scrollbar-width:none!important;
+  scrollbar-width:thin!important;
 }
-.direction-service-list::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.direction-service-list::-webkit-scrollbar{width:6px!important;height:6px!important}.direction-service-list::-webkit-scrollbar-thumb{background:#c8cdd4!important;border-radius:99px!important}
 @media(max-width:600px){
   .direction-service-modal{
     height:50vh!important;
     max-height:50vh!important;
   }
   .direction-service-list{
-    flex:1 1 auto!important;
-    min-height:0!important;
-    overflow-y:auto!important;
+    flex:0 0 232px!important;
+    height:232px!important;
+    min-height:232px!important;
+    max-height:232px!important;
+    overflow-y:scroll!important;
     overflow-x:hidden!important;
   }
 }
+
+/* v370 — Settings hub final visual cleanup. Keep the existing architecture/navigation,
+   but use a minimal title row and text-only cards. */
+#settingsScreen .settings-topbar{
+  position:relative!important;display:flex!important;align-items:center!important;
+  justify-content:flex-start!important;min-height:52px!important;margin-bottom:18px!important;padding:0!important;
+}
+#settingsScreen .settings-topbar .mg-legacy-top-control{
+  position:relative!important;z-index:2!important;margin:0!important;
+}
+#settingsScreen .settings-topbar-title{
+  position:absolute!important;left:50%!important;top:50%!important;
+  transform:translate(-50%,-50%)!important;margin:0!important;padding:0!important;
+  font-size:20px!important;line-height:1!important;font-weight:750!important;
+  letter-spacing:-.035em!important;color:#172033!important;white-space:nowrap!important;
+}
+#settingsScreen .settings-hero-v2,#settingsScreen .settings-hub-head{display:none!important}
+#settingsScreen .settings-hub-v357{padding:0 0 24px!important}
+#settingsScreen .settings-hub-grid{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
+#settingsScreen .settings-hub-card{
+  height:64px!important;min-height:64px!important;padding:0 17px 0 20px!important;
+  grid-template-columns:minmax(0,1fr) 24px!important;gap:10px!important;border-radius:18px!important;
+  border:1px solid #e1e5ea!important;background:#fff!important;box-shadow:0 7px 22px rgba(24,33,47,.045)!important;
+}
+#settingsScreen .settings-hub-card:active{transform:scale(.992)!important}
+#settingsScreen .settings-hub-icon,#settingsScreen .settings-hub-copy small{display:none!important}
+#settingsScreen .settings-hub-copy{display:block!important;min-width:0!important}
+#settingsScreen .settings-hub-copy b{display:block!important;font-size:17px!important;line-height:1.15!important;font-weight:750!important;color:#172033!important}
+#settingsScreen .settings-hub-arrow{font-size:29px!important;line-height:1!important;color:#7b8593!important}
+@media(max-width:560px){
+  #settingsScreen .settings-topbar{min-height:50px!important;margin-bottom:16px!important}
+  #settingsScreen .settings-topbar-title{font-size:20px!important}
+  #settingsScreen .settings-hub-card{height:60px!important;min-height:60px!important;border-radius:17px!important;padding-left:18px!important;padding-right:14px!important}
+  #settingsScreen .settings-hub-copy b{font-size:17px!important}
+}
+
+
+/* v9.1 — smart word suggestions for one-time service input */
+.direction-service-word-suggestions{display:flex!important;align-items:center!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-x!important;scrollbar-width:none!important;padding:7px 16px 2px!important;min-height:38px!important;box-sizing:border-box!important;background:#fff!important;border:0!important;white-space:nowrap!important}
+.direction-service-word-suggestions::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.direction-service-word-suggestions[hidden]{display:none!important}
+.direction-service-word-suggestion{appearance:none!important;border:1px solid #e4e7eb!important;background:#f5f6f8!important;color:#20242a!important;border-radius:999px!important;padding:7px 11px!important;min-height:30px!important;flex:0 0 auto!important;font:inherit!important;font-size:12px!important;font-weight:700!important;line-height:1!important;white-space:nowrap!important;cursor:pointer!important}
+.direction-service-word-suggestion:active{transform:scale(.97)!important;background:#eceef1!important}
+@media(max-width:600px){.direction-service-word-suggestions{padding-left:13px!important;padding-right:13px!important;gap:6px!important}}
