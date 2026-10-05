@@ -1,5 +1,5 @@
 /* Master Group v369 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v369-github-pages';
+const CACHE = 'master-group-v23-smart-dictionary-bundled';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -43,7 +43,48 @@ const CORE = [
   "./js/v284-settings-cleanup.js",
   "./js/settings-hub-v357.js",
   "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/icon-512.png",
+  "./js/mg-dict/dictionary-01.js",
+  "./js/mg-dict/dictionary-02.js",
+  "./js/mg-dict/dictionary-03.js",
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ];
 
 self.addEventListener('install', event => {

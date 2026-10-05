@@ -411,9 +411,10 @@
       <button type="button" class="direction-service-close" data-direction-service-close aria-label="Закрыть">×</button>
     </div>
     <div id="directionServiceList" class="direction-service-list"></div>
-    <div class="direction-service-actions">
-      <button type="button" class="btn secondary" data-direction-service-remove>Удалить направление</button>
-      <button type="button" class="btn primary" data-direction-service-ok>Окей</button>
+    <div id="directionServiceWordSuggestions" class="direction-service-word-suggestions" aria-label="Подсказки слов" hidden></div>
+    <div class="direction-service-quick-add">
+      <input id="directionServiceQuickInput" type="text" autocomplete="off" placeholder="Название услуги" aria-label="Название услуги">
+      <button type="button" class="btn primary" data-direction-service-quick-add>Добавить</button>
     </div>
   </div>
 </div></div>
@@ -436,36 +437,25 @@
 </section><div id="analyticsPanelOverview"><section class="card"><div class="stats-grid"><div class="stats-big"><b id="statCount">0</b><span>Всего смет</span></div><div class="stats-big"><b id="statMonth">0 MDL</b><span>Выручка за месяц</span></div><div class="stats-big"><b id="statProfit">0 MDL</b><span>Чистая прибыль</span></div><div class="stats-big"><b id="statExpenses">0 MDL</b><span>Расходы</span></div></div></section><section class="card"><h2>По месяцам</h2><div id="monthStats" class="month-list"></div></section></div><div id="analyticsPanelFinance" hidden><div id="financeOverview"></div><section class="card"><div class="settings-section-head"><div><h2>Финансы по сметам</h2><p class="muted">Все оплаты и расходы привязаны к конкретной смете.</p></div></div><div id="financeEstimates"></div></section></div></div>
 <div id="notificationsScreen" class="app screen" hidden><section class="notifications-hero"><div class="notifications-mark">🔔</div><div><h2>История изменений</h2><p>Здесь отображается, что именно было изменено в сметах и когда.</p></div><div class="notifications-actions"><button class="btn secondary" data-notif-read>Прочитать все</button><button class="btn secondary" data-notif-clear>Очистить</button></div></section><section id="notificationsList" class="notifications-list"></section></div><div id="settingsScreen" class="app screen" hidden>
 <header class="top settings-topbar">
-  <div class="top-left">
-    <button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
-    <div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span>Настройки</span></div></div>
-  </div>
-  <button class="btn secondary settings-done" data-action="home">Готово</button>
+  <button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
+  <h1 class="settings-topbar-title">Настройки</h1>
 </header>
-<section class="settings-hero-v2">
-  <div><div class="eyebrow">MASTER GROUP</div><h1>Настройки</h1><p>Управляйте каталогом, профилем компании и удалёнными сметами.</p></div>
-</section>
 <section id="settingsHub" class="settings-hub-v357" aria-label="Все настройки">
-  <div class="settings-hub-head">
-    <span class="settings-overline">MASTER GROUP</span>
-    <h1>Настройки</h1>
-    <p>Выберите раздел, который хотите настроить.</p>
-  </div>
   <div class="settings-hub-grid">
-    <button type="button" class="settings-hub-card" data-settings-hub="catalog">
-      <span class="settings-hub-icon">⌘</span><span class="settings-hub-copy"><b>Каталог</b><small>Направления и услуги</small></span><span class="settings-hub-arrow">›</span>
-    </button>
     <button type="button" class="settings-hub-card" data-settings-hub="company">
-      <span class="settings-hub-icon">▣</span><span class="settings-hub-copy"><b>Компания</b><small>Данные и реквизиты</small></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-copy"><b>Компания</b></span><span class="settings-hub-arrow">›</span>
     </button>
-    <button type="button" class="settings-hub-card" data-settings-hub="trash">
-      <span class="settings-hub-icon">⌫</span><span class="settings-hub-copy"><b>Корзина</b><small>Удалённые сметы</small></span><span class="settings-hub-arrow">›</span>
-    </button>
-    <button type="button" class="settings-hub-card" data-settings-hub="updates">
-      <span class="settings-hub-icon">↻</span><span class="settings-hub-copy"><b>Обновления</b><small>Версия приложения</small></span><span class="settings-hub-arrow">›</span>
+    <button type="button" class="settings-hub-card" data-settings-hub="catalog">
+      <span class="settings-hub-copy"><b>Каталог</b></span><span class="settings-hub-arrow">›</span>
     </button>
     <button type="button" class="settings-hub-card" data-settings-hub="estimates">
-      <span class="settings-hub-icon">▤</span><span class="settings-hub-copy"><b>Сметы</b><small>Шаблоны документов</small></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-copy"><b>Сметы</b></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="trash">
+      <span class="settings-hub-copy"><b>Корзина</b></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="updates">
+      <span class="settings-hub-copy"><b>Обновления</b></span><span class="settings-hub-arrow">›</span>
     </button>
   </div>
 </section>
@@ -739,7 +729,7 @@
     </div>
   </div>
 </div>
-<div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Своя услуга"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="dialog" aria-modal="true" aria-labelledby="mgUpdateNoticeTitle"><div class="mg-update-notice-card"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong id="mgUpdateNoticeTitle">Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div></div>
+<div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Название услуги" aria-label="Название услуги"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="dialog" aria-modal="true" aria-labelledby="mgUpdateNoticeTitle"><div class="mg-update-notice-card"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong id="mgUpdateNoticeTitle">Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div></div>
 <div id="toast" class="toast"></div><div id="archiveModal" class="modal-overlay"><div class="confirm-modal"><h3>Сохранить смету в архив?</h3><p>Вы сейчас находитесь в процессе создания сметы. Можно сохранить черновик в архив и вернуться к нему позже.</p><div class="confirm-actions"><button class="primary" data-archive-action="save">📦 Поставить в архив</button><button data-archive-action="continue">↩️ Продолжить работу</button><button data-archive-action="discard">Не сохранять</button></div></div></div>
 <script src="js/state.js"></script>
 <script src="js/data-model.js"></script>
@@ -750,6 +740,11 @@
 <script src="js/calculations.js"></script>
 <script src="js/finance-service.js"></script>
 <script src="js/estimate-ui.js"></script>
+<script src="js/mg-dict/dictionary-01.js"></script>
+<script src="js/mg-dict/dictionary-02.js"></script>
+<script src="js/mg-dict/dictionary-03.js"></script>
+<script src="js/mg-dict/dictionary-actions.js"></script>
+<script src="js/mg-dict/dictionary-works.js"></script>
 <script src="js/estimate-core.js"></script>
 <script src="js/finance-ui.js"></script>
 <script src="js/estimate-templates.js"></script>

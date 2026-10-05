@@ -67,7 +67,9 @@
         <span class="direction-service-copy"><b>${ctx.esc(n)}</b><small>${ctx.esc(u)}</small></span>
         <span class="direction-service-check">${yes?'✓':''}</span>
       </button>`;
-    }).join(''):'<div class="direction-service-empty">Для этого направления пока нет услуг. Добавьте их в Настройки.</div>';
+    }).join(''):'<div class="direction-service-empty">Для этого направления пока нет услуг в каталоге.</div>';
+    const quick=ctx.$('directionServiceQuickInput');
+    if(quick)quick.value='';
   }
   function openDirectionServiceModal(){
     const overlay=ctx.$('directionServiceOverlay');

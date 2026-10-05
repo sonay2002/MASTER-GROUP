@@ -17,6 +17,7 @@ const allItems=window.MGEstimate.allItems;
 const total=window.MGEstimate.total;
 const normalizeDirections=window.MGEstimate.normalizeDirections;
 const allItemsFromEstimate=window.MGEstimate.allItemsFromEstimate;
+document.addEventListener('input',e=>{if(e.target?.id==='directionServiceQuickInput')serviceWordSuggestions();});
 window.MGEstimateUI.init({state,catalog,cats,allItems,total,activeDir:()=>state.directions[state.activeDirection]||null,contactData,money,esc,$});
 function hasDraft(){return state.screen==='editor' && (state.directions.length||contactData().client||contactData().phone||contactData().address)}
 function draftBuild(){return {id:state.id||uid(),step:state.step,directions:JSON.parse(JSON.stringify(state.directions)),activeDirection:state.activeDirection,client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,savedAt:new Date().toLocaleString('ru-RU')}}
@@ -96,6 +97,172 @@ function selectCategory(n){
  window.MGEstimateUI.renderDirectionServiceModal();
  window.MGEstimateUI.openDirectionServiceModal();
 }
+// ─────────────────────────────────────────────────────────────────────────────
+// Master Group — умный конструктор названия услуги.
+// Логика: ДЕЙСТВИЕ → РАБОТА/ОБЪЕКТ → ХАРАКТЕРИСТИКА → ДОПОЛНЕНИЕ → …
+// Каждый пробел переводит поиск на следующий контекст. Весь 500k-корпус
+// остаётся доступным как резерв, но обычный поиск по нему не выполняется.
+// ─────────────────────────────────────────────────────────────────────────────
+const MG_MASTER_SERVICE_ALL = window.MG_MASTER_SERVICE_ALL || [];
+window.MG_MASTER_SERVICE_COUNT = MG_MASTER_SERVICE_ALL.length;
+
+const MG_ACTION_WORDS = new Set(window.MG_DICTIONARY_ACTIONS || [
+  'Монтаж','Установка','Демонтаж','Замена','Ремонт','Подключение','Настройка',
+  'Прокладка','Изготовление','Обслуживание','Очистка','Разборка','Сборка',
+  'Крепление','Регулировка','Герметизация','Покраска','Доставка','Вывоз',
+  'Погрузка','Разгрузка','Сварка','Резка','Гибка','Сверление','Зачистка',
+  'Шлифовка','Грунтовка','Обжимка','Опрессовка','Пайка','Утепление',
+  'Гидроизоляция','Теплоизоляция','Восстановление','Фиксация','Укладка',
+  'Разводка','Прессовка','Корчевка','Спил','Кронирование','Посадка',
+  'Планировка','Подрезка','Прочистка','Промывка'
+]);
+const MG_ACTION_FORMS = new Map([...MG_ACTION_WORDS].map(x => [String(x).toLocaleLowerCase('ru'), x]));
+const MG_WORKS = window.MG_DICTIONARY_WORKS || [];
+const MG_ACTION_WORKS = window.MG_DICTIONARY_ACTION_WORKS || {};
+const MG_WORK_ATTRIBUTES = window.MG_DICTIONARY_WORK_ATTRIBUTES || {};
+const MG_STAGE_WORDS = window.MG_DICTIONARY_STAGES || {};
+
+const MG_WORD_LOWER_CACHE = new Map();
+function mgLower(v){
+  const s=String(v||'');
+  let x=MG_WORD_LOWER_CACHE.get(s);
+  if(x===undefined){x=s.toLocaleLowerCase('ru');MG_WORD_LOWER_CACHE.set(s,x);}
+  return x;
+}
+function mgUnique(items){
+  const out=[],seen=new Set();
+  for(const x of items||[]){
+    const w=String(x||'').trim(); if(!w)continue;
+    const k=mgLower(w); if(seen.has(k))continue;
+    seen.add(k);out.push(w);
+  }
+  return out;
+}
+function mgPrefix(items,prefix,limit=60){
+  const p=mgLower(prefix);
+  if(!p)return items.slice(0,limit);
+  return items.filter(w=>mgLower(w).startsWith(p)).slice(0,limit);
+}
+function mgSortContext(items,prefix){
+  const p=mgLower(prefix);
+  return items.slice().sort((a,b)=>{
+    const al=mgLower(a), bl=mgLower(b);
+    const as=al===p?0:(al.startsWith(p)?1:2);
+    const bs=bl===p?0:(bl.startsWith(p)?1:2);
+    return as-bs || a.localeCompare(b,'ru');
+  });
+}
+// Общий словарь объектов: доступен после любого действия.
+// Связанные с действием варианты идут первыми, но никогда не блокируют
+// общий набор — поэтому «Покраска п» обязательно может найти «Пластик».
+// Из большого корпуса также извлекаем второй токен каждой готовой пары.
+// Это даёт общий запас объектов без дублирования самих 500k фраз.
+const MG_CORPUS_WORKS = [];
+for(const phrase of MG_MASTER_SERVICE_ALL){
+  const s=String(phrase||'').trim();
+  const firstSpace=s.indexOf(' ');
+  if(firstSpace>0){
+    const rest=s.slice(firstSpace+1).trim();
+    const secondSpace=rest.indexOf(' ');
+    if(rest) MG_CORPUS_WORKS.push(secondSpace>0 ? rest.slice(0,secondSpace) : rest);
+  }
+}
+const MG_GLOBAL_WORKS = mgUnique([
+  ...MG_WORKS,
+  ...MG_CORPUS_WORKS,
+  ...Object.values(MG_ACTION_WORKS || {}).flatMap(v => Array.isArray(v) ? v : []),
+  ...Object.values(MG_WORK_ATTRIBUTES || {}).flatMap(v => Array.isArray(v) ? v : [])
+]);
+
+function mgWorkCandidates(action){
+  const direct=MG_ACTION_WORKS[mgLower(action)] || MG_ACTION_WORKS[action] || [];
+  return mgUnique([...(direct||[]), ...MG_GLOBAL_WORKS]);
+}
+function mgAttributeCandidates(previous){
+  const key=mgLower(previous);
+  for(const [k,vals] of Object.entries(MG_WORK_ATTRIBUTES)){
+    if(mgLower(k)===key)return mgUnique(vals);
+  }
+  return mgUnique(MG_STAGE_WORDS.характеристика || []);
+}
+function mgPreviousCandidates(tokens){
+  const prev=tokens[tokens.length-1];
+  if(!prev)return [];
+  const attrs=mgAttributeCandidates(prev);
+  if(attrs.length)return attrs;
+  return mgUnique(MG_STAGE_WORDS.дополнение || []);
+}
+function hideServiceWordSuggestions(){
+  const strip=$('directionServiceWordSuggestions');
+  if(strip){strip.innerHTML='';strip.hidden=true;}
+}
+function serviceWordSuggestions(){
+  const input=$('directionServiceQuickInput'),strip=$('directionServiceWordSuggestions');
+  if(!input||!strip)return;
+  const value=String(input.value||'');
+  const trailingSpace=/\s$/.test(value);
+  const trimmed=value.trim();
+  const tokens=trimmed?trimmed.split(/\s+/).filter(Boolean):[];
+  const current=trailingSpace?'':(tokens.pop()||'');
+  const prefix=mgLower(current);
+  let items=[];
+
+  if(tokens.length===0){
+    // Первый этап — только действия. Никаких случайных слов из 500k.
+    items=mgPrefix([...MG_ACTION_WORDS],current,60);
+  }else{
+    const first=mgLower(tokens[0]);
+    const action=MG_ACTION_FORMS.get(first);
+    if(action){
+      if(tokens.length===1){
+        // Второй этап — общий словарь объектов. Сначала показываем
+        // объекты, связанные с действием, затем остальные общие слова.
+        items=mgPrefix(mgWorkCandidates(action),current,60);
+      }else if(tokens.length===2){
+        // Третий этап — характеристика выбранного объекта.
+        items=mgPrefix(mgAttributeCandidates(tokens[1]),current,60);
+        if(!items.length)items=mgPrefix(mgPreviousCandidates(tokens),current,60);
+      }else{
+        // Дальше продолжаем по контексту предыдущего слова.
+        items=mgPrefix(mgPreviousCandidates(tokens),current,60);
+      }
+    }
+  }
+
+  items=mgSortContext(mgUnique(items),current).slice(0,60);
+  strip.innerHTML=items.map(word=>`<button type="button" class="direction-service-word-suggestion" data-service-word="${esc(word)}">${esc(word)}</button>`).join('');
+  strip.hidden=!items.length;
+}
+function insertServiceWord(word){
+  const input=$('directionServiceQuickInput');if(!input)return;
+  const value=String(input.value||'');
+  const m=value.match(/^(.*?)(\S*)$/);
+  const before=m?.[1]||'';
+  input.value=before+word+' ';
+  input.focus();
+  try{input.setSelectionRange(input.value.length,input.value.length)}catch(_){}
+  serviceWordSuggestions();
+}
+function addOneTimeDirectionService(){
+ const el=$('directionServiceQuickInput');
+ const n=String(el?.value||'').trim();
+ if(!n)return toast('Введите название услуги');
+ let d=activeDir();
+ if(!d && state.pendingDirectionName){
+   d={name:state.pendingDirectionName,items:[]};
+   state.directions.push(d);
+   state.activeDirection=state.directions.length-1;
+   state.pendingDirectionName=null;
+ }
+ if(!d)return toast('Сначала выберите направление');
+ if(d.items.some(x=>x.name===n))return toast('Такая услуга уже добавлена');
+ d.items.push({id:uid(),name:n,qty:1,unit:'шт',price:0});
+ el.value='';
+ renderCats();
+ window.MGEstimateUI.renderDirectionServiceModal();
+ renderItems();
+ toast('Услуга добавлена в смету');
+}
 function toggleService(n,u){
  let d=activeDir();
  if(!d && state.pendingDirectionName){
@@ -172,7 +339,7 @@ function renderArchives(){const a=drafts(),el=$('archiveList');if(!a.length){el.
 function showStats(){renderStats();screen('statsScreen')}
 function edit(){screen('editor');step(state.directions.length?3:1)}
 function share(){const e=state.estimate;if(!e)return;const s=`Master Group — Смета ${e.number}\nКлиент: ${e.client||'—'}\nОбъект: ${e.object||'—'}\n\n`+allItemsFromEstimate(e).map((x,i)=>`${i+1}. ${x.direction?x.direction+' — ':''}${x.name} — ${x.qty} ${x.unit} × ${money(x.price)} = ${money(x.qty*x.price)} MDL`).join('\n')+`\n\nИТОГО: ${money(e.total)} MDL`;if(navigator.share)navigator.share({title:'Master Group — Смета',text:s}).catch(()=>{});else navigator.clipboard?.writeText(s).then(()=>toast('Текст скопирован'))}
-document.addEventListener('click',e=>{const openAdd=e.target.closest('[data-calc-open-add-menu]');if(openAdd){openCalcAddMenu();return}const closeAdd=e.target.closest('[data-calc-add-menu-close]');if(closeAdd){closeCalcAddMenu();return}const addOverlay=e.target.closest('#calcAddMenuOverlay');if(addOverlay&&e.target===addOverlay){closeCalcAddMenu();return}const cad=e.target.closest('[data-calc-add-direction]');if(cad){closeCalcAddMenu();openCalcDirectionPicker();return}const cnd=e.target.closest('[data-calc-new-direction]');if(cnd){addCalcDirection(cnd.dataset.calcNewDirection);return}const cdc=e.target.closest('[data-calc-direction-close]');if(cdc){closeCalcDirectionPicker();return}const cdo=e.target.closest('#calcDirectionOverlay');if(cdo&&e.target===cdo){closeCalcDirectionPicker();return}const cp=e.target.closest('[data-calc-picker-close]');if(cp){closeCalcPicker();return}const ca=e.target.closest('[data-calc-add]');if(ca){closeCalcAddMenu();openCalcPicker();return}const cc=e.target.closest('[data-calc-collapse]');if(cc){const i=Number(cc.dataset.calcCollapse);window.__mgCalcCollapsed=window.__mgCalcCollapsed||{};window.__mgCalcCollapsed[i]=!window.__mgCalcCollapsed[i];renderItems();return}const cd=e.target.closest('[data-calc-dir]');if(cd){state.activeDirection=Number(cd.dataset.calcDir)||0;renderCalcPicker();return}const cs=e.target.closest('[data-calc-service]');if(cs){toggleCalcService(cs.dataset.calcService,cs.dataset.calcUnit);return}const cm=e.target.closest('[data-calc-manual]');if(cm){addCalcManual();return}const co=e.target.closest('#calcPickerOverlay');if(co&&e.target===co){closeCalcPicker();return}const sAdd=e.target.closest('[data-settings-add-direction]');if(sAdd){settingsAddDirection();return}const sIcon=e.target.closest('[data-set-direction-icon]');if(sIcon){settingsSetIcon(Number(sIcon.dataset.setDirectionIcon),sIcon.dataset.icon);return}const sSave=e.target.closest('[data-save-direction]');if(sSave){settingsSyncServiceFields();settingsSaveDirection(Number(sSave.dataset.saveDirection));return}const sDel=e.target.closest('[data-delete-direction]');if(sDel){settingsDeleteDirection(Number(sDel.dataset.deleteDirection));return}const sAddSvc=e.target.closest('[data-add-service]');if(sAddSvc){settingsSyncServiceFields();settingsAddService(Number(sAddSvc.dataset.addService));return}const sDelSvc=e.target.closest('[data-delete-service]');if(sDelSvc){settingsDeleteService(...sDelSvc.dataset.deleteService.split(':').map(Number));return}const oa=e.target.closest('[data-open-archives]');if(oa){showArchives();return}const nr=e.target.closest('[data-notif-read]');if(nr){markAllNotificationsRead();return}const nc=e.target.closest('[data-notif-clear]');if(nc){clearNotifications();return}const ni=e.target.closest('[data-notification-id]');if(ni){openNotification(ni.dataset.notificationId);return}const ma=e.target.closest('[data-menu-action]');if(ma){e.preventDefault();e.stopPropagation();const action=ma.dataset.menuAction;$('drawerOverlay').classList.remove('open');if(action==='new')newEstimate();else if(action==='estimates')askArchive(window.MGAppCore?.showEstimates||showEstimates);else if(action==='stats')askArchive(window.MGAppCore?.showStats||showStats);else if(action==='notifications')window.openNotificationsScreen();else if(action==='settings'){const open=window.__mgOpenSettingsDirect||window.MGAppFinance?.showSettings||window.MGAppCore?.showSettings||showSettings;try{open();}catch(err){console.warn('MG settings open failed',err);showSettings();}return}else if(action==='home')askArchive(()=>{dashboard();screen('dashboard')});return}const m=e.target.closest('[data-menu]');if(m){const action=m.dataset.menu;if(action==='open')$('drawerOverlay').classList.add('open');else if(action==='close')$('drawerOverlay').classList.remove('open');return}const a=e.target.closest('[data-action]');if(a){e.preventDefault();const x=a.dataset.action;if(x==='new')newEstimate();else if(x==='home')askArchive(()=>{dashboard();screen('dashboard')});else if(x==='step1')(window.MGAppFinance?.step||step)(1);else if(x==='step2')(window.MGAppFinance?.step||step)(2);else if(x==='step3')(window.MGAppFinance?.step||step)(3);else if(x==='step4')(window.MGAppFinance?.step||step)(4);else if(x==='step5')(window.MGAppFinance?.step||step)(5);else if(x==='services')(window.MGAppFinance?.step||step)(2);else if(x==='create')(window.MGAppCore?.create||create)();else if(x==='edit')edit();else if(x==='share')(window.MGAppFinance?.share||share)();else if(x==='wa'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('wa');else if(x==='tg'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('tg');else if(x==='print'){try{const e=window.MGAppCore?.state?.estimate;if(e?.id&&window.MGAppCore?.documentBody)window.MGAppCore.documentBody({...e,template:(window.MGEstimateTemplates?.resolveForEstimate?.(e)||e.template||'classic')});}catch(err){console.warn('MG print template refresh failed',err)}document.documentElement.classList.add('printing');window.print();}return}const aa=e.target.closest('[data-archive-action]');if(aa){const ac=aa.dataset.archiveAction;if(ac==='save')archiveCurrent();else if(ac==='continue'){$('archiveModal').classList.remove('open');window.__archiveNext=null}else if(ac==='discard'){const n=window.__archiveNext||(()=>{});discardCurrent();window.__archiveNext=null;n()}return}const od=e.target.closest('[data-draft-open]');if(od){resumeDraft(od.dataset.draftOpen);return}const dd=e.target.closest('[data-draft-delete]');if(dd){removeDraft(dd.dataset.draftDelete);return}const closeDS=e.target.closest('[data-direction-service-close]');if(closeDS){window.MGEstimateUI.closeDirectionServiceModal();return}const okDS=e.target.closest('[data-direction-service-ok]');if(okDS){window.MGEstimateUI.closeDirectionServiceModal();return}const removeDS=e.target.closest('[data-direction-service-remove]');if(removeDS){window.MGEstimateUI.removeActiveDirection();return}const ds=e.target.closest('[data-direction-service]');if(ds){toggleService(ds.dataset.directionService,ds.dataset.directionUnit);return}const dso=e.target.closest('#directionServiceOverlay');if(dso&&e.target===dso){window.MGEstimateUI.closeDirectionServiceModal();return}const c=e.target.closest('[data-category]');if(c){selectCategory(c.dataset.category);return}const sd=e.target.closest('[data-dir]');if(sd){state.activeDirection=Number(sd.dataset.dir)||0;renderServiceDirections();renderServices();return}const s=e.target.closest('[data-service]');if(s){toggleService(s.dataset.service,s.dataset.unit);return}const ee=e.target.closest('[data-estimate-edit]');if(ee){editSaved(ee.dataset.estimateEdit);return}const eo=e.target.closest('[data-estimate-open]');if(eo){openSaved(eo.dataset.estimateOpen);return}const ed=e.target.closest('[data-estimate-delete]');if(ed){deleteSaved(ed.dataset.estimateDelete);return}const o=e.target.closest('[data-open]');if(o){load(o.dataset.open);return}const d=e.target.closest('[data-delete]');if(d){for(const dir of state.directions){const i=dir.items.findIndex(x=>x.id===d.dataset.delete);if(i>=0){dir.items.splice(i,1);break}}renderItems();renderServices();return}const minus=e.target.closest('[data-minus]');if(minus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===minus.dataset.minus);if(x){x.qty=Math.max(0,(Number(x.qty)||0)-1);renderItems();break}}return}const plus=e.target.closest('[data-plus]');if(plus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===plus.dataset.plus);if(x){x.qty=(Number(x.qty)||0)+1;renderItems();break}}return}});
+document.addEventListener('click',e=>{const openAdd=e.target.closest('[data-calc-open-add-menu]');if(openAdd){openCalcAddMenu();return}const closeAdd=e.target.closest('[data-calc-add-menu-close]');if(closeAdd){closeCalcAddMenu();return}const addOverlay=e.target.closest('#calcAddMenuOverlay');if(addOverlay&&e.target===addOverlay){closeCalcAddMenu();return}const cad=e.target.closest('[data-calc-add-direction]');if(cad){closeCalcAddMenu();openCalcDirectionPicker();return}const cnd=e.target.closest('[data-calc-new-direction]');if(cnd){addCalcDirection(cnd.dataset.calcNewDirection);return}const cdc=e.target.closest('[data-calc-direction-close]');if(cdc){closeCalcDirectionPicker();return}const cdo=e.target.closest('#calcDirectionOverlay');if(cdo&&e.target===cdo){closeCalcDirectionPicker();return}const cp=e.target.closest('[data-calc-picker-close]');if(cp){closeCalcPicker();return}const ca=e.target.closest('[data-calc-add]');if(ca){closeCalcAddMenu();openCalcPicker();return}const cc=e.target.closest('[data-calc-collapse]');if(cc){const i=Number(cc.dataset.calcCollapse);window.__mgCalcCollapsed=window.__mgCalcCollapsed||{};window.__mgCalcCollapsed[i]=!window.__mgCalcCollapsed[i];renderItems();return}const cd=e.target.closest('[data-calc-dir]');if(cd){state.activeDirection=Number(cd.dataset.calcDir)||0;renderCalcPicker();return}const cs=e.target.closest('[data-calc-service]');if(cs){toggleCalcService(cs.dataset.calcService,cs.dataset.calcUnit);return}const cm=e.target.closest('[data-calc-manual]');if(cm){addCalcManual();return}const co=e.target.closest('#calcPickerOverlay');if(co&&e.target===co){closeCalcPicker();return}const sAdd=e.target.closest('[data-settings-add-direction]');if(sAdd){settingsAddDirection();return}const sIcon=e.target.closest('[data-set-direction-icon]');if(sIcon){settingsSetIcon(Number(sIcon.dataset.setDirectionIcon),sIcon.dataset.icon);return}const sSave=e.target.closest('[data-save-direction]');if(sSave){settingsSyncServiceFields();settingsSaveDirection(Number(sSave.dataset.saveDirection));return}const sDel=e.target.closest('[data-delete-direction]');if(sDel){settingsDeleteDirection(Number(sDel.dataset.deleteDirection));return}const sAddSvc=e.target.closest('[data-add-service]');if(sAddSvc){settingsSyncServiceFields();settingsAddService(Number(sAddSvc.dataset.addService));return}const sDelSvc=e.target.closest('[data-delete-service]');if(sDelSvc){settingsDeleteService(...sDelSvc.dataset.deleteService.split(':').map(Number));return}const oa=e.target.closest('[data-open-archives]');if(oa){showArchives();return}const nr=e.target.closest('[data-notif-read]');if(nr){markAllNotificationsRead();return}const nc=e.target.closest('[data-notif-clear]');if(nc){clearNotifications();return}const ni=e.target.closest('[data-notification-id]');if(ni){openNotification(ni.dataset.notificationId);return}const ma=e.target.closest('[data-menu-action]');if(ma){e.preventDefault();e.stopPropagation();const action=ma.dataset.menuAction;$('drawerOverlay').classList.remove('open');if(action==='new')newEstimate();else if(action==='estimates')askArchive(window.MGAppCore?.showEstimates||showEstimates);else if(action==='stats')askArchive(window.MGAppCore?.showStats||showStats);else if(action==='notifications')window.openNotificationsScreen();else if(action==='settings'){const open=window.__mgOpenSettingsDirect||window.MGAppFinance?.showSettings||window.MGAppCore?.showSettings||showSettings;try{open();}catch(err){console.warn('MG settings open failed',err);showSettings();}return}else if(action==='home')askArchive(()=>{dashboard();screen('dashboard')});return}const m=e.target.closest('[data-menu]');if(m){const action=m.dataset.menu;if(action==='open')$('drawerOverlay').classList.add('open');else if(action==='close')$('drawerOverlay').classList.remove('open');return}const a=e.target.closest('[data-action]');if(a){e.preventDefault();const x=a.dataset.action;if(x==='new')newEstimate();else if(x==='home')askArchive(()=>{dashboard();screen('dashboard')});else if(x==='step1')(window.MGAppFinance?.step||step)(1);else if(x==='step2')(window.MGAppFinance?.step||step)(2);else if(x==='step3')(window.MGAppFinance?.step||step)(3);else if(x==='step4')(window.MGAppFinance?.step||step)(4);else if(x==='step5')(window.MGAppFinance?.step||step)(5);else if(x==='services')(window.MGAppFinance?.step||step)(2);else if(x==='create')(window.MGAppCore?.create||create)();else if(x==='edit')edit();else if(x==='share')(window.MGAppFinance?.share||share)();else if(x==='wa'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('wa');else if(x==='tg'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('tg');else if(x==='print'){try{const e=window.MGAppCore?.state?.estimate;if(e?.id&&window.MGAppCore?.documentBody)window.MGAppCore.documentBody({...e,template:(window.MGEstimateTemplates?.resolveForEstimate?.(e)||e.template||'classic')});}catch(err){console.warn('MG print template refresh failed',err)}document.documentElement.classList.add('printing');window.print();}return}const aa=e.target.closest('[data-archive-action]');if(aa){const ac=aa.dataset.archiveAction;if(ac==='save')archiveCurrent();else if(ac==='continue'){$('archiveModal').classList.remove('open');window.__archiveNext=null}else if(ac==='discard'){const n=window.__archiveNext||(()=>{});discardCurrent();window.__archiveNext=null;n()}return}const od=e.target.closest('[data-draft-open]');if(od){resumeDraft(od.dataset.draftOpen);return}const dd=e.target.closest('[data-draft-delete]');if(dd){removeDraft(dd.dataset.draftDelete);return}const wordSuggestion=e.target.closest('[data-service-word]');if(wordSuggestion){insertServiceWord(wordSuggestion.dataset.serviceWord||'');return}const quickAdd=e.target.closest('[data-direction-service-quick-add]');if(quickAdd){addOneTimeDirectionService();return}const closeDS=e.target.closest('[data-direction-service-close]');if(closeDS){window.MGEstimateUI.closeDirectionServiceModal();return}const okDS=e.target.closest('[data-direction-service-ok]');if(okDS){window.MGEstimateUI.closeDirectionServiceModal();return}const removeDS=e.target.closest('[data-direction-service-remove]');if(removeDS){window.MGEstimateUI.removeActiveDirection();return}const ds=e.target.closest('[data-direction-service]');if(ds){toggleService(ds.dataset.directionService,ds.dataset.directionUnit);return}const dso=e.target.closest('#directionServiceOverlay');if(dso&&e.target===dso){window.MGEstimateUI.closeDirectionServiceModal();return}const c=e.target.closest('[data-category]');if(c){selectCategory(c.dataset.category);return}const sd=e.target.closest('[data-dir]');if(sd){state.activeDirection=Number(sd.dataset.dir)||0;hideServiceWordSuggestions();renderServiceDirections();renderServices();return}const s=e.target.closest('[data-service]');if(s){toggleService(s.dataset.service,s.dataset.unit);return}const ee=e.target.closest('[data-estimate-edit]');if(ee){editSaved(ee.dataset.estimateEdit);return}const eo=e.target.closest('[data-estimate-open]');if(eo){openSaved(eo.dataset.estimateOpen);return}const ed=e.target.closest('[data-estimate-delete]');if(ed){deleteSaved(ed.dataset.estimateDelete);return}const o=e.target.closest('[data-open]');if(o){load(o.dataset.open);return}const d=e.target.closest('[data-delete]');if(d){for(const dir of state.directions){const i=dir.items.findIndex(x=>x.id===d.dataset.delete);if(i>=0){dir.items.splice(i,1);break}}renderItems();renderServices();return}const minus=e.target.closest('[data-minus]');if(minus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===minus.dataset.minus);if(x){x.qty=Math.max(0,(Number(x.qty)||0)-1);renderItems();break}}return}const plus=e.target.closest('[data-plus]');if(plus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===plus.dataset.plus);if(x){x.qty=(Number(x.qty)||0)+1;renderItems();break}}return}});
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset.qty){for(const dir of state.directions){const x=dir.items.find(x=>x.id===el.dataset.qty);if(x){x.qty=Math.max(0,Number(el.value)||0);el.value=x.qty;$('total').textContent=money(total())+' MDL';const sum=document.querySelector(`[data-line-total="${x.id}"]`);if(sum)sum.textContent=money(x.qty*x.price)+' MDL';break}}}if(el.dataset.price){for(const dir of state.directions){const x=dir.items.find(x=>x.id===el.dataset.price);if(x){x.price=el.value===''?0:Math.max(0,Number(el.value)||0);$('total').textContent=money(total())+' MDL';const sum=document.querySelector(`[data-line-total="${x.id}"]`);if(sum)sum.textContent=money(x.qty*x.price)+' MDL';break}}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCalcAddMenu();closeCalcPicker();closeCalcDirectionPicker();window.MGEstimateUI.closeDirectionServiceModal()}});window.newEstimate=newEstimate;renderCats();renderServiceDirections();renderItems();dashboard();screen('dashboard');
 
