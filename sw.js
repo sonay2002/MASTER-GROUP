@@ -1,5 +1,5 @@
 /* Master Group v370 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v26-smart-dictionary-500k';
+const CACHE = 'master-group-v27-smart-dictionary-search-fix';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
