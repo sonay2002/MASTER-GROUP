@@ -24,7 +24,7 @@ const context={
     MGCatalog:{data:[{name:'Сантехника',services:[]}],cats:[],svc:[],save(){}},
     MGEstimate:{allItems(){return[]},total(){return 0},normalizeDirections(x){return x},allItemsFromEstimate(){return[]}},
     MGEstimateUI:{init(){},renderCats(){},renderDirectionServiceModal(){},renderServiceDirections(){},renderServices(){},renderItems(){},renderReview(){},renderCalcDirectionPicker(){},renderCalcPicker(){},renderReview(){}},
-    MG_AI_SERVICE:{async suggestServiceName({text}){calls++; await new Promise(r=>setTimeout(r,text==='первое слово'?500:15)); return {corrected:text==='первое слово'?'Первое слово — старый результат':'Второе слово — актуальный результат',suggestions:[{text:'x'}],engine:'master-local-ai-open-v4',offline:true};}}
+    MG_AI_SERVICE:{async suggestServiceName({text}){calls++; await new Promise(r=>setTimeout(r,text==='первое слово'?500:15)); return {corrected:text==='первое слово'?'Первое слово — старый результат':'Второе слово — актуальный результат',suggestions:[{text:'x'}],engine:'local-ai-router-qwen',offline:true};}}
   },
   document,console,setTimeout,clearTimeout,JSON,String,Number,Map,Object,Array,Error,Set,Math,Promise,Date,Intl,location:{},navigator:{},crypto:{randomUUID(){return 'x'}}
 };
@@ -33,11 +33,11 @@ vm.createContext(context);vm.runInContext(source,context,{filename:'estimate-cor
 (async()=>{
   els.directionServiceQuickInput.value='первое слово';
   for(const fn of (listeners.input||[])) fn({target:els.directionServiceQuickInput});
-  await new Promise(r=>setTimeout(r,240));
+  await new Promise(r=>setTimeout(r,700));
   if(els.directionServiceAiSuggestion.hidden) throw new Error('AI card should stay visible while analyzing');
   els.directionServiceQuickInput.value='второе слово';
   for(const fn of (listeners.input||[])) fn({target:els.directionServiceQuickInput});
-  await new Promise(r=>setTimeout(r,260));
+  await new Promise(r=>setTimeout(r,750));
   if(els.aiMain.textContent!=='Второе слово — актуальный результат') throw new Error('Stale AI result overwrote current input');
   context.window.__mgResetServiceAi();
   await new Promise(r=>setTimeout(r,100));

@@ -1,4 +1,4 @@
-/* Master Group — Autonomous Service Intelligence v5 · whole-text AI brain + external 10M memory + Gemma 4 E4B
+/* Master Group — Autonomous Service Intelligence v5 · whole-text AI brain + external 10M memory + Qwen3.5-2B
  *
  * No remote AI/API is required for the service-name assistant.
  * The public API is intentionally unchanged so the current UI continues to
@@ -10,7 +10,7 @@
  *     in the Master Group catalog + concept memory;
  *  3) 10M external word memory: supporting recognition evidence only, never a
  *     visible per-token correction path for multi-word service requests;
- *  4) local generation (Gemma 4 E4B) only for genuinely unresolved phrases;
+ *  4) local generation (Qwen3.5-2B) only for genuinely unresolved phrases;
  *  5) confidence/relevance guardrails: reject unrelated or malformed candidates.
  *
  * Where a browser exposes a native on-device LanguageModel, it may be used as
@@ -31,7 +31,7 @@
   // Real local generative layer. No OpenAI/Firebase/remote inference is used.
   // The model is downloaded once, cached by Transformers.js, and then runs on
   // the user's device (WebGPU when available, otherwise the local fallback).
-  const LOCAL_LLM_MODEL='onnx-community/gemma-4-E4B-it-ONNX';
+  const LOCAL_LLM_MODEL='onnx-community/Qwen3.5-2B-ONNX-OPT';
   const AI_BRAIN_MODE='whole-text-primary';
   const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0';
   let localLlmPipeline=null;
@@ -403,6 +403,13 @@
 
   function semanticBrainPhrase(text,direction='',selectedServices=[]){
     const raw=stripPunct(text); if(!raw)return null;
+    // High-confidence single-word orthography fixes are a terminal fallback
+    // only; they are never used as the multi-word reasoning path.
+    const single=tokenise(raw);
+    if(single.length===1){
+      const canonical=normalizeUnknownNoun(single[0]);
+      if(norm(canonical)!==norm(single[0]))return {text:capital(canonical),confidence:.99,note:'Высокоточное восстановление известного термина'};
+    }
     const knownSemantic=KNOWN_SEMANTIC_PHRASES[norm(raw)];
     if(knownSemantic)return {text:knownSemantic,confidence:.99,note:'Понято по смыслу и профессиональному шаблону фразы'};
     const normalizedLoose=normalizeLooseInput(raw);
@@ -884,7 +891,7 @@
     const rawTokens=tokenise(s);const mapped=[];let knownCount=0;
     for(const t of rawTokens){
       const m=translateLooseLatinWord(t);
-      if(m){mapped.push(m);knownCount++;}else mapped.push(t);
+      if(m){mapped.push(normalizeUnknownNoun(m));knownCount++;}else mapped.push(normalizeUnknownNoun(t));
     }
     // Only run phonetic Russian transliteration when the input looks like
     // transliterated Russian. Do not turn ordinary Romanian/Latin into garbage
@@ -904,7 +911,7 @@
 
   function normalizeUnknownNoun(word){
     const w=clean(word,120);if(!w)return w;
-    const known={дырк:'дырка',двер:'дверь',окн:'окно',стен:'стена',потол:'потолок',труб:'труба',кабел:'кабель',раковн:'раковина',мотор:'мотор',генератор:'генератор',двигател:'двигатель',насос:'насос',филтр:'фильтр',моторн:'мотор',сантех:'сантехника',богашек:'багажник',богажник:'багажник',багажн:'багажник',багаж:'багажник',бампр:'бампер',бампе:'бампер',акумулятор:'аккумулятор',акумлятор:'аккумулятор',машын:'машина'};
+    const known={дырк:'дырка',двер:'дверь',окн:'окно',стен:'стена',потол:'потолок',труб:'труба',кабел:'кабель',раковн:'раковина',мотор:'мотор',генератор:'генератор',двигател:'двигатель',насос:'насос',филтр:'фильтр',моторн:'мотор',сантех:'сантехника',богашек:'багажник',богажник:'багажник',багажн:'багажник',багаж:'багажник',бампр:'бампер',бампе:'бампер',акумулятор:'аккумулятор',акумлятор:'аккумулятор',машын:'машина',интелект:'интеллект',искуственный:'искусственный'};
     return known[norm(w)]||w;
   }
 
@@ -1150,20 +1157,16 @@
       let mod=null;
       let processor=null;
       const buildGenerator=async(device,dtype)=>{
-        const {AutoProcessor,Gemma4ForConditionalGeneration}=mod;
+        const {AutoProcessor,Qwen3_5ForConditionalGeneration}=mod;
         if(!processor)processor=await AutoProcessor.from_pretrained(LOCAL_LLM_MODEL);
-        const model=await Gemma4ForConditionalGeneration.from_pretrained(LOCAL_LLM_MODEL,{device,dtype});
+        const model=await Qwen3_5ForConditionalGeneration.from_pretrained(LOCAL_LLM_MODEL,{device,dtype});
         const generator=async(messages,opts={})=>{
           const prompt=processor.apply_chat_template(messages,{enable_thinking:false,add_generation_prompt:true});
           const inputs=await processor(prompt,{add_special_tokens:false});
-          // Gemma 4's ONNX decoder must keep only the last token's logits during
-          // generation. Transformers.js 4.3.0 fixes this upstream; passing it
-          // explicitly also protects us from regressions and large-prompt OOMs.
           const outputs=await model.generate({
             ...inputs,
             max_new_tokens:opts.max_new_tokens||32,
             do_sample:false,
-            num_logits_to_keep:1
           });
           const decoded=processor.batch_decode(outputs.slice(null,[inputs.input_ids.dims.at(-1),null]),{skip_special_tokens:true});
           return [{generated_text:String(decoded?.[0]||'')}];
@@ -1187,7 +1190,7 @@
               localLlmState='ready-webgpu';
               return localLlmPipeline;
             }catch(gpuErr){
-              console.warn('Master Group Gemma WebGPU load failed; trying WASM',gpuErr);
+              console.warn('Master Group Qwen3.5 WebGPU load failed; trying WASM',gpuErr);
             }
           }
           localLlmPipeline=await buildGenerator('wasm','q4');
@@ -1196,7 +1199,7 @@
         }catch(err){
           localLlmLastError=String(err?.message||err||'Unknown model loading error');
           localLlmState='unavailable';
-          console.warn('Master Group local Gemma 4 E4B unavailable',err);
+          console.warn('Master Group local Qwen3.5-2B unavailable',err);
           return null;
         }
       }catch(err){
@@ -1213,7 +1216,7 @@
     if(!isBrowserRuntime())return Promise.resolve(false);
     return ensureLocalLlm().then(model=>{
       if(model){
-        try{window.dispatchEvent(new CustomEvent('mg-ai-model-ready',{detail:{engine:'gemma-4-e4b',state:localLlmState}}));}catch(_){ }
+        try{window.dispatchEvent(new CustomEvent('mg-ai-model-ready',{detail:{engine:'qwen3.5-2b',state:localLlmState}}));}catch(_){ }
       }
       return !!model;
     }).catch(()=>false);
@@ -1270,9 +1273,9 @@
       if(/^(не могу|я не могу|не знаю|не удалось|как исправить)/i.test(corrected))return null;
       return {
         corrected,
-        suggestions:[{text:corrected,note:localLlmState==='ready-webgpu'?'Локальная AI-модель Gemma 4 E4B на устройстве':'Локальная AI-модель Gemma 4 E4B (CPU)',confidence:.96}],
+        suggestions:[{text:corrected,note:localLlmState==='ready-webgpu'?'Локальная AI-модель Qwen3.5-2B на устройстве':'Локальная AI-модель Qwen3.5-2B (CPU)',confidence:.96}],
         changed:norm(corrected)!==norm(text),
-        engine:'local-llm-gemma-4-e4b',
+        engine:'local-llm-qwen3.5-2b',
         offline:true,
         modelCached:true,
         remoteInference:false,
@@ -1294,8 +1297,8 @@
       const output=await generator(messages,{max_new_tokens:48,do_sample:false});
       const corrected=extractGeneratedText(output);
       if(!corrected||corrected.length<2||corrected.length>180)return null;
-      return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Gemma 4 E4B',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-gemma-4-e4b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
-    }catch(err){console.warn('Master Group Gemma 4 E4B repair failed',err);return null;}
+      return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Qwen3.5-2B',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-qwen3.5-2b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
+    }catch(err){console.warn('Master Group Qwen3.5-2B repair failed',err);return null;}
   }
 
   // Final guard for ANY whole-text candidate, including raw LLM output.
@@ -1304,7 +1307,7 @@
   function isQualitySuggestion(candidate){
     const x=cleanupGenerated(String(candidate||''));
     if(!x || x.length<2 || x.length>180)return false;
-    if(/^(?:ответ|правильная формулировка|название услуги|пользователь|направление|каталог)/i.test(x))return false;
+    if(/^(?:ответ|правильная формулировка|название услуги|пользователь|направление|каталог)\b/i.test(x))return false;
     if(/(?:не могу|я не могу|не знаю|не удалось|как исправить|извините)/i.test(x))return false;
     if(/[!?]{2,}|[<>]{2,}|\b(?:травы|трава)\s+канализац\b/i.test(x))return false;
     if(/\b(?:задняя|передняя|левая|правая|верхняя|нижняя)\s+(?:багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(x))return false;
@@ -1329,6 +1332,210 @@
     const forms=[...ACTIONS,...OBJECTS,...OPEN_ACTIONS].flatMap(x=>x.forms||[]).map(norm).filter(x=>x.length>2);
     const common=new Set(['и','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без','не','все','это','как','или','а','для','внутри','наружный','наружная','задний','задняя','передний','передняя','правый','левый','новый','старая','старый']);
     return toks.some(t=>t.length>=4 && !common.has(t) && !forms.includes(t) && bestForm(t,forms).score<.62);
+  }
+
+
+
+  // ================================================================
+  // v417 — REAL LOCAL AI ROUTER
+  // The brains run first. The 10M dictionary is consulted only after
+  // the brains have produced whole-text candidates. Models are loaded
+  // one at a time to reduce peak memory pressure on iPhone/Safari.
+  // ================================================================
+  const AI_ROUTER_VERSION='v417-local-ai-router-qwen-gemma-deepseek';
+  const AI_BRAINS=[
+    {
+      id:'qwen', label:'Qwen3.5-2B', country:'CN', type:'qwen35',
+      model:'onnx-community/Qwen3.5-2B-ONNX-OPT', dtype:'q4f16',
+      priority:1
+    },
+    {
+      id:'gemma', label:'Gemma 3 1B', country:'US', type:'pipeline',
+      model:'onnx-community/gemma-3-1b-it-ONNX', dtype:'q4',
+      priority:2
+    },
+    {
+      id:'deepseek', label:'DeepSeek-R1 Distill Qwen 1.5B', country:'CN', type:'pipeline',
+      model:'onnx-community/DeepSeek-R1-Distill-Qwen-1.5B-ONNX', dtype:'q4f16',
+      priority:3
+    }
+  ];
+  const ROUTER={module:null,modulePromise:null,active:null,activeId:null,states:{},requestSeq:0};
+  const nowMs=()=>typeof performance!=='undefined'&&typeof performance.now==='function'?performance.now():Date.now();
+  for(const b of AI_BRAINS)ROUTER.states[b.id]={state:'idle',lastError:'',runs:0,lastMs:0};
+
+  function routerPrompt(text,direction,selectedServices){
+    return `Ты — один из трёх независимых языковых мозгов приложения Master Group.
+Твоя задача — НЕ исправлять слова по одному.
+Сначала пойми ВЕСЬ исходный текст как единое сообщение: намерение, действие или действия, объект или объекты, связи между ними и контекст направления.
+Пользователь может писать с сильными опечатками, пропущенными буквами, неправильными окончаниями, транслитом, по-русски, по-румынски или смешанно.
+Не копируй ошибочные слова механически. Сформируй ОДНО нормальное профессиональное название услуги на русском языке.
+Сохрани все существенные действия и объекты исходного текста. Не добавляй факты, материалы, цены, количество, размеры или новые объекты.
+Исправляй род, число, падеж и предлоги по смыслу ВСЕЙ фразы.
+Примеры:
+разборко зборка квадрашкла => Разборка и сборка квадроцикла
+креплние мотра к рам => Крепление мотора к раме
+штробавко канала канализации => Штробление канала канализации
+уклдк кафла ваной => Укладка плитки в ванной комнате
+монтж метало конструкции => Монтаж металлоконструкции
+устанвка раковн => Установка раковины
+покраска стена кухня => Покраска стен на кухне
+
+Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}
+Уже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}
+Исходный текст: ${clean(text)}
+
+Верни ТОЛЬКО одну итоговую русскую фразу, без кавычек и объяснений.`;
+  }
+
+  async function ensureRouterModule(){
+    if(ROUTER.module)return ROUTER.module;
+    if(ROUTER.modulePromise)return ROUTER.modulePromise;
+    ROUTER.modulePromise=import(LOCAL_LLM_CDN).then(mod=>{ROUTER.module=mod;return mod;}).finally(()=>{ROUTER.modulePromise=null;});
+    return ROUTER.modulePromise;
+  }
+
+  async function disposeRouterActive(){
+    const active=ROUTER.active;
+    ROUTER.active=null;ROUTER.activeId=null;
+    if(!active)return;
+    try{
+      if(typeof active.dispose==='function')await active.dispose();
+    }catch(_){ }
+    try{
+      if(typeof active.model?.dispose==='function')await active.model.dispose();
+    }catch(_){ }
+    try{
+      if(typeof active.pipeline?.dispose==='function')await active.pipeline.dispose();
+    }catch(_){ }
+  }
+
+  async function loadRouterBrain(spec){
+    if(ROUTER.active && ROUTER.activeId===spec.id)return ROUTER.active;
+    await disposeRouterActive();
+    const mod=await ensureRouterModule();
+    const state=ROUTER.states[spec.id];
+    state.state='loading';state.lastError='';
+    const t0=nowMs();
+    try{
+      let runner;
+      let cleanup=async()=>{};
+      const gpu=typeof navigator!=='undefined' && navigator.gpu && (await navigator.gpu.requestAdapter())!=null;
+      const device=gpu?'webgpu':'wasm';
+      if(spec.type==='qwen35'){
+        const {AutoProcessor,Qwen3_5ForConditionalGeneration}=mod;
+        if(!AutoProcessor||!Qwen3_5ForConditionalGeneration)throw new Error('Qwen3.5 runtime is not available');
+        const processor=await AutoProcessor.from_pretrained(spec.model);
+        const model=await Qwen3_5ForConditionalGeneration.from_pretrained(spec.model,{device,dtype:spec.dtype});
+        runner=async(messages)=>{
+          const prompt=processor.apply_chat_template(messages,{enable_thinking:false,add_generation_prompt:true});
+          const inputs=await processor(prompt,{add_special_tokens:false});
+          const outputs=await model.generate({...inputs,max_new_tokens:40,do_sample:false});
+          const decoded=processor.batch_decode(outputs.slice(null,[inputs.input_ids.dims.at(-1),null]),{skip_special_tokens:true});
+          return extractGeneratedText([{generated_text:String(decoded?.[0]||'')}]);
+        };
+        cleanup=async()=>{try{if(typeof model.dispose==='function')await model.dispose();}catch(_){}};
+        ROUTER.active={runner,model,dispose:cleanup};
+      }else{
+        const {pipeline}=mod;
+        if(!pipeline)throw new Error('Transformers.js pipeline is not available');
+        const pipe=await pipeline('text-generation',spec.model,{device,dtype:spec.dtype});
+        runner=async(messages)=>{
+          const output=await pipe(messages,{max_new_tokens:40,do_sample:false});
+          return extractGeneratedText(output);
+        };
+        cleanup=async()=>{try{if(typeof pipe.dispose==='function')await pipe.dispose();}catch(_){}};
+        ROUTER.active={runner,pipeline:pipe,dispose:cleanup};
+      }
+      ROUTER.activeId=spec.id;
+      state.state=device==='webgpu'?'ready-webgpu':'ready-wasm';
+      state.lastMs=Math.round((nowMs())-t0);
+      return ROUTER.active;
+    }catch(err){
+      state.state='unavailable';state.lastError=String(err?.message||err||'unknown error');
+      state.lastMs=Math.round((nowMs())-t0);
+      await disposeRouterActive();
+      throw err;
+    }
+  }
+
+  function routerCandidateScore(input,candidate,brainId){
+    const out=cleanupGenerated(candidate||'');
+    if(!isQualitySuggestion(out))return -100;
+    const inputActs=bestConcepts(input,[...ACTIONS,...OPEN_ACTIONS],.50);
+    const outActs=bestConcepts(out,[...ACTIONS,...OPEN_ACTIONS],.55);
+    const inputObjs=bestConcepts(input,OBJECTS,.50);
+    const outObjs=bestConcepts(out,OBJECTS,.55);
+    let score=.55;
+    if(inputActs[0]&&outActs[0])score += inputActs[0].id===outActs[0].id ? .20 : -.35;
+    if(inputObjs[0]&&outObjs[0])score += inputObjs[0].id===outObjs[0].id ? .20 : -.35;
+    const inWords=tokenise(input),outWords=tokenise(out);
+    let overlap=0;for(const iw of inWords){for(const ow of outWords){if(similarity(iw,ow)>=.72){overlap++;break;}}}
+    if(inWords.length)score+=.12*(overlap/inWords.length);
+    if(outWords.length>=2)score+=.06;
+    if(norm(out)!==norm(input))score+=.04;
+    if(brainId==='qwen')score+=.015;
+    if(brainId==='gemma')score+=.01;
+    return Math.max(0,Math.min(1,score));
+  }
+
+  async function runBrain(spec,input,direction,selectedServices){
+    const started=nowMs();
+    const state=ROUTER.states[spec.id];
+    state.runs++;
+    try{
+      const active=await loadRouterBrain(spec);
+      const messages=[
+        {role:'system',content:'Ты должен понять смысл всей фразы и вернуть только профессиональное название услуги на русском.'},
+        {role:'user',content:routerPrompt(input,direction,selectedServices)}
+      ];
+      const corrected=cleanupGenerated(await active.runner(messages));
+      state.lastMs=Math.round((nowMs())-started);
+      if(!isQualitySuggestion(corrected))return null;
+      return {brainId:spec.id,brain:spec.label,corrected,score:routerCandidateScore(input,corrected,spec.id),latencyMs:state.lastMs};
+    }catch(err){
+      state.lastError=String(err?.message||err||'unknown error');
+      state.lastMs=Math.round((nowMs())-started);
+      return null;
+    }finally{
+      // Free the previous model before the next brain to avoid loading all
+      // three large models into iPhone/Safari memory simultaneously.
+      await disposeRouterActive();
+    }
+  }
+
+  function scoreWithMemory(candidate,memoryCandidates,input){
+    let score=Number(candidate.score)||0;
+    const c=norm(candidate.corrected);
+    const rows=Array.isArray(memoryCandidates)?memoryCandidates:[];
+    for(const m of rows.slice(0,10)){
+      const mt=norm(m.text||m.name||'');
+      if(mt && (mt===c || similarity(mt,c)>=.82)){score+=.18;break;}
+      const a=tokenise(mt),b=tokenise(c);let hit=0;
+      for(const x of a)if(b.some(y=>similarity(x,y)>=.82))hit++;
+      if(a.length && hit>=Math.max(1,Math.ceil(a.length*.55))){score+=.08;break;}
+    }
+    const outObj=inferObject(candidate.corrected,[]),inObj=inferObject(input,[]);
+    if(inObj?.id&&outObj?.id&&inObj.id===outObj.id)score+=.05;
+    return Math.min(1,score);
+  }
+
+  async function runAiRouter(input,direction,selectedServices,opts={}){
+    const request=++ROUTER.requestSeq;
+    if(!isBrowserRuntime())return {candidates:[],brainsUsed:[],difficult:false,nonBrowser:true};
+    const all=[];
+    // For a simple clean phrase one strong brain is enough; for noisy or
+    // multi-action phrases we ask all three brains to disagree/agree.
+    const tokens=tokenise(input);
+    const difficult=tokens.length>=2 || hasSuspiciousToken(input) || /[-–—+]\s*/.test(input) || /(\b(?:и|збор|собр|разбор))/i.test(input);
+    const plan=difficult?AI_BRAINS:[AI_BRAINS[0]];
+    for(const spec of plan){
+      if(request!==ROUTER.requestSeq)return {candidates:all,cancelled:true};
+      const row=await runBrain(spec,input,direction,selectedServices);
+      if(row)all.push(row);
+    }
+    all.sort((a,b)=>b.score-a.score);
+    return {candidates:all,brainsUsed:plan.map(x=>x.id),difficult};
   }
 
   async function ensureNativeSession(){
@@ -1363,122 +1570,139 @@
   }
 
   async function suggestServiceName({text,direction='',selectedServices=[]}={}){
-    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai',offline:true,confidence:1};
+    const input=clean(text);
+    if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai-router',offline:true,confidence:1};
     const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);
-    const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services,brain:AI_BRAIN_MODE});
+    const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services,brain:AI_ROUTER_VERSION});
     if(CACHE.has(key))return CACHE.get(key);
 
-    const tokens=tokenise(input);
-    const multiToken=tokens.length>=2;
-    const suspicious=hasSuspiciousToken(input);
+    // PHASE 1 — brains first. No dictionary retrieval is executed before this.
+    const router=await runAiRouter(input,direction,services);
+    const modelCandidates=(router?.candidates||[]).map(x=>({
+      text:cleanupGenerated(x.corrected),
+      note:`${x.brain} — анализ всей фразы целиком`,
+      confidence:x.score,
+      brainId:x.brainId,
+      latencyMs:x.latencyMs
+    })).filter(x=>isQualitySuggestion(x.text));
 
-    // 10M memory = external reference. It is retrieval evidence only.
-    // Multi-word visible correction NEVER comes from sequential dictionary edits.
+    // If every primary brain is unavailable, optionally try the browser's
+    // native local LanguageModel. This is still local; it is not a server/API.
+    if(!modelCandidates.length){
+      try{
+        const native=await nativeSuggest(input,direction,services);
+        if(native?.corrected && isQualitySuggestion(native.corrected)){
+          modelCandidates.push({text:native.corrected,note:'Локальная модель устройства — анализ всей фразы целиком',confidence:.74,brainId:'native'});
+        }
+      }catch(_){ }
+    }
+
+    // PHASE 2 — only now ask the 10M external memory for supporting evidence.
+    // Memory does not manufacture the answer and never performs visible
+    // token-by-token replacement.
     const memorySuggestions=memoryPhraseCandidates(input,direction,services);
     const dict=await dictionarySuggest(input);
-    const memoryHints=memorySuggestions.slice(0,8).map(x=>x.text).join(' | ') || '';
-    const semanticCandidate=semanticBrainPhrase(input,direction,services);
+    const memoryHints=memorySuggestions.slice(0,10).map(x=>x.text||x.name).filter(Boolean);
 
-    // Whole-text AI is PRIMARY for phrases. This is intentionally the opposite
-    // of the previous token-by-token pipeline.
-    let llm=null;
-    if(multiToken || suspicious){
-      try{
-        if(localLlmState==='not-loaded' || localLlmState==='loading')await ensureLocalLlm();
-        if(localLlmState==='ready-webgpu' || localLlmState==='ready-wasm'){
-          llm=await localLlmSuggest(input,direction,services,memoryHints);
-        }
-      }catch(err){console.warn('Master Group whole-text Gemma stage failed',err)}
-    }
-
-    const modelText=cleanupGenerated(llm?.corrected||'');
-    const modelHasUnresolvedTypos=suspicious && hasSuspiciousToken(modelText);
-    const safeModel=llm && !modelHasUnresolvedTypos && isQualitySuggestion(modelText) ? {
-      ...llm,
-      corrected:modelText,
-      suggestions:[{text:modelText,note:'Gemma 4 E4B — анализ всей фразы целиком',confidence:.98}],
-      changed:norm(llm.corrected)!==norm(input),
-      confidence:.98,
-      engine:'local-llm-gemma-4-e4b-whole-text'
-    } : null;
-
-    // Safe whole-text fallbacks. They may construct a phrase, but they do not
-    // perform visible word-by-word replacement for multi-word input.
-    const safe=[];
-    const addSafe=(row,note,confidence)=>{
-      if(!row)return;
-      const t=cleanupGenerated(typeof row==='string'?row:row.text||row.name||'');
-      if(!isQualitySuggestion(t))return;
-      if(norm(t)===norm(input))return;
-      // Once a main object is understood, an unrelated catalog object is not a
-      // valid alternative merely because it shares the same action.
-      const reqObj=inferObject(input,[]); const candObj=inferObject(t,[]);
+    // PHASE 3 — deterministic semantic fallbacks are kept whole-phrase only.
+    const deterministic=[];
+    const addDet=(row,note,confidence)=>{
+      const t=cleanupGenerated(typeof row==='string'?row:(row?.text||row?.name||''));
+      if(!t||!isQualitySuggestion(t)||norm(t)===norm(input))return;
+      // A one-word object is a concept, not a finished service title. For
+      // object queries such as «богажник» require a whole service phrase;
+      // pure terminology queries such as «интелект» may still resolve to one
+      // corrected term.
+      const reqObj=inferObject(input,[]);
+      if(tokenise(input).length===1 && tokenise(t).length<2 && reqObj?.id)return;
+      // Once the input clearly identifies an object, an unrelated catalog
+      // object must never leak into alternatives.
+      const candObj=inferObject(t,[]);
       if(reqObj?.id && candObj?.id && reqObj.id!==candObj.id)return;
-      if(safe.some(x=>norm(x.text)===norm(t)))return;
-      safe.push({text:t,note:note||row.note||'Whole-text fallback',confidence:confidence??row.confidence??.85});
+      if(deterministic.some(x=>norm(x.text)===norm(t)))return;
+      deterministic.push({text:t,note,confidence,brainId:'semantic'});
     };
-    addSafe(semanticCandidate?.text,semanticCandidate?.note,.98);
-    addSafe(contextualServicePhrase(input),'Восстановлено по смыслу всей фразы',.97);
-    for(const m of memorySuggestions)addSafe(m,'Память услуг Master Group',Math.min(.94,Number(m.confidence||m.score||.8)));
+    const semantic=semanticBrainPhrase(input,direction,services);
+    addDet(semantic?.text,semantic?.note||'Смысловой whole-text резерв',Number(semantic?.confidence||.9));
+    addDet(contextualServicePhrase(input),'Восстановлено по смыслу всей фразы',.9);
+    for(const m of memorySuggestions.slice(0,5))addDet(m,'Найдено во внешней памяти 10M',Math.min(.88,Number(m.confidence||m.score||.8)));
     const catalog=semanticCatalogCandidates(input,direction,services);
-    for(const row of catalog.slice(0,4))addSafe(row,'Подходит к каталогу Master Group',Math.min(.93,Number(row.score||.8)));
+    for(const row of catalog.slice(0,4))addDet(row,'Поддержка каталога Master Group',Math.min(.86,Number(row.score||.8)));
     const generated=buildLocalGeneration(input,direction,services);
-    addSafe(generated,'Локальное смысловое резервное восстановление',generated?.confidence??.86);
+    addDet(generated,'Whole-text резерв без LLM',Number(generated?.confidence||.8));
 
-    // Single concepts stay in phrase-memory mode: «багажник» -> useful service
-    // combinations, never an isolated inflected noun.
-    if(tokens.length===1){
-      const phraseOnly=safe.filter(x=>tokenise(x.text).length>=2).slice(0,5);
-      if(phraseOnly.length){
-        const result={corrected:phraseOnly[0].text,suggestions:phraseOnly,changed:norm(phraseOnly[0].text)!==norm(input),engine:'master-whole-text-memory',offline:true,dictionaryUsed:!!dict,dictionaryEntries:10000000,dictionaryLoadedShards:dict?.loadedShards||[],confidence:phraseOnly[0].confidence,remoteInference:false,remoteApi:false,localInference:true};
-        CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);return result;
-      }
+    // Score the already-generated brain answers against memory AFTER the brain
+    // stage. The memory can validate terminology but cannot replace the brain.
+    const rankedModels=modelCandidates.map(c=>({...c,finalScore:scoreWithMemory(c,memorySuggestions,input)})).sort((a,b)=>b.finalScore-a.finalScore);
+    const semanticHigh=deterministic[0] && Number(deterministic[0].confidence||0)>=.95;
+    let winner=null;
+    if(rankedModels.length){
+      const top=rankedModels[0];
+      // A high-confidence explicit semantic frame wins over a model only when
+      // the model does not preserve the recognized intent/objects.
+      if(semanticHigh){
+        const inObj=inferObject(input,[]),outObj=inferObject(top.text,[]);
+        const intentSafe=(!inObj?.id||!outObj?.id||inObj.id===outObj.id) && top.finalScore>=.58;
+        winner=intentSafe?top:deterministic[0];
+      }else winner=top.finalScore>=.58?top:deterministic[0];
+    }else winner=deterministic[0]||null;
+
+    if(!winner){
+      const result={corrected:cleanupGenerated(input),suggestions:[],changed:false,engine:'master-local-ai-router',offline:true,uncertain:true,confidence:.3,dictionaryUsed:!!dict,dictionaryEntries:10000000,dictionaryLoadedShards:dict?.loadedShards||[],remoteInference:false,remoteApi:false,localInference:true,brainsUsed:router?.brainsUsed||[]};
+      CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);return result;
     }
 
-    // Model wins after guardrails; deterministic candidates are only fallback.
-    let result=safeModel ? {...safeModel,suggestions:[safeModel.suggestions?.[0]].filter(Boolean)} : (safe[0] ? {corrected:safe[0].text,suggestions:safe.slice(0,5),changed:norm(safe[0].text)!==norm(input),engine:'master-whole-text-memory',offline:true,confidence:safe[0].confidence} : null);
-    if(!result){
-      result={corrected:cleanupGenerated(input),suggestions:[],changed:false,engine:'master-whole-text-memory',offline:true,uncertain:true,confidence:.35};
-    }else if(!safeModel && suspicious){result={...result,uncertain:true};}
+    // Alternatives are whole phrases only. Prefer independent brain answers,
+    // then strong semantic/memory candidates. Never return isolated word edits.
+    const pool=[];
+    const push=(x)=>{
+      const t=cleanupGenerated(x?.text||'');
+      if(!t||!isQualitySuggestion(t)||norm(t)===norm(input)||pool.some(y=>norm(y.text)===norm(t)))return;
+      if(tokenise(input).length>=2 && tokenise(t).length<2)return;
+      pool.push({text:t,note:x.note||'AI',confidence:Number(x.finalScore||x.confidence||.7)});
+    };
+    push(winner);
+    for(const m of rankedModels)push(m);
+    for(const d of deterministic)push(d);
 
-    // Reject a model answer that changes a clearly recognized object/action.
-    // Exception: multi-action phrases such as «разборка и сборка» are handled
-    // by the whole-text model itself and should not be reduced to one action.
-    if(safeModel){
-      const inputObj=inferObject(input,[]);
-      const outObj=inferObject(safeModel.corrected,[]);
-      const inputActs=bestConcepts(input,[...ACTIONS,...OPEN_ACTIONS],.60);
-      const outActs=bestConcepts(safeModel.corrected,[...ACTIONS,...OPEN_ACTIONS],.60);
-      const hasMultipleActions=/(?:и|\+|[-–—])/i.test(input) || /(разбор|сбор)/i.test(input);
-      if(inputObj?.id && outObj?.id && inputObj.id!==outObj.id){
-        result=safe[0] ? {...safe[0],uncertain:true} : result;
-      }else if(inputActs[0] && outActs[0] && inputActs[0].id!==outActs[0].id && !hasMultipleActions){
-        result=safe[0] ? {...safe[0],uncertain:true} : result;
-      }
-    }
-
-    if(result.suggestions?.length){
-      const seen=new Set();
-      result.suggestions=result.suggestions.filter(x=>{const t=norm(x.text);if(!t||seen.has(t))return false;seen.add(t);return true;}).slice(0,5);
-    }
-    result.dictionaryUsed=!!dict;
-    result.dictionaryEntries=10000000;
-    result.dictionaryLoadedShards=dict?.loadedShards||[];
-    result.remoteInference=false;
-    result.remoteApi=false;
-    result.localInference=true;
-    if(result.engine==='master-whole-text-memory'&&result.corrected&&suspicious)result.uncertain=true;
-
+    // Preserve best three different whole-phrase candidates.
+    const suggestions=pool.slice(0,3);
+    const corrected=suggestions[0]?.text||cleanupGenerated(input);
+    const result={
+      corrected,
+      suggestions,
+      changed:norm(corrected)!==norm(input),
+      engine:winner.brainId?`local-ai-router-${winner.brainId}`:'master-local-ai-router',
+      brain:winner.brain||winner.note||'local-ai-router',
+      brainsUsed:router?.brainsUsed||[],
+      brainCount:modelCandidates.length,
+      offline:true,
+      localInference:true,
+      remoteInference:false,
+      remoteApi:false,
+      firstStage:'brains',
+      memoryStage:'10m-after-brains',
+      dictionaryUsed:!!dict,
+      dictionaryEntries:10000000,
+      dictionaryLoadedShards:dict?.loadedShards||[],
+      confidence:Number(winner.finalScore||winner.confidence||.7),
+      uncertain:Number(winner.finalScore||winner.confidence||0)<.72
+    };
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
     return result;
   }
 
   function clearCache(){CACHE.clear();}
+  function warmupAiRouter(){
+    return ensureRouterModule().then(()=>true).catch(()=>false);
+  }
   function getStatus(){return {
-    engine:localLlmState.startsWith('ready')?'local-llm-gemma-4-e4b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory'),
+    engine:'local-ai-router',
+    router:AI_ROUTER_VERSION,
+    brains:AI_BRAINS.map(b=>({id:b.id,label:b.label,model:b.model,state:ROUTER.states[b.id]?.state||'idle',runs:ROUTER.states[b.id]?.runs||0,lastMs:ROUTER.states[b.id]?.lastMs||0,error:ROUTER.states[b.id]?.lastError||''})),
     native:nativeState,
-    localLlm:localLlmState,
-    model:LOCAL_LLM_MODEL,
+    legacyQwen:localLlmState,
+    model:AI_BRAINS.map(b=>b.model),
     dictionary:'master-dictionary-10m',
     dictionaryEntries:10000000,
     offline:true,
@@ -1487,8 +1711,10 @@
     remoteHost:false,
     firstRunNeedsNetwork:true,
     localInference:true,
+    brainOrder:'brains-first-then-10m-memory',
+    activeBrain:ROUTER.activeId,
     modelError:localLlmLastError
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,warmupLocalLlm,esc,region:null,version:'v415-whole-text-ai-brain-gemma4-e4b',brainMode:AI_BRAIN_MODE};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,warmupLocalLlm,warmupAiRouter,esc,region:null,version:'v417-local-ai-router-qwen-gemma-deepseek',brainMode:'multi-brain-whole-text-first'};
 })();

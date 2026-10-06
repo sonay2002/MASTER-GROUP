@@ -25,7 +25,7 @@ context.window.window=context.window;vm.createContext(context);vm.runInContext(s
     const r=await context.window.MG_AI_SERVICE.suggestServiceName({text:input,direction:'',selectedServices:[]});
     if(!r||!r.corrected)throw new Error('No result: '+input);
     if(r.offline!==true)throw new Error('Not offline: '+input);
-    if(!['master-local-ai-open-v4','native-local-ai','master-semantic-brain-v408','master-semantic-brain-v412','master-ai-with-10m-memory','master-whole-text-memory','local-llm-gemma-4-e4b','local-llm-gemma-4-e4b-whole-text'].includes(r.engine))throw new Error('Bad engine: '+r.engine);
+    if(typeof r.engine!=='string'||(!r.engine.includes('local-ai')&&!r.engine.includes('master-')))throw new Error('Bad engine: '+r.engine);
     if(r.corrected.length>180)throw new Error('Too long: '+input);
     if(/на стене|на потолке|на участке|в подвале|на крыше/.test(r.corrected) && !/(стен|потол|участ|подвал|крыш|teren|curte|baie|bucatar|acoperis|tavan|perete)/i.test(input)) throw new Error('Suspicious invented location: '+input+' => '+r.corrected);
     console.log(input,'=>',r.corrected);

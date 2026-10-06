@@ -13,7 +13,7 @@ processor.batch_decode=()=>['Разборка и сборка квадроцик
 const mock={
   env:{useBrowserCache:true,allowRemoteModels:true},
   AutoProcessor:{from_pretrained:async()=>processor},
-  Gemma4ForConditionalGeneration:{from_pretrained:async()=>({async generate(){return {slice(){return [];}}}})}
+  Qwen3_5ForConditionalGeneration:{from_pretrained:async()=>({async generate(){return {slice(){return [];}}}})}
 };
 const context={
   __mockTransformers:mock,
@@ -30,7 +30,7 @@ const ai=context.window.MG_AI_SERVICE;
 await ai.warmupLocalLlm();
 const r=await ai.suggestServiceName({text:'разборко зборка квадрашкла'});
 assert.equal(r.corrected,'Разборка и сборка квадроцикла');
-assert.equal(r.engine,'local-llm-gemma-4-e4b-whole-text');
+assert.equal(r.engine,'local-llm-qwen3.5-2b-whole-text');
 assert.equal(r.localInference,true);
 assert.equal(r.remoteInference,false);
-console.log('Gemma whole-text primary mock: PASS');
+console.log('Qwen3.5 whole-text primary mock: PASS');

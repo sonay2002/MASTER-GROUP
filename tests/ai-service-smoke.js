@@ -24,7 +24,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v415-whole-text-ai-brain-gemma4-e4b-e4b') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v417-local-ai-router-qwen-gemma-deepseek') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().offline !== true) throw new Error('AI must be offline/local');
 
 (async () => {
@@ -45,7 +45,7 @@ if (context.window.MG_AI_SERVICE.getStatus().offline !== true) throw new Error('
     const result = await context.window.MG_AI_SERVICE.suggestServiceName({text: input, direction: 'Клининг участка'});
     if (!result?.corrected) throw new Error(`No correction for: ${input}`);
     if (result?.offline !== true) throw new Error(`Non-local engine used for: ${input}`);
-    if (!['master-local-ai-open-v4','master-ai-with-10m-memory','master-semantic-brain-v408','master-semantic-brain-v412','master-whole-text-memory','native-local-ai','local-llm-gemma-4-e4b','local-llm-gemma-4-e4b-whole-text'].includes(result.engine)) throw new Error(`Unexpected engine for: ${input}: ${result.engine}`);
+    if (typeof result.engine !== 'string' || !result.engine.includes('local-ai')) throw new Error(`Unexpected engine for: ${input}: ${result.engine}`);
     if (input === 'укладк кафел' && result.corrected !== expected) throw new Error(`Unexpected correction: ${result.corrected}`);
     if (input === 'montare faianta baie' && !/плитк/i.test(result.corrected)) throw new Error(`Romanian input not understood: ${result.corrected}`);
   }

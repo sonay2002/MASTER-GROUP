@@ -1,0 +1,15 @@
+import fs from 'fs';
+import assert from 'assert';
+const ai=fs.readFileSync(new URL('../js/mg-ai-service.js',import.meta.url),'utf8');
+assert(ai.includes("AI_ROUTER_VERSION='v417-local-ai-router-qwen-gemma-deepseek'"));
+assert(ai.includes("label:'Qwen3.5-2B'"));
+assert(ai.includes("label:'Gemma 3 1B'"));
+assert(ai.includes("label:'DeepSeek-R1 Distill Qwen 1.5B'"));
+assert(ai.includes('const router=await runAiRouter(input,direction,services);'));
+assert(ai.includes('const memorySuggestions=memoryPhraseCandidates(input,direction,services);'));
+assert(ai.indexOf('const router=await runAiRouter(input,direction,services);') < ai.indexOf('const memorySuggestions=memoryPhraseCandidates(input,direction,services);'));
+assert(ai.includes('async function disposeRouterActive()'));
+assert(ai.includes('Free the previous model before the next brain'));
+assert(ai.includes('const difficult=tokens.length>=2'));
+assert(ai.includes('const plan=difficult?AI_BRAINS:[AI_BRAINS[0]]'));
+console.log('AI router smoke: PASS');

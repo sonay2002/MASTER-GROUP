@@ -14,7 +14,7 @@ processor.batch_decode=async()=>['Травы канализац канализа
 const mock={
   env:{useBrowserCache:true,allowRemoteModels:true},
   AutoProcessor:{from_pretrained:async()=>processor},
-  Gemma4ForConditionalGeneration:{from_pretrained:async()=>({async generate(){return {slice(){return [];}}}})}
+  Qwen3_5ForConditionalGeneration:{from_pretrained:async()=>({async generate(){return {slice(){return [];}}}})}
 };
 const context={
   __mockTransformers:mock,
@@ -31,4 +31,4 @@ const ai=context.window.MG_AI_SERVICE;
 assert.equal(await ai.warmupLocalLlm(),true,'mock Gemma should load');
 const bad=await ai.suggestServiceName({text:'абракадабра'});
 assert.notEqual(bad.corrected,'Травы канализац канализации','garbage model output must be rejected');
-console.log('Gemma guardrail mock: PASS — malformed model output rejected');
+console.log('Qwen3.5 guardrail mock: PASS — malformed model output rejected');
