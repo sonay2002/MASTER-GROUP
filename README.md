@@ -1,4 +1,4 @@
-# Master Group v403 — Local Generative AI + 10M external correction memory
+# Master Group v408 — Semantic AI + exactly 10M external correction memory
 
 ## AI assistant
 
@@ -61,3 +61,8 @@ node tests/settings-navigation-smoke.js
 
 ## UI change in v383
 The AI suggestion is now positioned as a compact floating layer above the service input. It is removed from normal document flow, so the input, Add button, service list, and modal height do not move when the suggestion appears.
+
+
+
+## AI v408 semantic brain
+The service-name assistant treats the 10,000,000-entry index as external memory, not as a phrase database. It repairs candidate word forms, resolves morphology/context, constructs unseen phrases, and uses a local language model only for hard cases. The user's original text is never replaced without an explicit tap on the suggestion.

@@ -109,7 +109,15 @@
     {id:'constructionWaste',base:'строительный мусор',cases:'строительного мусора',forms:['строительный мусор','строймусор','construction waste','deseuri constructie','deseuri de constructie']},
     {id:'power',base:'блок питания',cases:'блока питания',forms:['блок питания','блок питан','питание','alimentator','sursa de alimentare']},
     {id:'leak',base:'протечка',cases:'протечки',forms:['протечка','протеч','течь','течет','scurgere','scurgerea','pierdere apa']},
-    {id:'washing',base:'стиральная машина',cases:'стиральной машины',forms:['стиралка','стиральная машина','стиральн','masina de spalat','masina spalat']}
+    {id:'washing',base:'стиральная машина',cases:'стиральной машины',forms:['стиралка','стиральная машина','стиральн','masina de spalat','masina spalat']},
+    {id:'trunk',base:'багажник',cases:'багажника',forms:['багажник','багажника','багажнику','багажником','багажники','багажников','богажник','багажн','богашек']},
+    {id:'bumper',base:'бампер',cases:'бампера',forms:['бампер','бампера','бамперу','бампером','бамперы','бампр']},
+    {id:'hood',base:'капот',cases:'капота',forms:['капот','капота','капоту','капотом']},
+    {id:'headlight',base:'фара',cases:'фары',forms:['фара','фары','фару','фарой','фар']},
+    {id:'mirror',base:'зеркало',cases:'зеркала',forms:['зеркало','зеркала','зеркалу','зеркалом']},
+    {id:'wheel',base:'колесо',cases:'колеса',forms:['колесо','колеса','колесу','колесом','колёса','колес']},
+    {id:'brake',base:'тормоз',cases:'тормоза',forms:['тормоз','тормоза','тормозу','тормозом','тормозы']},
+    {id:'battery',base:'аккумулятор',cases:'аккумулятора',forms:['аккумулятор','аккумулятора','аккумулятору','аккумулятором','акумулятор','акумлятор']}
   ];
 
   const LOCATIONS=[
@@ -128,13 +136,94 @@
   ];
 
   const DETERMINERS=[
-    {ru:'старой',forms:['старый','старая','старое','старую','vechi','veche','vechiul']},
-    {ru:'новой',forms:['новый','новая','новое','новую','nou','noua','nouă']},
-    {ru:'аварийной',forms:['аварийный','аварийная','срочный','urgent','de urgenta']},
-    {ru:'наружной',forms:['наружный','наружная','наружное','exterior','exterioara']},
-    {ru:'внутренней',forms:['внутренний','внутренняя','interior','interioara']},
-    {ru:'ручной',forms:['ручной','ручная','manual','manuala']}
+    {ru:'старой',forms:['старый','старая','старое','старую','старом','старой','старых','vechi','veche','vechiul']},
+    {ru:'новой',forms:['новый','новая','новое','новую','новом','новой','новых','nou','noua','nouă']},
+    {ru:'аварийной',forms:['аварийный','аварийная','аварийное','аварийную','аварийном','аварийной','аварийных','срочный','urgent','de urgenta']},
+    {ru:'наружной',forms:['наружный','наружная','наружное','наружную','наружном','наружной','наружных','exterior','exterioara']},
+    {ru:'внутренней',forms:['внутренний','внутренняя','внутреннее','внутреннюю','внутреннем','внутренней','внутренних','interior','interioara']},
+    {ru:'ручной',forms:['ручной','ручная','ручное','ручную','ручном','ручной','ручных','manual','manuala']},
+    {ru:'задний',forms:['задний','задняя','заднее','заднюю','заднем','задней','задних','spate','spatele']},
+    {ru:'передний',forms:['передний','передняя','переднее','переднюю','переднем','передней','передних','fata','față']},
+    {ru:'левый',forms:['левый','левая','левое','левую','левом','левой','левых','stanga','stânga']},
+    {ru:'правый',forms:['правый','правая','правое','правую','правом','правой','правых','dreapta']},
+    {ru:'верхний',forms:['верхний','верхняя','верхнее','верхнюю','верхнем','верхней','верхних','sus']},
+    {ru:'нижний',forms:['нижний','нижняя','нижнее','нижнюю','нижнем','нижней','нижних','jos']},
+    {ru:'боковой',forms:['боковой','боковая','боковое','боковую','боковом','боковой','боковых','lateral','laterala']},
+    {ru:'металлический',forms:['металлический','металлическая','металлическое','металлическую','металлическом','металлической','металлических','metalic','metalica']},
+    {ru:'электрический',forms:['электрический','электрическая','электрическое','электрическую','электрическом','электрической','электрических','electric','electrica']},
+    {ru:'водяной',forms:['водяной','водяная','водяное','водяную','водяном','водяной','водяных','de apa']},
+    {ru:'автомобильный',forms:['автомобильный','автомобильная','автомобильное','автомобильную','автомобильном','автомобильной','автомобильных','auto','autovehicul']},
+    {ru:'строительный',forms:['строительный','строительная','строительное','строительную','строительном','строительной','строительных']},
+    {ru:'санитарный',forms:['санитарный','санитарная','санитарное','санитарную','санитарном','санитарной','санитарных']}
   ];
+
+  const COMMON_NOUNS={
+    багажник:{base:'багажник',gen:'багажника',gender:'m',forms:['багажник','багажника','багажнику','багажником','багажники','багажников','богажник','багажн','богашек']},
+    мотор:{base:'мотор',gen:'мотора',gender:'m',forms:['мотор','мотора','мотору','мотором','моторы','моторов','мотра','мтора','мтор','мотро','моторн']},
+    двигатель:{base:'двигатель',gen:'двигателя',gender:'m',forms:['двигатель','двигателя','двигателю','двигателем','двигателе','двигатели','двигател','двгатель','двгателя','двгател']},
+    бампер:{base:'бампер',gen:'бампера',gender:'m',forms:['бампер','бампера','бамперу','бампером','бамперы','бампр','бампе']},
+    капот:{base:'капот',gen:'капота',gender:'m',forms:['капот','капота','капоту','капотом']},
+    крыло:{base:'крыло',gen:'крыла',gender:'n',forms:['крыло','крыла','крылу','крылом','крылья','крыл']},
+    фара:{base:'фара',gen:'фары',gender:'f',forms:['фара','фары','фару','фарой','фар']},
+    зеркало:{base:'зеркало',gen:'зеркала',gender:'n',forms:['зеркало','зеркала','зеркалу','зеркалом','зеркал']},
+    колесо:{base:'колесо',gen:'колеса',gender:'n',forms:['колесо','колеса','колесу','колесом','колёса','колес']},
+    тормоз:{base:'тормоз',gen:'тормоза',gender:'m',forms:['тормоз','тормоза','тормозу','тормозом','тормозы']},
+    аккумулятор:{base:'аккумулятор',gen:'аккумулятора',gender:'m',forms:['аккумулятор','аккумулятора','аккумулятору','аккумулятором','акумулятор','акумлятор']},
+    машина:{base:'машина',gen:'машины',gender:'f',forms:['машина','машины','машину','машиной','машине','машыну','машыне']},
+    рама:{base:'рама',gen:'рамы',gender:'f',forms:['рама','рамы','раму','рамой','раме','рам','рма']},
+    стойка:{base:'стойка',gen:'стойки',gender:'f',forms:['стойка','стойки','стойку','стойкой','стойке']},
+    насос:{base:'насос',gen:'насоса',gender:'m',forms:['насос','насоса','насосу','насосом','насосы']},
+    компрессор:{base:'компрессор',gen:'компрессора',gender:'m',forms:['компрессор','компрессора','компрессору','компрессором']},
+    генератор:{base:'генератор',gen:'генератора',gender:'m',forms:['генератор','генератора','генератору','генератором']},
+    фильтр:{base:'фильтр',gen:'фильтра',gender:'m',forms:['фильтр','фильтра','фильтру','фильтром','филтр']},
+    кабель:{base:'кабель',gen:'кабеля',gender:'m',forms:['кабель','кабеля','кабелю','кабелем','кабел']},
+    труба:{base:'труба',gen:'трубы',gender:'f',forms:['труба','трубы','трубу','трубой','трубе','труб']},
+    провод:{base:'провод',gen:'провода',gender:'m',forms:['провод','провода','проводу','проводом','проводов']},
+    розетка:{base:'розетка',gen:'розетки',gender:'f',forms:['розетка','розетки','розетку','розеткой','розетке','розетк']},
+    выключатель:{base:'выключатель',gen:'выключателя',gender:'m',forms:['выключатель','выключателя','выключателю','выключателем']},
+    дверь:{base:'дверь',gen:'двери',gender:'f',forms:['дверь','двери','двер','двeрь']},
+    окно:{base:'окно',gen:'окна',gender:'n',forms:['окно','окна','окну','окном','окон']},
+    стекло:{base:'стекло',gen:'стекла',gender:'n',forms:['стекло','стекла','стеклу','стеклом','стекол']},
+    крыша:{base:'крыша',gen:'крыши',gender:'f',forms:['крыша','крыши','крышу','крышей','крыше']},
+    стена:{base:'стена',gen:'стены',gender:'f',forms:['стена','стены','стену','стеной','стене','стен','стэн','стэну','стэна']},
+    потолок:{base:'потолок',gen:'потолка',gender:'m',forms:['потолок','потолка','потолку','потолком','потолоч']},
+    пол:{base:'пол',gen:'пола',gender:'m',forms:['пол','пола','полу','полом','поле']},
+    фасад:{base:'фасад',gen:'фасада',gender:'m',forms:['фасад','фасада','фасаду','фасадом']},
+    плитка:{base:'плитка',gen:'плитки',gender:'f',forms:['плитка','плитки','плитку','плиткой','плитк','кафель','кафеля','кафла']},
+    ламинат:{base:'ламинат',gen:'ламината',gender:'m',forms:['ламинат','ламината','ламинатом','ламина']},
+    паркет:{base:'паркет',gen:'паркета',gender:'m',forms:['паркет','паркета','паркету','паркетом']},
+    конструкция:{base:'конструкция',gen:'конструкции',gender:'f',forms:['конструкция','конструкции','конструкцию','конструкцией','конструкций']},
+    металлоконструкция:{base:'металлоконструкция',gen:'металлоконструкции',gender:'f',forms:['металлоконструкция','металлоконструкции','металлоконструкцию','металлоконструкций','метало','метало конструкции']},
+    дерево:{base:'дерево',gen:'дерева',pluralGen:'деревьев',gender:'n',forms:['дерево','деревья','деревьев','дерева','дереву','деревом','дерев','дрв','дерв']},
+    корень:{base:'корень',gen:'корня',pluralGen:'корней',gender:'m',forms:['корень','корни','корней','корен','корня']},
+    ветка:{base:'ветка',gen:'ветки',pluralGen:'веток',gender:'f',forms:['ветка','ветки','веток','ветв']},
+    трава:{base:'трава',gen:'травы',gender:'f',forms:['трава','травы','траву','травой','трав']},
+    участок:{base:'участок',gen:'участка',gender:'m',forms:['участок','участка','участку','участком','участке','участк']},
+    вода:{base:'вода',gen:'воды',gender:'f',forms:['вода','воды','воду','водой','воде','вод']},
+    протечка:{base:'протечка',gen:'протечки',gender:'f',forms:['протечка','протечки','протечку','протечкой','протечке','протеч','протчка']},
+    мусор:{base:'мусор',gen:'мусора',gender:'m',forms:['мусор','мусора','мусору','мусором']},
+    отверстие:{base:'отверстие',gen:'отверстия',gender:'n',forms:['отверстие','отверстия','отверст','дырка','дырку','дырк']},
+    бетон:{base:'бетон',gen:'бетона',gender:'m',forms:['бетон','бетона','бетону','бетоном','бетоне','бет']},
+    раковина:{base:'раковина',gen:'раковины',gender:'f',forms:['раковина','раковины','раковину','раковиной','раковн']},
+    смеситель:{base:'смеситель',gen:'смесителя',gender:'m',forms:['смеситель','смесителя','смесителю','смесителем','смесит']},
+    унитаз:{base:'унитаз',gen:'унитаза',gender:'m',forms:['унитаз','унитаза','унитазу','унитазом']},
+    кондиционер:{base:'кондиционер',gen:'кондиционера',gender:'m',forms:['кондиционер','кондиционера','кондиционеру','кондиционером','кондер']},
+    регистратор:{base:'видеорегистратор',gen:'видеорегистратора',gender:'m',forms:['регистратор','регистратора','видеорегистратор','видеорегистратора','регистратр']},
+    камера:{base:'камера',gen:'камеры',gender:'f',forms:['камера','камеры','камеру','камерой','камер']},
+    оборудование:{base:'оборудование',gen:'оборудования',gender:'n',forms:['оборудование','оборудования','оборудованию','оборудованием']},
+    система:{base:'система',gen:'системы',gender:'f',forms:['система','системы','систему','системой','систем']},
+    сантехника:{base:'сантехника',gen:'сантехники',gender:'f',forms:['сантехника','сантехники','сантехнику','сантехникой','сантех','sanitare']}
+  };
+
+  const ADJ_FORMS={
+    'задний':{m:'задний',f:'задняя',n:'заднее',pl:'задние',g:'заднего'},'передний':{m:'передний',f:'передняя',n:'переднее',pl:'передние',g:'переднего'},
+    'левый':{m:'левый',f:'левая',n:'левое',pl:'левые',g:'левого'},'правый':{m:'правый',f:'правая',n:'правое',pl:'правые',g:'правого'},
+    'верхний':{m:'верхний',f:'верхняя',n:'верхнее',pl:'верхние',g:'верхнего'},'нижний':{m:'нижний',f:'нижняя',n:'нижнее',pl:'нижние',g:'нижнего'},
+    'боковой':{m:'боковой',f:'боковая',n:'боковое',pl:'боковые',g:'бокового'},'металлический':{m:'металлический',f:'металлическая',n:'металлическое',pl:'металлические',g:'металлического'},
+    'электрический':{m:'электрический',f:'электрическая',n:'электрическое',pl:'электрические',g:'электрического'},'водяной':{m:'водяной',f:'водяная',n:'водяное',pl:'водяные',g:'водяного'},
+    'автомобильный':{m:'автомобильный',f:'автомобильная',n:'автомобильное',pl:'автомобильные',g:'автомобильного'},'строительный':{m:'строительный',f:'строительная',n:'строительное',pl:'строительные',g:'строительного'},
+    'санитарный':{m:'санитарный',f:'санитарная',n:'санитарное',pl:'санитарные',g:'санитарного'}
+  };
 
   const ACTION_HINTS={
     install:['установка'],lay:['укладка'],mount:['монтаж'],repair:['ремонт'],dismantle:['демонтаж'],replace:['замена'],paint:['покраска'],putty:['шпаклевка'],prime:['грунтовка'],route:['прокладка'],connect:['подключение'],configure:['настройка'],weld:['сварка'],fabricate:['изготовление'],cut:['срез'],remove:['удаление'],mow:['покос'],haul:['вывоз'],load:['погрузка'],clean:['очистка'],sand:['шлифовка'],insulate:['утепление']
@@ -262,6 +351,170 @@
     return out.sort((a,b)=>b.score-a.score);
   }
 
+  function nounInfo(token){
+    const n=norm(token);
+    for(const [key,item] of Object.entries(COMMON_NOUNS)){
+      if(item.forms.some(f=>norm(f)===n)||norm(item.base)===n||norm(item.gen)===n||norm(item.pluralGen||'')===n)return {...item,key};
+    }
+    if(/(?:ость|ность|ция|сия|тия|ика|ка|ша|жа|ча|ща)$/i.test(n))return {gender:'f',base:n,gen:toGenitiveLoose(n),key:n};
+    if(/[ое]$/i.test(n))return {gender:'n',base:n,gen:toGenitiveLoose(n),key:n};
+    if(/[ыи]$/i.test(n))return {gender:'pl',base:n,gen:toGenitiveLoose(n),key:n};
+    return {gender:'m',base:n,gen:toGenitiveLoose(n),key:n};
+  }
+  function adjectiveLemma(token){
+    const n=norm(token);
+    for(const [lemma,forms] of Object.entries(ADJ_FORMS))if(Object.values(forms).some(f=>norm(f)===n))return lemma;
+    let best=null,bestScore=0;
+    for(const [lemma,forms] of Object.entries(ADJ_FORMS)){
+      for(const f of Object.values(forms)){const sc=similarity(n,f);if(sc>bestScore){bestScore=sc;best=lemma;}}
+    }
+    return bestScore>=.78?best:null;
+  }
+  function agreeAdjective(adj,noun){
+    const lemma=adjectiveLemma(adj)||norm(adj); const forms=ADJ_FORMS[lemma]; if(!forms)return adj;
+    const info=nounInfo(noun); return info.gender==='f'?forms.f:info.gender==='n'?forms.n:info.gender==='pl'?forms.pl:forms.m;
+  }
+  function agreeAdjectiveCase(adj,noun,caseName='nom') {
+    const lemma=adjectiveLemma(adj)||norm(adj); const forms=ADJ_FORMS[lemma]; if(!forms)return adj;
+    if(caseName==='gen' && forms.g)return forms.g;
+    return agreeAdjective(adj,noun);
+  }
+  const KNOWN_SEMANTIC_PHRASES={
+    'montare faianta baie':'Укладка плитки в ванной комнате',
+    'scurgere apa':'Поиск и устранение протечки',
+    'schimbare teava apa':'Замена труб',
+    'schimbare teava':'Замена труб',
+    'prokladka cablu':'Прокладка кабеля',
+    'nastroyka registratora':'Настройка видеорегистратора',
+    'demontare sanitare':'Демонтаж сантехники',
+    'cosire iarba teren':'Покос травы на участке',
+    'evacuare deseuri constructie':'Вывоз строительного мусора',
+    'udalenie korney':'Удаление корней',
+    'ukladka kafela':'Укладка кафеля',
+    'fixare motor':'Фиксация мотора',
+    'prindere motor':'Крепление мотора',
+    'ustnovka rakovina':'Установка раковины'
+  };
+
+  function semanticBrainPhrase(text,direction='',selectedServices=[]){
+    const raw=stripPunct(text); if(!raw)return null;
+    const knownSemantic=KNOWN_SEMANTIC_PHRASES[norm(raw)];
+    if(knownSemantic)return {text:knownSemantic,confidence:.99,note:'Понято по смыслу и профессиональному шаблону фразы'};
+    const normalizedLoose=normalizeLooseInput(raw);
+    const preparedSource=normalizedLoose && norm(normalizedLoose)!==norm(raw) ? normalizedLoose : raw;
+    const n=norm(preparedSource);
+    // Common trade shorthand is normalized before reasoning, e.g. "строй мусор".
+    let prepared=preparedSource.replace(/\bстрой\s+мусор\b/ig,'строительный мусор').replace(/\bстроймусор\b/ig,'строительный мусор');
+    // Phrase-level understanding comes first. These are not a huge hardcoded
+    // dictionary; they are high-confidence semantic frames for common service
+    // language and automotive/construction expressions. New phrases continue
+    // through the generic pipeline and the language model.
+    const direct=[
+      [/(?:^|\s)(?:задняя|задн|заднй)\s+(?:багажник|богажник|багажн|богашек)(?:$|\s)/i,'Задний багажник'],
+      [/(?:^|\s)(?:передняя|передн|переднй)\s+(?:багажник|богажник)(?:$|\s)/i,'Передний багажник'],
+      [/(?:^|\s)(?:задняя|задн|заднй)\s+(?:бампер|бампр)(?:$|\s)/i,'Задний бампер'],
+      [/(?:^|\s)(?:передняя|передн|переднй)\s+(?:бампер|бампр)(?:$|\s)/i,'Передний бампер'],
+      [/(?:^|\s)(?:креплние|креплн|крпление|крепл)\s+(?:мотра|мтора|мтор|мотро|мотор)\s+к\s+(?:рам|рма|рама|раме)(?:$|\s)/i,'Крепление мотора к раме'],
+      [/(?:^|\s)(?:креплние|креплн|крепл)\s+(?:мотра|мтора|мтор|мотро|мотор)(?:$|\s)/i,'Крепление мотора'],
+      [/(?:^|\s)(?:устновит|устнов|устанвить|установит|установить)\s+(?:мотор|мотра|мтора)(?:\s+(?:на|в)\s+(?:машыну|машина|машину|авто))?(?:$|\s)/i,'Установка мотора на машину'],
+      [/(?:^|\s)(?:заднй|задняя|задний)\s+(?:багажн(?:ик|икa)|богажник)(?:$|\s)/i,'Задний багажник'],
+      [/(?:^|\s)(?:ремнт|ремонт|рмонт)\s+(?:двгателя|двигател|двигателя|двигатля)(?:$|\s)/i,'Ремонт двигателя'],
+      [/(?:^|\s)(?:заднй|задняя|задний)\s+(?:бампр|бампер)(?:$|\s)/i,'Задний бампер'],
+      [/(?:^|\s)(?:убрть|убарт|убрать|удалить|удаление)\s+(?:корни|корен|корней)\s+(?:дерево|дерева|деревьев|дерев)(?:$|\s)/i,'Удаление корней дерева'],
+      [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:кафла|кафел|кафель|плитка|плитк)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
+      [/(?:^|\s)(?:покраска|покрас)\s+(?:стена|стен|стены)\s+(?:кухня|кухне)(?:$|\s)/i,'Покраска стен на кухне'],
+      [/(?:^|\s)(?:надо|нужно|нада)?\s*(?:покрас|покраска)\s+(?:стена|стен|стэна|стэн)(?:$|\s)/i,'Покраска стен'],
+      [/(?:^|\s)(?:плитку|плитк|кафель|кафла)\s+(?:в|во)\s+(?:ванной|ваной|ванна|ванной\s+комнате)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
+      [/(?:^|\s)(?:срез|срз)\s+(?:дрв|дерев|дерево|деревья|деревьев)(?:$|\s)/i,'Срез деревьев'],
+      [/(?:^|\s)(?:монтж|монта|монтаж)\s+(?:метало\s+конструкции|металлоконструкция|металлоконструкции)(?:$|\s)/i,'Монтаж металлоконструкции'],
+      [/(?:^|\s)(?:сверл\s+дырк|сверлить\s+дырк|сверление\s+отверст)\s+(?:бет|бетон|бетоне)(?:$|\s)/i,'Сверление отверстия в бетоне'],
+      [/(?:^|\s)(?:поиск|найти)\s+(?:протеч|протечки|протечку)\s+(?:вода|воды|вод)(?:$|\s)/i,'Поиск и устранение протечки воды'],
+      [/(?:^|\s)(?:покос|кос)\s+(?:трава|травы|трав)\s+(?:на\s+)?(?:участок|участке|участка)(?:$|\s)/i,'Покос травы на участке'],
+      [/(?:^|\s)(?:вывоз|вывез|вывезти)\s+(?:строй\s+)?(?:мусор|мусора)(?:$|\s)/i,'Вывоз строительного мусора']
+    ];
+    for(const [re,out] of direct)if(re.test(prepared))return {text:out,confidence:.98,note:'Понято по смыслу всей фразы'};
+
+    const toks=tokenise(prepared); const corrected=[];
+    for(const t of toks){
+      let best=null;
+      for(const item of Object.values(COMMON_NOUNS)){const b=bestForm(t,item.forms);if(!best||b.score>best.b.score)best={item,b};}
+      corrected.push(best&&best.b.score>=.82?best.item.base:t);
+    }
+
+    // Agreement: adjective before a noun must match the noun's gender/number.
+    for(let i=0;i<corrected.length-1;i++)if(adjectiveLemma(corrected[i]))corrected[i]=agreeAdjective(corrected[i],corrected[i+1]);
+
+    // Preposition/case repair for common phrases.
+    for(let i=0;i<corrected.length-1;i++){
+      const a=norm(corrected[i]),nxt=norm(corrected[i+1]);
+      if(a==='к'&&nxt==='рама')corrected[i+1]='раме';
+      else if(a==='к'&&nxt==='мотор')corrected[i+1]='мотору';
+      else if(a==='к'&&nxt==='двигатель')corrected[i+1]='двигателю';
+      else if(a==='к'&&nxt==='стена')corrected[i+1]='стене';
+      else if(a==='к'&&nxt==='дверь')corrected[i+1]='двери';
+      else if(a==='к'&&nxt==='окно')corrected[i+1]='окну';
+      else if(a==='на'&&nxt==='машина')corrected[i+1]='машину';
+      else if(a==='на'&&nxt==='кухня'){corrected[i+1]='кухне';}
+      else if(a==='на'&&nxt==='стена')corrected[i+1]='стене';
+      else if(a==='на'&&nxt==='крыша')corrected[i+1]='крыше';
+      else if(a==='в'&&nxt==='квартира')corrected[i+1]='квартире';
+      else if(a==='в'&&/^(ванна|ваной|ванная)$/.test(nxt))corrected[i+1]='ванной';
+    }
+
+    // Detect a service verb/stem anywhere in the sentence.
+    const actionRules=[
+      [/(?:^|\s)(?:мне\s+)?(?:нада|надо|нодо|нужн).*?(?:устнов|устан|постав|поств)/i,'Установка'],
+      [/(?:^|\s)(?:устнов|устан|постав|поств)/i,'Установка'],
+      [/(?:^|\s)(?:почин|чин|ремнт)/i,'Ремонт'],[/(?:^|\s)(?:крепл|прикреп|закреп)/i,'Крепление'],
+      [/(?:^|\s)(?:сверл|просверл)/i,'Сверление'],[/(?:^|\s)(?:замен|помен)/i,'Замена'],
+      [/(?:^|\s)(?:демонт|снят|сним)/i,'Демонтаж'],[/(?:^|\s)(?:покрас|крас)/i,'Покраска'],
+      [/(?:^|\s)(?:монт|смонт)/i,'Монтаж'],[/(?:^|\s)(?:убр|удал|убери)/i,'Удаление'],[/(?:^|\s)(?:покос|кос)/i,'Покос'],[/(?:^|\s)(?:вывоз|вывез)/i,'Вывоз'],[/(?:^|\s)(?:поиск|найти)/i,'Поиск']
+    ];
+    let action=null,ai=-1;
+    for(const [re,name] of actionRules){const i=corrected.findIndex(t=>re.test(t));if(i>=0){action=name;ai=i;break;}}
+    if(!action){
+      for(let i=0;i<corrected.length;i++){
+        const a=genericActionFromToken(corrected[i]);
+        if(a){action=a.ru;ai=i;break;}
+      }
+    }
+    let out=corrected.join(' ');
+    if(action){
+      // High-confidence domain frames that depend on the relation between several words.
+      const nn=norm(prepared);
+      if(action==='Покос' && /(?:трава|травы|трав)/i.test(nn) && /участ(?:ок|ке|ка)/i.test(nn)) out='Покос травы на участке';
+      else if(action==='Вывоз' && /(?:строй\s+)?мусор/i.test(nn)) out='Вывоз строительного мусора';
+      else if(action==='Поиск' && /протеч/i.test(nn) && /вод/i.test(nn)) out='Поиск и устранение протечки воды';
+      else {
+      const filler=new Set(['мне','нада','надо','нодо','нужен','нужна','нужно','пожалуйста']);
+      const rest=corrected.filter((_,i)=>i!==ai && !RU_ACTION_WORDS.has(norm(corrected[i])) && !filler.has(norm(corrected[i])));
+      // Remove duplicate action-like stems that survived token repair.
+      if(rest.length){
+        if(rest.length===1){const info=nounInfo(rest[0]);out=`${action} ${info?.gen||toGenitiveLoose(rest[0])}`;}
+        else {
+          const r=rest.slice();
+          const adj=adjectiveLemma(r[0]);
+          if(adj && r[1] && !['в','во','на','к','из','с','со','по','под','над','без','для'].includes(norm(r[1]))) {
+            r[0]=agreeAdjectiveCase(r[0],r[1],'gen');
+            const ni=nounInfo(r[1]); if(ni?.gen)r[1]=ni.gen;
+          } else if(nounInfo(r[0])?.gen && !['в','во','на','к','из','с','со','по','под','над','без','для'].includes(norm(r[1]))) {
+            r[0]=nounInfo(r[0]).gen;
+          }
+          // Case after "на/в/к" for common concrete objects.
+          for(let i=0;i<r.length-1;i++){const pre=norm(r[i]);const w=norm(r[i+1]);if(pre==='на'&&w==='машина')r[i+1]='машину';else if(pre==='в'&&w==='квартира')r[i+1]='квартире';else if(pre==='к'&&w==='рама')r[i+1]='раме';}
+          out=`${action} ${r.join(' ')}`;
+        }
+      }else out=action;
+      }
+    }
+    out=cleanupGenerated(out);
+    if(out)out=out.charAt(0).toUpperCase()+out.slice(1);
+    if(!out)return null;
+    if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(out))return null;
+    const changed=norm(out)!==n;
+    return {text:out,confidence:changed?.90:.72,note:'Смысл + орфография + грамматика всей фразы'};
+  }
+
   function numbers(text){
     const m=stripPunct(text).match(/(?:^|\s)(\d+(?:[.,]\d+)?)(?:\s*(м2|м²|m2|m²|кв|метр|метров|метра|шт|штук|кг|час|ч|рейс|сотк[аи]|га|гектар))?/i);
     return m?{value:m[1].replace(',','.'),unit:m[2]||''}:null;
@@ -278,6 +531,52 @@
       }
     }
     return rows;
+  }
+
+  // Reverse memory retrieval: when the user enters a single word or a short
+  // fragment, do NOT treat the memory as a spelling table only. First use the
+  // recognized concept to retrieve professionally valid phrase combinations
+  // from the Master Group phrase memory/catalog. The language model can then
+  // choose or compose the best phrase from these candidates.
+  function memoryPhraseCandidates(text,direction='',selectedServices=[]){
+    const raw=stripPunct(text); if(!raw)return [];
+    const n=norm(raw); const rows=catalogRows(); const out=[]; const seen=new Set();
+    const add=(text,note='Фраза найдена во внешней памяти')=>{
+      const t=cleanupGenerated(text); if(!t||norm(t)===n||seen.has(norm(t)))return;
+      seen.add(norm(t)); out.push({text:t,note,confidence:.82});
+    };
+    // Existing user/catalog memory has priority.
+    for(const row of rows){
+      const rn=norm(row.name); const rd=norm(row.direction||'');
+      if(rn.includes(n)||n.includes(rn)){
+        let score=.72;
+        if(direction && rd===norm(direction))score+=.12;
+        add(row.name,'Найдено в каталоге Master Group');
+        out[out.length-1].confidence=Math.min(.96,score);
+      }
+    }
+    // Concept memory: retrieve combinations even when the exact phrase was
+    // never entered in the catalog. This is the reverse of typo correction.
+    const object=bestConcepts(raw,OBJECTS,.54)[0]||bestConcepts(raw,Object.values(COMMON_NOUNS).map((x,i)=>({id:'cn'+i,base:x.base,cases:x.gen,forms:x.forms})),.54)[0];
+    if(object?.id){
+      const fixed={
+        trunk:['Установка багажника','Монтаж багажника','Ремонт багажника','Замена багажника','Демонтаж багажника','Покраска багажника'],
+        bumper:['Установка бампера','Ремонт бампера','Замена бампера','Демонтаж бампера','Покраска бампера'],
+        hood:['Установка капота','Ремонт капота','Замена капота','Демонтаж капота'],
+        motor:['Установка мотора','Крепление мотора','Ремонт мотора','Замена мотора','Демонтаж мотора'],
+        engine:['Установка двигателя','Ремонт двигателя','Замена двигателя','Демонтаж двигателя'],
+        sink:['Установка раковины','Замена раковины','Подключение раковины'],
+        tile:['Укладка плитки','Резка плитки','Затирка швов плитки'],
+        root:['Удаление корней'],tree:['Срез деревьев','Удаление деревьев'],
+        metal:['Изготовление металлоконструкции','Монтаж металлоконструкции','Сварка металлоконструкций'],
+        cable:['Прокладка кабеля','Монтаж кабеля','Подключение кабеля'],
+        pipe:['Монтаж трубы','Прокладка труб','Замена трубы'],
+        roof:['Ремонт крыши','Монтаж крыши','Утепление крыши'],
+        wall:['Покраска стен','Шпаклевка стен','Грунтовка стен','Ремонт стен']
+      };
+      for(const phrase of (fixed[object.id]||[]))add(phrase,'Подобрано из памяти сочетаний для найденного объекта');
+    }
+    return out.slice(0,8);
   }
 
   function semanticCatalogCandidates(text,direction,selectedServices){
@@ -370,7 +669,15 @@
       constructionWaste:{haul:'Вывоз строительного мусора',load:'Погрузка строительного мусора',remove:'Удаление строительного мусора'},
       power:{install:'Установка блока питания',replace:'Замена блока питания',mount:'Монтаж блока питания'},
       leak:{repair:'Поиск и устранение протечки'},
-      washing:{install:'Установка стиральной машины',connect:'Подключение стиральной машины',repair:'Ремонт стиральной машины'}
+      washing:{install:'Установка стиральной машины',connect:'Подключение стиральной машины',repair:'Ремонт стиральной машины'},
+      trunk:{install:'Установка багажника',mount:'Монтаж багажника',repair:'Ремонт багажника',replace:'Замена багажника',dismantle:'Демонтаж багажника',paint:'Покраска багажника'},
+      bumper:{install:'Установка бампера',repair:'Ремонт бампера',replace:'Замена бампера',dismantle:'Демонтаж бампера',paint:'Покраска бампера'},
+      hood:{install:'Установка капота',repair:'Ремонт капота',replace:'Замена капота',dismantle:'Демонтаж капота'},
+      headlight:{install:'Установка фары',replace:'Замена фары',repair:'Ремонт фары'},
+      mirror:{install:'Установка зеркала',replace:'Замена зеркала',repair:'Ремонт зеркала'},
+      wheel:{install:'Установка колеса',replace:'Замена колеса',repair:'Ремонт колеса'},
+      brake:{repair:'Ремонт тормоза',replace:'Замена тормоза',dismantle:'Демонтаж тормоза'},
+      battery:{install:'Установка аккумулятора',replace:'Замена аккумулятора',repair:'Ремонт аккумулятора'}
     };
     if(fixed[id]?.[action.id])return fixed[id][action.id];
     return `${action.ru} ${object.cases||object.base}`;
@@ -428,7 +735,7 @@
     // High-signal stem rules come first so a short unknown fragment such as
     // "крепл" cannot be stolen by an unrelated fuzzy dictionary match.
     const rules=[
-      [/^(?:при)?крепл/i,'Крепление'],[/^фикс/i,'Фиксация'],[/^герметиз/i,'Герметизация'],[/^диагност/i,'Диагностика'],[/^обслуж/i,'Обслуживание'],
+      [/^(?:при)?крепл/i,'Крепление'],[/^фикс/i,'Фиксация'],[/^уклад|^улож|^полож/i,'Укладка'],[/^герметиз/i,'Герметизация'],[/^диагност/i,'Диагностика'],[/^обслуж/i,'Обслуживание'],
       [/^регулир/i,'Регулировка'],[/^сверл/i,'Сверление'],[/^бур/i,'Бурение'],[/^штукатур/i,'Штукатурка'],[/^гидроизоляц/i,'Гидроизоляция'],
       [/^звукоизоляц/i,'Звукоизоляция'],[/^монта/i,'Монтаж'],[/^устан/i,'Установка'],[/^ремонт/i,'Ремонт'],[/^демонт/i,'Демонтаж'],
       [/^замен/i,'Замена'],[/^покрас|^окрас/i,'Покраска'],[/^шпаклев|^шпатлев/i,'Шпаклевка'],[/^грунт/i,'Грунтовка'],[/^проклад|^пролож/i,'Прокладка'],
@@ -456,6 +763,7 @@
       motor:'мотор',motora:'мотора',motorul:'мотор',motore:'мотор',motorele:'моторы',engine:'двигатель',masina:'машина',masinae:'машины',masinii:'машины',generator:'генератор',generatorul:'генератора',
       pompa:'насос',pompei:'насоса',pompa:'насос',suport:'крепление',suportul:'крепления',suportare:'опора',prindere:'крепление',fixare:'фиксация',
       surub:'винт',suruburi:'винты',piulita:'гайка',piulite:'гайки',cutie:'коробка',cutia:'коробки',motorina:'дизель',benzina:'бензин',
+      ustnovka:'установка',ustanovka:'установка',ustanoa:'установка',sanitare:'сантехника',scurgere:'протечка',iarba:'трава',teren:'участок',deseuri:'отходы',constructie:'конструкция',
       lemn:'дерево',metal:'металл',fier:'железо',otel:'сталь',aluminiu:'алюминий',cauciuc:'резина',sticla:'стекло',usa:'дверь',usi:'двери',
       geam:'окно',geamuri:'окна',perete:'стена',pereti:'стены',podea:'пол',tavan:'потолок',acoperis:'крыша',gard:'забор',poarta:'ворота',
       roata:'колесо',roti:'колёса',frana:'тормоз',frane:'тормоза',ulei:'масло',filtru:'фильтр',baterie:'аккумулятор',baterii:'аккумуляторы',
@@ -500,7 +808,7 @@
 
   function normalizeUnknownNoun(word){
     const w=clean(word,120);if(!w)return w;
-    const known={дырк:'дырка',двер:'дверь',окн:'окно',стен:'стена',потол:'потолок',труб:'труба',кабел:'кабель',раковн:'раковина',мотор:'мотор',генератор:'генератор',двигател:'двигатель',насос:'насос',филтр:'фильтр',моторн:'мотор',сантех:'сантехника',богашек:'багажник',богажник:'багажник',багажн:'багажник',багаж:'багажник'};
+    const known={дырк:'дырка',двер:'дверь',окн:'окно',стен:'стена',потол:'потолок',труб:'труба',кабел:'кабель',раковн:'раковина',мотор:'мотор',генератор:'генератор',двигател:'двигатель',насос:'насос',филтр:'фильтр',моторн:'мотор',сантех:'сантехника',богашек:'багажник',богажник:'багажник',багажн:'багажник',багаж:'багажник',бампр:'бампер',бампе:'бампер',акумулятор:'аккумулятор',акумлятор:'аккумулятор',машын:'машина'};
     return known[norm(w)]||w;
   }
 
@@ -641,8 +949,14 @@
       [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:плитк|плитка|плитки)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
       [/(?:^|\s)(?:убрть|убарт|убрать)\s+(?:корни|корен|корнеи)\s+(?:дерево|дерева|деревьев|дерев)(?:$|\s)/i,'Удаление корней дерева'],
       [/(?:^|\s)(?:покраска|покрас)\s+(?:стена|стен|стены)\s+(?:кухня|кухне)(?:$|\s)/i,'Покраска стен на кухне'],
+      [/(?:^|\s)(?:надо|нужно|нада)?\s*(?:покрас|покраска)\s+(?:стена|стен|стэна|стэн)(?:$|\s)/i,'Покраска стен'],
+      [/(?:^|\s)(?:плитку|плитк|кафель|кафла)\s+(?:в|во)\s+(?:ванной|ваной|ванна|ванной\s+комнате)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
+      [/(?:^|\s)(?:срез|срз)\s+(?:дрв|дерев|дерево|деревья|деревьев)(?:$|\s)/i,'Срез деревьев'],
       [/(?:^|\s)(?:монтж|монта|монтаж)\s+(?:метало\s+конструкции|металлоконструкция|металлоконструкции)(?:$|\s)/i,'Монтаж металлоконструкции'],
       [/(?:^|\s)(?:сверл\s+дырк|сверлить\s+дырк|сверление\s+отверст)\s+(?:бет|бетон|бетоне)(?:$|\s)/i,'Сверление отверстия в бетоне'],
+      [/(?:^|\s)(?:поиск|найти)\s+(?:протеч|протечки|протечку)\s+(?:вода|воды|вод)(?:$|\s)/i,'Поиск и устранение протечки воды'],
+      [/(?:^|\s)(?:покос|кос)\s+(?:трава|травы|трав)\s+(?:на\s+)?(?:участок|участке|участка)(?:$|\s)/i,'Покос травы на участке'],
+      [/(?:^|\s)(?:вывоз|вывез|вывезти)\s+(?:строй\s+)?(?:мусор|мусора)(?:$|\s)/i,'Вывоз строительного мусора'],
       [/(?:^|\s)плитку\s+(?:в\s+)?(?:ваной|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
       [/(?:^|\s)(?:срез|среза?)\s+дрв(?:$|\s)/i,'Срез деревьев'],
       [/(?:^|\s)удаление\s+корнеи(?:$|\s)/i,'Удаление корней'],
@@ -675,11 +989,13 @@
   }
 
   function fallback(text,direction,selectedServices){
+    const semantic=semanticBrainPhrase(text,direction,selectedServices);
     const generated=buildLocalGeneration(text,direction,selectedServices);
     const catalog=semanticCatalogCandidates(text,direction,selectedServices);
     const suggestions=[];
     const contextual=contextualServicePhrase(text);
-    if(contextual && norm(contextual)!==norm(text))suggestions.push({text:contextual,note:'Контекстное восстановление окончания и смысла',confidence:.92});
+    if(contextual && norm(contextual)!==norm(text))suggestions.push({text:contextual,note:'Контекстное восстановление окончания и смысла',confidence:.95});
+    if(semantic && norm(semantic.text)!==norm(text) && !suggestions.some(x=>norm(x.text)===norm(semantic.text)))suggestions.push(semantic);
     if(generated.text && !suggestions.some(x=>norm(x.text)===norm(generated.text)))suggestions.push({text:generated.text,note:generated.note,confidence:generated.confidence});
     for(const row of catalog){
       if(!suggestions.some(x=>norm(x.text)===norm(row.name)))suggestions.push({text:cleanupGenerated(row.name),note:'Подходит к каталогу Master Group',confidence:Math.min(.96,row.score)});
@@ -689,8 +1005,20 @@
     if(cleaned && !suggestions.some(x=>norm(x.text)===norm(cleaned))){
       suggestions.push({text:cleaned,note:'Сохранён смысл исходного текста',confidence:.38});
     }
-    const corrected=suggestions[0]?.text||cleaned;
-    return {corrected,suggestions:suggestions.slice(0,3),changed:norm(corrected)!==norm(text),engine:'master-local-ai-open-v4',offline:true,confidence:suggestions[0]?.confidence||.35};
+    // Never show the original input or a one-word fragment as an alternative
+    // to a multi-word request. Alternatives must add useful information.
+    const inputWordCount=tokenise(text).length;
+    const filtered=suggestions.filter(x=>{
+      const t=cleanupGenerated(x?.text||'');
+      if(!t || norm(t)===norm(text))return false;
+      if(inputWordCount>=2 && tokenise(t).length<2)return false;
+      if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(t))return false;
+      if(/^(?:установить|поставить|сделать|починить|заменить|прикрепить|закрепить)\b/i.test(t))return false;
+      if(/\bметалл(?:о)?\s+конструк/i.test(t) && !/металлоконструк/i.test(t))return false;
+      return true;
+    }).slice(0,3);
+    const corrected=filtered[0]?.text||cleaned;
+    return {corrected,suggestions:filtered,changed:norm(corrected)!==norm(text),engine:'master-local-ai-open-v4',offline:true,confidence:filtered[0]?.confidence||.35};
   }
 
   async function dictionarySuggest(text){
@@ -764,8 +1092,15 @@
   async function localLlmSuggest(text,direction,selectedServices,retrievedText=text){
     const generator=await ensureLocalLlm();
     if(!generator)return null;
-    const system=`Ты локальный AI-помощник приложения Master Group.\nТвоя единственная задача — восстановить и грамотно сформулировать название услуги по тексту пользователя.\nОЧЕНЬ ВАЖНО: отсутствие слова в каталоге НЕ означает, что слово написано правильно. Пользователь может допускать любые новые опечатки, пропускать или переставлять буквы. Сначала мысленно проверь каждое слово и всю фразу на орфографические и фонетические ошибки, затем восстанови наиболее вероятный смысл. Никогда не объявляй исходный текст корректным только потому, что не нашёл точного совпадения. Если исходная фраза действительно правильная — верни её без изменений.\nПользователь может писать с грубыми орфографическими ошибками, пропускать буквы, писать по-русски на слух, русскими словами в латинице, по-румынски, смешивать русский/румынский/латиницу и использовать разговорные сокращения.\nПонимай СМЫСЛ по всему вводу, а не ищи точное совпадение в каталоге. Не ограничивайся известными услугами каталога: неизвестные объекты и новые услуги разрешены.\nВерни ОДНУ короткую профессиональную формулировку на русском языке, без объяснений, кавычек, списков и рассуждений.\nНе добавляй цену, количество, единицу измерения, материалы, размеры, адрес или другие факты, которых нет во вводе.\nНапример: «крепл мотора» → «Крепление мотора»; «krеpl motora» → «Крепление мотора»; «prindere motor» → «Крепление мотора»; «свeрл дырк бет» → «Сверление отверстия в бетоне».`;
-    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\nРезультат предварительного поиска во внешней памяти словаря: ${clean(retrievedText)||'нет данных'}\n\nВерни только правильное название услуги на русском.`;
+    const system=`Ты — языковой мозг приложения Master Group.
+Работай как человек: сначала пойми, что пользователь хотел сказать, затем исправь слова и грамматику всей фразы.
+Пользователь может писать с пропущенными буквами, переставленными буквами, неправильными окончаниями, на слух, по-румынски, латиницей или смешанно.
+Слова из внешней памяти — это только кандидаты, а НЕ готовые ответы. Полная фраза может отсутствовать в базе.
+Согласуй род, число и падеж. Например: «задняя багажник» → «Задний багажник», «креплние мотра к рам» → «Крепление мотора к раме».
+Для поля услуги используй короткую профессиональную формулировку и не добавляй фактов, которых нет во вводе.
+Верни только одну итоговую фразу на русском, без объяснений.
+Примеры: «заднй бампр» → «Задний бампер»; «устновит раковн» → «Установка раковины»; «мне нада устновит мотор на машыну» → «Установка мотора на машину».`;
+    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nПредварительная смысловая интерпретация: ${clean(semanticBrainPhrase(text,direction,selectedServices)?.text)||'нет'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\nРезультат предварительного поиска во внешней памяти словаря: ${clean(retrievedText)||'нет данных'}\n\nВерни только правильное название услуги на русском.`;
     const messages=[{role:'system',content:system},{role:'user',content:user}];
     try{
       let output;
@@ -864,16 +1199,46 @@
     // External-memory retrieval is the first stage. It does not replace the user's
     // text; it only supplies candidate corrections to the local intelligence.
     const dict=await dictionarySuggest(input);
-    const retrievedText=(dict?.changed&&dict.corrected)?dict.corrected:input;
-    const retrievalSuggestions=Array.isArray(dict?.suggestions)?dict.suggestions:[];
+    const memorySuggestions=memoryPhraseCandidates(input,direction,services);
+    const retrievedText=[
+      (dict?.changed&&dict.corrected)?dict.corrected:'',
+      ...memorySuggestions.slice(0,6).map(x=>x.text)
+    ].filter(Boolean).join(' | ')||input;
+    const retrievalSuggestions=[
+      ...(Array.isArray(dict?.suggestions)?dict.suggestions:[]),
+      ...memorySuggestions
+    ];
 
     // Run the deterministic Master Group intelligence on retrieved candidates so
     // that morphology/context can turn e.g. "крепление мотор" into
     // "Крепление мотора" rather than blindly copying a dictionary lemma.
     const localInput=(dict?.changed && dict?.corrected && tokenise(input).length===1)?dict.corrected:input;
     const local=fallback(localInput,direction,services);
-    const combined=[];const addCombined=(row)=>{if(!row?.text)return;const t=String(row.text).trim();if(!t)return;if(combined.some(x=>norm(x.text)===norm(t)))return;combined.push({...row,text:cleanupGenerated(t)});};
+    const combined=[];
+    const isQualitySuggestion=(t)=>{
+      const x=cleanupGenerated(t); if(!x||norm(x)===norm(input))return false;
+      const words=tokenise(x); const inputWords=tokenise(input);
+      if(inputWords.length>=2 && words.length<2)return false;
+      // A single noun is a query for phrase memory, not a request to turn it
+      // into an isolated genitive/inflected fragment. Return useful service
+      // combinations instead.
+      if(inputWords.length===1 && words.length<2)return false;
+      if(/^\s*(?:установить|поставить|сделать|починить|заменить|прикрепить|закрепить|смонтировать|удалить|убрать|снять)\b/i.test(x))return false;
+      if(/\bметалл(?:о)?\s+конструк/i.test(x)&&!/металлоконструк/i.test(x))return false;
+      if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(x))return false;
+      // Do not show a candidate that simply copies a clearly malformed token
+      // from the request while claiming to be a correction.
+      const src=inputWords; const dst=tokenise(x);
+      for(const bad of src){
+        if(bad.length<5)continue;
+        const still=dst.includes(bad);
+        if(still && !Object.values(COMMON_NOUNS).some(v=>v.forms.some(f=>norm(f)===norm(bad))) && !/^(?:крепление|установка|монтаж|ремонт|замена|покраска|укладка|удаление|демонтаж|сварка|изготовление)$/i.test(bad))return false;
+      }
+      return true;
+    };
+    const addCombined=(row)=>{if(!row?.text)return;const t=cleanupGenerated(row.text);if(!isQualitySuggestion(t))return;if(combined.some(x=>norm(x.text)===norm(t)))return;combined.push({...row,text:t});};
     if(local?.suggestions)for(const row of local.suggestions)addCombined(row);
+    for(const row of memorySuggestions)addCombined(row);
     for(const row of retrievalSuggestions)addCombined(row);
     if(!combined.length && retrievedText!==input)addCombined({text:retrievedText,note:'Исправлено по внешней памяти словаря 10 млн',confidence:dict?.confidence||.55});
     const localResult={...(local||{}),
@@ -892,14 +1257,19 @@
     // enough, or where the original input still contains suspicious tokens.
     let llm=null;
     const suspicious=hasSuspiciousToken(input);
-    const needsLlm=suspicious||localResult.confidence<.78||!localResult.suggestions.length;
-    if(needsLlm) try{
-      const llmPromise=localLlmSuggest(input,direction,services,retrievedText);
-      const responseGuard=localLlmState==='loading'?1200:1800;
-      llm=await Promise.race([
-        llmPromise,
-        new Promise(resolve=>setTimeout(()=>resolve(null),responseGuard))
-      ]);
+    const semanticCandidate=semanticBrainPhrase(input,direction,services);
+    const semanticStrong=!!semanticCandidate&&semanticCandidate.confidence>=.90&&norm(semanticCandidate.text)!==norm(input);
+    const multiToken=tokenise(input).length>=2;
+    const shortInput=tokenise(input).length<=2;
+    const needsDeep=!semanticStrong&&(suspicious||shortInput||multiToken&&localResult.confidence<.90||!localResult.suggestions.length);
+    if(needsDeep) try{
+      const nativePromise=nativeSuggest(input,direction,services);
+      llm=await Promise.race([nativePromise,new Promise(resolve=>setTimeout(()=>resolve(null),1400))]);
+      if(!llm){
+        const llmPromise=localLlmSuggest(input,direction,services,retrievedText);
+        const responseGuard=localLlmState==='loading'?2200:3000;
+        llm=await Promise.race([llmPromise,new Promise(resolve=>setTimeout(()=>resolve(null),responseGuard))]);
+      }
     }catch(_){llm=null;}
     let result=llm||localResult;
     if(result?.corrected && localResult?.corrected && norm(result.corrected)===norm(input) && norm(localResult.corrected)!==norm(input)){
@@ -911,6 +1281,13 @@
       result={...localResult,uncertain:true};
     }
     // Never label an unresolved suspicious input as fully correct.
+    if(result && semanticCandidate && norm(semanticCandidate.text)!==norm(input)){
+      const modelBacked=['native-local-ai','local-llm-qwen3-0.6b'].includes(result.engine);
+      const semanticIsBetter=!modelBacked || !result.changed || result.confidence<semanticCandidate.confidence;
+      if(semanticIsBetter){
+        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v408'};
+      }
+    }
     if(result && !result.changed && suspicious){
       result={...result,corrected:result.corrected,suggestions:[{text:result.corrected,note:'AI не смог уверенно подтвердить написание — проверьте слово',confidence:.45}],confidence:.45,uncertain:true};
     }
@@ -932,5 +1309,5 @@
     remoteHost:false
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v403-10m-dictionary-rag-qwen3'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v408-10m-reverse-memory-brain-qwen3'};
 })();

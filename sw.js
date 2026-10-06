@@ -1,11 +1,11 @@
-/* Master Group v403 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v403';
+/* Master Group v408 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v408';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=401",
+  "./css/styles.css?v=408",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -70,7 +70,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
   const isNavigation = event.request.mode === 'navigate' || url.pathname.endsWith('/index.html');
   const isAppAsset = /\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
-  const isDictionaryShard = /\/dictionary-10m\/shards\/shard-\d{3}\.txt\.gz$/i.test(url.pathname);
+  const isDictionaryShard = /\/dictionary-10m\/shard-\d{3}\.txt\.gz$/i.test(url.pathname);
   if (isNavigation) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })

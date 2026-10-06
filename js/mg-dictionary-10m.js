@@ -213,5 +213,5 @@
     if(exact)return [{text:exact,score:1,source:t}];
     return topFuzzy(t,sh);
   }
-  window.MG_DICTIONARY_10M={suggest,searchToken,shardFor,crc32,loadManifest,version:'v403',entryCount:10000000};
+  window.MG_DICTIONARY_10M={suggest,searchToken,shardFor,crc32,loadManifest,version:'v407',entryCount:10000000};
 })();

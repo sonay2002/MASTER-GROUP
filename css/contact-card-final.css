@@ -1,0 +1,198 @@
+/* Master Group — Contact card reference design
+   Only #step4 is affected. The rest of the application is untouched. */
+#step4 .contact-card-v2{
+  padding:22px 20px 18px!important;
+  background:#fff!important;
+  border:1px solid #e1e5ea!important;
+  border-radius:30px!important;
+  box-shadow:0 14px 36px rgba(20,28,40,.06)!important;
+  box-sizing:border-box!important;
+}
+
+#step4 .contact-heading-v2{
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+  margin:0 0 18px!important;
+  padding:0 0 18px!important;
+  border-bottom:1px solid #e2e6eb!important;
+}
+
+#step4 .contact-heading-icon-v2{
+  width:58px!important;
+  height:58px!important;
+  flex:0 0 58px!important;
+  border-radius:17px!important;
+  background:#f4f5f7!important;
+  border:1px solid #dfe3e8!important;
+  display:grid!important;
+  place-items:center!important;
+}
+
+#step4 .contact-heading-icon-v2 svg{
+  width:32px!important;
+  height:32px!important;
+  fill:none!important;
+  stroke:#172031!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
+#step4 .contact-heading-v2 > div:last-child{
+  min-width:0!important;
+  flex:1 1 auto!important;
+}
+
+#step4 .contact-heading-v2 .title{
+  margin:0!important;
+  font-size:22px!important;
+  line-height:1.12!important;
+  letter-spacing:-.028em!important;
+  color:#162033!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+#step4 .contact-fields-v2{
+  display:grid!important;
+  gap:18px!important;
+}
+
+#step4 .contact-field-v2{
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  align-items:end!important;
+  column-gap:14px!important;
+  min-height:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+
+#step4 .contact-field-icon-v2{
+  width:46px!important;
+  height:46px!important;
+  flex:0 0 46px!important;
+  border-radius:14px!important;
+  background:#f4f5f7!important;
+  border:1px solid #dfe3e8!important;
+  display:grid!important;
+  place-items:center!important;
+  align-self:end!important;
+  margin-bottom:0!important;
+}
+
+#step4 .contact-field-icon-v2 svg{
+  width:26px!important;
+  height:26px!important;
+  fill:none!important;
+  stroke:#172031!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
+#step4 .contact-field-body-v2{
+  min-width:0!important;
+  width:100%!important;
+}
+
+#step4 .contact-field-body-v2 label{
+  display:block!important;
+  margin:0 0 7px!important;
+  font-size:15px!important;
+  line-height:1.15!important;
+  font-weight:800!important;
+  color:#172031!important;
+}
+
+#step4 .contact-field-body-v2 input{
+  display:block!important;
+  width:100%!important;
+  height:48px!important;
+  box-sizing:border-box!important;
+  border:1px solid #dfe3e8!important;
+  border-radius:16px!important;
+  background:#fbfcfd!important;
+  padding:0 14px!important;
+  font-size:15px!important;
+  font-weight:500!important;
+  color:#172031!important;
+  outline:none!important;
+}
+
+#step4 .contact-field-body-v2 input::placeholder{
+  color:#a2aab6!important;
+  opacity:1!important;
+}
+
+#step4 .contact-field-body-v2 input:focus{
+  border-color:#c4cad2!important;
+  box-shadow:0 0 0 3px rgba(23,32,49,.045)!important;
+}
+
+#step4 .nav-actions{
+  margin-top:18px!important;
+  gap:10px!important;
+}
+
+#step4 .nav-actions .btn{
+  min-height:48px!important;
+  height:48px!important;
+  border-radius:15px!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  padding:0 10px!important;
+}
+
+@media(max-width:520px){
+  #step4 .contact-card-v2{
+    padding:18px 14px 15px!important;
+    border-radius:27px!important;
+  }
+  #step4 .contact-heading-v2{
+    gap:14px!important;
+    margin-bottom:17px!important;
+    padding-bottom:17px!important;
+  }
+  #step4 .contact-heading-icon-v2{
+    width:58px!important;
+    height:58px!important;
+    flex-basis:58px!important;
+  }
+  #step4 .contact-heading-v2 .title{
+    font-size:21px!important;
+    letter-spacing:-.026em!important;
+  }
+  #step4 .contact-fields-v2{
+    gap:17px!important;
+  }
+  #step4 .contact-field-v2{
+    grid-template-columns:46px minmax(0,1fr)!important;
+    column-gap:12px!important;
+  }
+  #step4 .contact-field-body-v2 label{
+    font-size:15px!important;
+    margin-bottom:7px!important;
+  }
+  #step4 .contact-field-body-v2 input{
+    height:48px!important;
+    border-radius:15px!important;
+    font-size:15px!important;
+    padding:0 13px!important;
+  }
+  #step4 .nav-actions .btn{
+    height:48px!important;
+    min-height:48px!important;
+    border-radius:15px!important;
+    font-size:14px!important;
+  }
+}
+
+@media(max-width:380px){
+  #step4 .contact-heading-v2 .title{font-size:19px!important;}
+  #step4 .contact-field-v2{column-gap:10px!important;}
+}
