@@ -1589,5 +1589,5 @@
     configured:hasOpenRouterKey()
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v413-openrouter-gemma4-fast'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v414-openrouter-gemma4-fast'};
 })();

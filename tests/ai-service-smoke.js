@@ -47,7 +47,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v413-openrouter-gemma4-fast') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v414-openrouter-gemma4-fast') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().remoteApi !== true) throw new Error('OpenRouter API must be enabled');
 context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
 

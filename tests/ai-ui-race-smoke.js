@@ -33,11 +33,11 @@ vm.createContext(context);vm.runInContext(source,context,{filename:'estimate-cor
 (async()=>{
   els.directionServiceQuickInput.value='первое слово';
   for(const fn of (listeners.input||[])) fn({target:els.directionServiceQuickInput});
-  await new Promise(r=>setTimeout(r,240));
+  await new Promise(r=>setTimeout(r,650));
   if(els.directionServiceAiSuggestion.hidden) throw new Error('AI card should stay visible while analyzing');
   els.directionServiceQuickInput.value='второе слово';
   for(const fn of (listeners.input||[])) fn({target:els.directionServiceQuickInput});
-  await new Promise(r=>setTimeout(r,260));
+  await new Promise(r=>setTimeout(r,700));
   if(els.aiMain.textContent!=='Второе слово — актуальный результат') throw new Error('Stale AI result overwrote current input');
   context.window.__mgResetServiceAi();
   await new Promise(r=>setTimeout(r,100));
