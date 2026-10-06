@@ -6,15 +6,8 @@ const core=fs.readFileSync(new URL('../js/estimate-core.js',import.meta.url),'ut
 assert(dict.includes('entryCount:10000000'));
 assert(dict.includes("Number(m?.entryCount)!==10000000"));
 assert(dict.includes('256'));
-assert(ai.indexOf('const dict=await dictionarySuggest(input)') >= 0);
-assert(ai.indexOf('const dict=await dictionarySuggest(input)') > ai.indexOf('const router=await runAiRouter(input,direction,services)'));
-assert(ai.includes('const AI_BRAINS=['));
-assert(ai.includes('Qwen3.5-2B-ONNX-OPT'));
-assert(ai.includes('gemma-3-1b-it-ONNX'));
-assert(ai.includes('DeepSeek-R1-Distill-Qwen-1.5B-ONNX'));
-assert(ai.includes("memoryStage:'10m-after-brains'"));
-assert(ai.includes("engine:'local-llm-qwen3.5-2b'"));
-assert(ai.includes("onnx-community/Qwen3.5-2B-ONNX-OPT"));
+assert(ai.indexOf('const dict=await dictionarySuggest(input)') < ai.indexOf('localLlmSuggest(input,direction,services,retrievedText)'));
+assert(ai.includes("engine:'local-llm-qwen3-0.6b'"));
 assert(core.includes('Suggestions are NEVER applied implicitly'));
 assert(core.includes("return String(raw||'').trim();"));
-console.log('10M algorithm smoke PASS: brains-first router + exact-count guard + memory-second + user-confirmed apply');
+console.log('10M algorithm smoke PASS: exact-count guard + dictionary-first + Qwen fallback + user-confirmed apply');
