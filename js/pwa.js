@@ -1,4 +1,4 @@
-/* Master Group v412 — reliable in-app PWA update flow */
+/* Master Group v413 — reliable in-app PWA update flow */
 (()=>{
 'use strict';
 const APP_VERSION=document.querySelector('meta[name="app-version"]')?.content||'unknown';

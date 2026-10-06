@@ -47,7 +47,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v412-openrouter-free-brain') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v413-openrouter-gemma4-fast') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().remoteApi !== true) throw new Error('OpenRouter API must be enabled');
 context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
 
@@ -68,7 +68,7 @@ context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
   for (const [input, expected] of cases) {
     const result = await context.window.MG_AI_SERVICE.suggestServiceName({text: input, direction: 'Клининг участка'});
     if (!result?.corrected) throw new Error(`No correction for: ${input}`);
-    if (result?.engine !== 'openrouter-free-brain') throw new Error(`Unexpected engine for: ${input}: ${result.engine}`);
+    if (result?.engine !== 'openrouter-gemma4-free-brain') throw new Error(`Unexpected engine for: ${input}: ${result.engine}`);
         if (input === 'укладк кафел' && result.corrected !== expected) throw new Error(`Unexpected correction: ${result.corrected}`);
     if (input === 'montare faianta baie' && !/плитк/i.test(result.corrected)) throw new Error(`Romanian input not understood: ${result.corrected}`);
   }

@@ -44,6 +44,7 @@
 
   const ACTIONS=[
     {id:'install',ru:'Установка',forms:['установка','установить','поставить','поставь','поставит','устан','устанвка','устанока','instalare','instalarea','instalat','instalati','a instala','a pune','install','installation']},
+    {id:'fasten',ru:'Крепление',forms:['крепление','крепить','крепит','крепл','креплние','креплен','закрепить','закрепление','прикрепить','прикрепление','крепеж','крепёж','fixare','fixarea','fixat','a fixa','fixare motor']},
     {id:'lay',ru:'Укладка',forms:['укладка','уклад','укладк','уложить','уложит','положить','положит','покласть','покласт','faianta','faian','montare faianta','montarea faianta','laminat','parchet','montaj podea','montare podea']},
     {id:'mount',ru:'Монтаж',forms:['монтаж','монта','монтажа','смонтировать','монтировать','montaj','montare','montarea','montat','asamblare']},
     {id:'repair',ru:'Ремонт',forms:['ремонт','ремонтировать','ремонтир','починить','починка','ремнт','рмонт','поиск','устранение','устранить','ликвидация','найти протечку','reparare','repararea','reparat','a repara']},
@@ -1111,7 +1112,7 @@
   // the iPhone. The provider is forced to the free router so paid models are not
   // selected accidentally.
   const OPENROUTER_ENDPOINT='https://openrouter.ai/api/v1/chat/completions';
-  const OPENROUTER_MODEL='openrouter/free';
+  const OPENROUTER_MODEL='google/gemma-4-26b-a4b-it:free';
   const OPENROUTER_KEY_STORAGE='mg_openrouter_api_key_v1';
   let remoteBrainState='not-configured';
   let remoteBrainPromise=null;
@@ -1127,6 +1128,20 @@
     return !!k;
   }
   function hasOpenRouterKey(){return /^sk-or-v1-[A-Za-z0-9_-]+$/.test(getOpenRouterKey());}
+
+  function remoteSuggestionCompatible(candidate,input){
+    const c=clean(candidate,180); if(!c)return false;
+    const inWords=tokenise(input), cWords=tokenise(c);
+    if(inWords.length>=2 && cWords.length<2)return false;
+    const inObject=inferObject(input,[]), cObject=inferObject(c,[]);
+    if(inObject?.id && cObject?.id && inObject.id!==cObject.id)return false;
+    const inAction=inferAction(input,[]), cAction=inferAction(c,[]);
+    // When the user clearly supplied an action, the AI is not allowed to
+    // silently replace it with a different service type (e.g. «крепление» ->
+    // «утепление»). If the action is absent/ambiguous, the AI may choose one.
+    if(inAction?.id && cAction?.id && inAction.id!==cAction.id)return false;
+    return true;
+  }
 
   function parseRemoteSuggestions(content,input){
     let raw=String(content||'').trim();
@@ -1144,11 +1159,14 @@
     const out=[]; const seen=new Set();
     for(const row of rows){
       const text=cleanupGenerated(row?.text||row?.name||'');
-      if(!text||norm(text)===norm(input)||seen.has(norm(text)))continue;
-      if(tokenise(input).length>=2&&tokenise(text).length<2)continue;
-      if(text.length>180)continue;
+      if(!text||seen.has(norm(text))||text.length>180)continue;
+      const same=norm(text)===norm(input);
+      // A correct multi-word input may legitimately be returned unchanged. A
+      // lone noun must still produce service phrases rather than «confirming» it.
+      if(same && (tokenise(input).length<2 || hasSuspiciousToken(input)))continue;
+      if(!remoteSuggestionCompatible(text,input))continue;
       seen.add(norm(text));
-      out.push({text,note:String(row?.note||'Понято AI по смыслу всей фразы'),confidence:Math.max(.45,Math.min(.99,Number(row?.confidence)||.88))});
+      out.push({text,note:String(row?.note|| (same?'AI подтвердил введённую формулировку':'Понято AI по смыслу всей фразы')),confidence:Math.max(.45,Math.min(.99,Number(row?.confidence)||.88))});
       if(out.length>=5)break;
     }
     return out;
@@ -1162,26 +1180,53 @@
     }
     if(!key){remoteBrainState='not-configured';return null;}
     if(remoteBrainPromise)return remoteBrainPromise;
-    const hints=memoryHints.slice(0,8).map(x=>cleanupGenerated(x?.text||'')).filter(Boolean);
-    const prompt=[
+
+    const inputAction=inferAction(text,[]), inputObject=inferObject(text,[]);
+    // Only send memory hints that agree with the concepts in the user's phrase.
+    // Direction/catalog context is deliberately weaker than the actual text.
+    const hints=memoryHints.slice(0,10).map(x=>cleanupGenerated(x?.text||'')).filter(Boolean).filter(h=>{
+      const ho=inferObject(h,[]), ha=inferAction(h,[]);
+      if(inputObject?.id && ho?.id && inputObject.id!==ho.id)return false;
+      if(inputAction?.id && ha?.id && inputAction.id!==ha.id)return false;
+      return true;
+    }).slice(0,5);
+
+    const system=[
       'Ты — главный языковой интеллект приложения Master Group.',
-      'Твоя задача — понять СМЫСЛ ВСЕЙ фразы пользователя, а не исправлять слова по одному.',
-      'Пользователь может писать с сильными орфографическими ошибками, пропусками букв, русско-румынским смешением или транслитом.',
-      'Сначала мысленно восстанови намерение пользователя. Затем сформируй профессиональные названия услуг на русском языке.',
-      'Если исходное сообщение является одним объектом (например, «багажник»), предложи несколько реальных услуг с этим объектом: установка, ремонт, замена, монтаж и т.п. Не возвращай просто исправленный объект.',
-      'Не меняй смысл и не придумывай несвязанные работы.',
-      'Если ниже есть подсказки памяти, используй их ТОЛЬКО как справочный материал. Они могут быть ошибочными; твой смысловой анализ важнее.',
-      'Верни только JSON без Markdown в формате: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.',
-      'Максимум 5 вариантов. Первый — самый вероятный. Если уверенный вариант один, всё равно верни один.',
-      `Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}`,
-      `Уже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}`,
-      `Справочная память: ${hints.join(' | ')||'нет'}`,
-      `Исходный текст пользователя: ${clean(text)}`
+      'Понимай ВСЮ фразу целиком. Не исправляй слова механически по одному.',
+      'Пользователь может писать с сильными опечатками, пропусками букв, на русском, румынском, смешанно или транслитом.',
+      'Сначала восстанови намерение, затем сформируй профессиональное название услуги на русском.',
+      'КРИТИЧЕСКОЕ ПРАВИЛО: если во входе уже явно указан вид работы, например «крепление», «монтаж», «ремонт», «замена», «утепление», НЕ меняй его на другой вид работы.',
+      'Если указан объект, например «мотор», «багажник», «раковина», сохраняй именно этот объект. Не подменяй его другим объектом.',
+      'Направление каталога — только слабый контекст. Оно НИКОГДА не может переопределять смысл исходной фразы.',
+      'Если исходная фраза из двух и более слов уже грамматически и профессионально нормальна, верни её без изменения.',
+      'Если введён только один объект, предложи 3–5 реальных услуг с этим объектом: например «багажник» → «Установка багажника», «Монтаж багажника», «Ремонт багажника».',
+      'Не придумывай детали, цены, количество, материалы или факты.',
+      'Верни ТОЛЬКО JSON. Никаких рассуждений, Markdown, пояснений или текста до/после JSON.'
     ].join('\n');
+    const user=[
+      `Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}`,
+      `Выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}`,
+      `Справочная память (только если совпадает с объектом/действием): ${hints.join(' | ')||'нет'}`,
+      `Исходный текст пользователя: ${clean(text)}`,
+      'Верни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.'
+    ].join('\n');
+
     remoteBrainPromise=(async()=>{
       remoteBrainState='loading';
+      const controller=typeof AbortController!=='undefined'?new AbortController():null;
+      const timer=controller?setTimeout(()=>controller.abort(),6500):null;
       try{
-        const res=await fetch(OPENROUTER_ENDPOINT,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Master Group'},body:JSON.stringify({model:OPENROUTER_MODEL,messages:[{role:'system',content:'Отвечай только валидным JSON по инструкции пользователя.'},{role:'user',content:prompt}],temperature:.15,max_tokens:300})});
+        const res=await fetch(OPENROUTER_ENDPOINT,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Master Group'},signal:controller?.signal,body:JSON.stringify({
+          model:OPENROUTER_MODEL,
+          messages:[{role:'system',content:system},{role:'user',content:user}],
+          temperature:0,
+          max_tokens:120,
+          seed:7,
+          reasoning:{enabled:false},
+          response_format:{type:'json_schema',json_schema:{name:'master_group_service_suggestions',strict:true,schema:{type:'object',properties:{suggestions:{type:'array',minItems:1,maxItems:5,items:{type:'object',properties:{text:{type:'string'},note:{type:'string'},confidence:{type:'number'}},required:['text','note','confidence'],additionalProperties:false}}},required:['suggestions'],additionalProperties:false}}},
+          provider:{sort:'throughput',allow_fallbacks:true}
+        })});
         if(!res.ok){
           let detail='';try{detail=(await res.json())?.error?.message||'';}catch(_){detail=await res.text().catch(()=> '');}
           const e=new Error(detail||('OpenRouter HTTP '+res.status));e.code='OPENROUTER_HTTP_'+res.status;throw e;
@@ -1189,14 +1234,17 @@
         const data=await res.json();
         const content=data?.choices?.[0]?.message?.content||'';
         const suggestions=parseRemoteSuggestions(content,text);
-        if(!suggestions.length)throw new Error('OpenRouter returned no usable suggestions');
+        if(!suggestions.length)throw new Error('OpenRouter returned no compatible suggestions');
         remoteBrainState='ready';
-        return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:OPENROUTER_MODEL,confidence:suggestions[0].confidence};
+        return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-gemma4-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:OPENROUTER_MODEL,confidence:suggestions[0].confidence};
       }catch(err){
         remoteBrainState=hasOpenRouterKey()?'error':'not-configured';
         console.warn('Master Group OpenRouter:',err);
         return null;
-      }finally{remoteBrainPromise=null;}
+      }finally{
+        if(timer)clearTimeout(timer);
+        remoteBrainPromise=null;
+      }
     })();
     return remoteBrainPromise;
   }
@@ -1527,7 +1575,7 @@
 
   function clearCache(){CACHE.clear();}
   function getStatus(){return {
-    engine:remoteBrainState==='ready'?'openrouter-free-brain':(localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory')),
+    engine:remoteBrainState==='ready'?'openrouter-gemma4-free-brain':(localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory')),
     native:nativeState,
     localLlm:localLlmState,
     model:OPENROUTER_MODEL,
@@ -1541,5 +1589,5 @@
     configured:hasOpenRouterKey()
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v412-openrouter-free-brain'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v413-openrouter-gemma4-fast'};
 })();

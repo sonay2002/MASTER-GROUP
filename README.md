@@ -1,3 +1,11 @@
+# Master Group v413 — OpenRouter Gemma 4 Fast Brain
+
+Service-name AI now uses the free Google Gemma 4 26B A4B endpoint through OpenRouter. The phrase is sent as a whole semantic request. Local Qwen inference is not started for normal service-name suggestions.
+
+Key safeguards: pinned free model, reasoning disabled, structured JSON output, 6.5s network timeout, throughput-first provider routing, and semantic validation so an explicit action/object cannot be silently replaced by an unrelated one.
+
+The OpenRouter key remains in the browser localStorage and is not embedded in GitHub Pages source.
+
 # Master Group v408 — Semantic AI + exactly 10M external correction memory
 
 ## AI assistant

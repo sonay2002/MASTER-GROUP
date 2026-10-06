@@ -240,7 +240,7 @@ async function serviceWordSuggestions(){
       setAiStatus(message);
       console.warn('MG AI suggestions failed',err);
     }
-  },220);
+  },600);
 }
 
 function insertServiceWord(word){
