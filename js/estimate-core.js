@@ -17,7 +17,8 @@ const allItems=window.MGEstimate.allItems;
 const total=window.MGEstimate.total;
 const normalizeDirections=window.MGEstimate.normalizeDirections;
 const allItemsFromEstimate=window.MGEstimate.allItemsFromEstimate;
-document.addEventListener('input',e=>{scheduleRecoverySave();if(e.target?.id==='directionServiceQuickInput'){try{serviceWordSuggestions()}catch(err){console.warn('MG AI suggestions failed',err)}}});window.addEventListener?.('beforeunload',saveRecoveryNow);window.addEventListener?.('pagehide',saveRecoveryNow);
+document.addEventListener('input',e=>{scheduleRecoverySave();if(e.target?.id==='directionServiceQuickInput'){try{serviceWordSuggestions()}catch(err){console.warn('MG AI suggestions failed',err)}}});
+window.addEventListener?.('mg-ai-model-ready',()=>{try{const input=document.getElementById('directionServiceQuickInput');if(input?.value?.trim())serviceWordSuggestions()}catch(err){console.warn('MG AI model-ready refresh failed',err)}});window.addEventListener?.('beforeunload',saveRecoveryNow);window.addEventListener?.('pagehide',saveRecoveryNow);
 window.MGEstimateUI.init({state,catalog,cats,allItems,total,activeDir:()=>state.directions[state.activeDirection]||null,contactData,money,esc,$});
 function hasDraft(){return state.screen==='editor' && (state.directions.length||contactData().client||contactData().phone||contactData().address)}
 function draftBuild(){return {id:state.id||uid(),step:state.step,directions:JSON.parse(JSON.stringify(state.directions)),activeDirection:state.activeDirection,client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,savedAt:new Date().toLocaleString('ru-RU')}}
@@ -216,6 +217,7 @@ async function serviceWordSuggestions(){
   if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
   if(alts){alts.innerHTML='';alts.hidden=true;}
   setAiStatus('AI анализирует…');
+  try{window.MG_AI_SERVICE?.warmupLocalLlm?.();}catch(err){console.warn('MG Gemma warmup failed',err)}
   aiSuggestTimer=setTimeout(async()=>{
     try{
       const ctx=aiDirectionContext();

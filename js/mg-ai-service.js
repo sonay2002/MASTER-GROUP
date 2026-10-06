@@ -1,4 +1,4 @@
-/* Master Group — Autonomous Service Intelligence v3 · whole-text semantic memory
+/* Master Group — Autonomous Service Intelligence v4 · whole-text semantic memory + Gemma 4 E4B
  *
  * No remote AI/API is required for the service-name assistant.
  * The public API is intentionally unchanged so the current UI continues to
@@ -10,7 +10,7 @@
  *     in the Master Group catalog + concept memory;
  *  3) 10M external word memory: supporting recognition evidence only, never a
  *     visible per-token correction path for multi-word service requests;
- *  4) local generation (Qwen3) only for genuinely unresolved phrases;
+ *  4) local generation (Gemma 4 E4B) only for genuinely unresolved phrases;
  *  5) confidence/relevance guardrails: reject unrelated or malformed candidates.
  *
  * Where a browser exposes a native on-device LanguageModel, it may be used as
@@ -31,11 +31,12 @@
   // Real local generative layer. No OpenAI/Firebase/remote inference is used.
   // The model is downloaded once, cached by Transformers.js, and then runs on
   // the user's device (WebGPU when available, otherwise the local fallback).
-  const LOCAL_LLM_MODEL='onnx-community/Qwen3-0.6B-ONNX';
-  const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+  const LOCAL_LLM_MODEL='onnx-community/gemma-4-E4B-it-ONNX';
+  const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0';
   let localLlmPipeline=null;
   let localLlmState='not-loaded';
   let localLlmPromise=null;
+  let localLlmLastError='';
 
 
   const RU_VOWELS='аеёиоуыэюя';
@@ -1130,29 +1131,78 @@
     if(localLlmState==='unavailable')return null;
     if(localLlmPromise)return localLlmPromise;
     localLlmState='loading';
+    localLlmLastError='';
     localLlmPromise=(async()=>{
+      let mod=null;
+      let processor=null;
+      const buildGenerator=async(device,dtype)=>{
+        const {AutoProcessor,Gemma4ForConditionalGeneration}=mod;
+        if(!processor)processor=await AutoProcessor.from_pretrained(LOCAL_LLM_MODEL);
+        const model=await Gemma4ForConditionalGeneration.from_pretrained(LOCAL_LLM_MODEL,{device,dtype});
+        const generator=async(messages,opts={})=>{
+          const prompt=processor.apply_chat_template(messages,{enable_thinking:false,add_generation_prompt:true});
+          const inputs=await processor(prompt,{add_special_tokens:false});
+          // Gemma 4's ONNX decoder must keep only the last token's logits during
+          // generation. Transformers.js 4.3.0 fixes this upstream; passing it
+          // explicitly also protects us from regressions and large-prompt OOMs.
+          const outputs=await model.generate({
+            ...inputs,
+            max_new_tokens:opts.max_new_tokens||32,
+            do_sample:false,
+            num_logits_to_keep:1
+          });
+          const decoded=processor.batch_decode(outputs.slice(null,[inputs.input_ids.dims.at(-1),null]),{skip_special_tokens:true});
+          return [{generated_text:String(decoded?.[0]||'')}];
+        };
+        generator.tokenizer=processor.tokenizer;
+        return generator;
+      };
       try{
-        const mod=await import(LOCAL_LLM_CDN);
-        const {pipeline,env}=mod;
-        // Use browser cache so that after the first model download, inference is
-        // local even with the network switched off. Remote models are allowed
-        // only for that initial model acquisition.
+        mod=await import(LOCAL_LLM_CDN);
+        const {env}=mod;
+        // Model files are fetched from Hugging Face on first use and cached in
+        // the browser. Inference itself is local to the user's device.
         if(env?.useBrowserCache!==undefined)env.useBrowserCache=true;
         if(env?.allowRemoteModels!==undefined)env.allowRemoteModels=true;
-        const webgpu=isWebGPUAvailable();
-        const options=webgpu
-          ? {device:'webgpu',dtype:'q4f16'}
-          : {device:'wasm',dtype:'q4'};
-        localLlmPipeline=await pipeline('text-generation',LOCAL_LLM_MODEL,options);
-        localLlmState=webgpu?'ready-webgpu':'ready-wasm';
-        return localLlmPipeline;
+        if(env?.useFSCache!==undefined)env.useFSCache=false;
+        try{
+          const canGpu=typeof navigator!=='undefined' && navigator.gpu && (await navigator.gpu.requestAdapter())!=null;
+          if(canGpu){
+            try{
+              localLlmPipeline=await buildGenerator('webgpu','q4f16');
+              localLlmState='ready-webgpu';
+              return localLlmPipeline;
+            }catch(gpuErr){
+              console.warn('Master Group Gemma WebGPU load failed; trying WASM',gpuErr);
+            }
+          }
+          localLlmPipeline=await buildGenerator('wasm','q4');
+          localLlmState='ready-wasm';
+          return localLlmPipeline;
+        }catch(err){
+          localLlmLastError=String(err?.message||err||'Unknown model loading error');
+          localLlmState='unavailable';
+          console.warn('Master Group local Gemma 4 E4B unavailable',err);
+          return null;
+        }
       }catch(err){
+        localLlmLastError=String(err?.message||err||'Unknown Transformers.js loading error');
         localLlmState='unavailable';
-        console.warn('Master Group local LLM unavailable',err);
+        console.warn('Master Group Transformers.js unavailable',err);
         return null;
       }finally{localLlmPromise=null;}
     })();
     return localLlmPromise;
+  }
+
+  function warmupLocalLlm(){
+    if(!isBrowserRuntime())return Promise.resolve(false);
+    return ensureLocalLlm().then(model=>{
+      if(model){
+        try{window.dispatchEvent(new CustomEvent('mg-ai-model-ready',{detail:{engine:'gemma-4-e4b',state:localLlmState}}));}catch(_){ }
+      }
+      return !!model;
+    }).catch(()=>false);
   }
 
   function extractGeneratedText(output){
@@ -1187,26 +1237,15 @@
     const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nПредварительная смысловая интерпретация: ${clean(semanticBrainPhrase(text,direction,selectedServices)?.text)||'нет'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\nРезультат предварительного поиска во внешней памяти словаря: ${clean(retrievedText)||'нет данных'}\n\nВерни только правильное название услуги на русском.`;
     const messages=[{role:'system',content:system},{role:'user',content:user}];
     try{
-      let output;
-      try{
-        const tokenizer=generator.tokenizer;
-        if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
-          const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
-          output=await generator(prompt,{max_new_tokens:48,do_sample:false,return_full_text:false});
-        }else{
-          output=await generator(messages,{max_new_tokens:48,do_sample:false});
-        }
-      }catch(firstErr){
-        output=await generator(messages,{max_new_tokens:48,do_sample:false});
-      }
+      const output=await generator(messages,{max_new_tokens:48,do_sample:false});
       const corrected=extractGeneratedText(output);
       if(!corrected||corrected.length<2||corrected.length>180)return null;
       if(/^(не могу|я не могу|не знаю|не удалось|как исправить)/i.test(corrected))return null;
       return {
         corrected,
-        suggestions:[{text:corrected,note:localLlmState==='ready-webgpu'?'Локальная AI-модель Qwen3 на устройстве':'Локальная AI-модель Qwen3 (CPU)',confidence:.96}],
+        suggestions:[{text:corrected,note:localLlmState==='ready-webgpu'?'Локальная AI-модель Gemma 4 E4B на устройстве':'Локальная AI-модель Gemma 4 E4B (CPU)',confidence:.96}],
         changed:norm(corrected)!==norm(text),
-        engine:'local-llm-qwen3-0.6b',
+        engine:'local-llm-gemma-4-e4b',
         offline:true,
         modelCached:true,
         remoteInference:false,
@@ -1225,16 +1264,11 @@
     const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nИсходный текст: ${clean(text)}\nПроверь особенно слова с пропущенными, лишними, переставленными или заменёнными буквами. Верни исправленный вариант либо исходный текст, если он действительно без ошибок.`;
     try{
       const messages=[{role:'system',content:system},{role:'user',content:user}];
-      let output;
-      const tokenizer=generator.tokenizer;
-      if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
-        const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
-        output=await generator(prompt,{max_new_tokens:48,do_sample:false,return_full_text:false});
-      }else output=await generator(messages,{max_new_tokens:48,do_sample:false});
+      const output=await generator(messages,{max_new_tokens:48,do_sample:false});
       const corrected=extractGeneratedText(output);
       if(!corrected||corrected.length<2||corrected.length>180)return null;
-      return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Qwen3',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-qwen3-0.6b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
-    }catch(err){console.warn('Master Group Qwen3 repair failed',err);return null;}
+      return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Gemma 4 E4B',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-gemma-4-e4b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
+    }catch(err){console.warn('Master Group Gemma 4 E4B repair failed',err);return null;}
   }
 
   function hasSuspiciousToken(text){
@@ -1316,6 +1350,16 @@
           if(!canonicalForms.some(f=>f && norm(x).includes(f)))return false;
         }
       }
+      // Reject malformed/redundant word sequences that are a common signature
+      // of degenerate local-model output (for example: «канализац канализации»).
+      const candWords=tokenise(x);
+      for(let i=0;i<candWords.length-1;i++){
+        const a=norm(candWords[i]),b=norm(candWords[i+1]);
+        if(a===b && a.length>=5)return false;
+        const min=Math.min(a.length,b.length), max=Math.max(a.length,b.length);
+        if(min>=6 && max-min<=3 && a.slice(0,Math.min(8,min))===b.slice(0,Math.min(8,min)) && levenshtein(a,b,3)<=3)return false;
+      }
+      if(/\b(?:травы|трава)\s+канализац\b/i.test(x))return false;
       // Do not show a candidate that simply copies a clearly malformed token
       // from the request while claiming to be a correction.
       const src=inputWords; const dst=tokenise(x);
@@ -1356,7 +1400,7 @@
       confidence:combined[0]?.confidence||dict?.confidence||local?.confidence||.45
     };
 
-    // Qwen3 is reserved for cases where retrieval + deterministic context are not
+    // Gemma 4 E4B is reserved for cases where retrieval + deterministic context are not
     // enough, or where the original input still contains suspicious tokens.
     let llm=null;
     const suspicious=hasSuspiciousToken(input);
@@ -1365,24 +1409,34 @@
     const phraseMemoryStrong=memorySuggestions.some(x=>Number(x.confidence||0)>=.90 && tokenise(x.text).length>=2);
     const multiToken=tokenise(input).length>=2;
     const shortInput=tokenise(input).length<=2;
-    // Qwen is reserved for cases where whole-text phrase memory and deterministic
+    // Gemma 4 E4B is reserved for cases where whole-text phrase memory and deterministic
     // reasoning are genuinely uncertain. This keeps normal typing fast and avoids
-    // loading the 0.6B model for every short word.
+    // loading the Gemma 4 E4B model for every short word.
     const needsDeep=!phraseMemoryStrong&&!semanticStrong&&(suspicious||shortInput||multiToken&&localResult.confidence<.90||!localResult.suggestions.length);
     if(needsDeep) try{
-      const nativePromise=nativeSuggest(input,direction,services);
-      llm=await Promise.race([nativePromise,new Promise(resolve=>setTimeout(()=>resolve(null),1400))]);
-      if(!llm){
-        const llmPromise=localLlmSuggest(input,direction,services,retrievedText);
-        const responseGuard=localLlmState==='loading'?2200:3000;
-        llm=await Promise.race([llmPromise,new Promise(resolve=>setTimeout(()=>resolve(null),responseGuard))]);
+      // Gemma 4 E4B is the configured generative brain. On the first use we
+      // start loading it in the background rather than blocking the field.
+      if(localLlmState==='not-loaded')warmupLocalLlm();
+      if(localLlmState==='ready-webgpu' || localLlmState==='ready-wasm'){
+        llm=await localLlmSuggest(input,direction,services,retrievedText);
+      }
+      // Native LanguageModel is only a last-resort device fallback when Gemma
+      // could not be loaded; it is never preferred over Gemma.
+      if(!llm && localLlmState==='unavailable'){
+        const nativePromise=nativeSuggest(input,direction,services);
+        llm=await Promise.race([nativePromise,new Promise(resolve=>setTimeout(()=>resolve(null),1400))]);
       }
     }catch(_){llm=null;}
-    let result=llm||localResult;
+
+    // Never allow raw model text to bypass the same relevance guardrails used
+    // by deterministic candidates. This is the protection against nonsense
+    // like an unrelated noun, malformed agreement, or repeated garbage.
+    const safeLlm = llm && isQualitySuggestion(llm.corrected) ? llm : null;
+    let result=safeLlm||localResult;
     if(result?.corrected && localResult?.corrected && norm(result.corrected)===norm(input) && norm(localResult.corrected)!==norm(input)){
       result={...localResult,uncertain:true};
     }
-    // If Qwen echoes the input while dictionary/local retrieval found a candidate,
+    // If the local model echoes the input while dictionary/local retrieval found a candidate,
     // keep the recovered candidate rather than incorrectly declaring the text correct.
     if(result && norm(result.corrected||'')===norm(input) && localResult.changed){
       result={...localResult,uncertain:true};
@@ -1396,10 +1450,10 @@
       // corrected noun. A one-word semantic output is therefore not allowed to
       // override a multi-word phrase already retrieved from memory.
       const bareSingleConcept=(inputWords===1);
-      const modelBacked=['native-local-ai','local-llm-qwen3-0.6b'].includes(result.engine);
+      const modelBacked=['native-local-ai','local-llm-gemma-4-e4b'].includes(result.engine);
       const semanticIsBetter=!bareSingleConcept && (!modelBacked || !result.changed || result.confidence<semanticCandidate.confidence);
       if(semanticIsBetter){
-        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v410'};
+        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v412'};
       }
     }
     if(result && !result.changed && suspicious){
@@ -1411,7 +1465,7 @@
 
   function clearCache(){CACHE.clear();}
   function getStatus(){return {
-    engine:localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory'),
+    engine:localLlmState.startsWith('ready')?'local-llm-gemma-4-e4b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory'),
     native:nativeState,
     localLlm:localLlmState,
     model:LOCAL_LLM_MODEL,
@@ -1420,8 +1474,11 @@
     offline:true,
     remoteInference:false,
     remoteApi:false,
-    remoteHost:false
+    remoteHost:false,
+    firstRunNeedsNetwork:true,
+    localInference:true,
+    modelError:localLlmLastError
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v410-10m-whole-text-semantic-memory-qwen3'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,warmupLocalLlm,esc,region:null,version:'v413-10m-whole-text-semantic-memory-gemma4-e4b'};
 })();

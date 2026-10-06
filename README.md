@@ -2,7 +2,7 @@
 
 ## AI assistant
 
-The service-name assistant now has a real local generative layer based on **Qwen3-0.6B** running in the browser through Transformers.js/ONNX. There is no OpenAI API, Firebase Function, or remote inference call in the service-name AI path. The current UI contract is unchanged: the user types in the service field and the proposed Russian wording appears **above the field**.
+The service-name assistant now has a real local generative layer based on **Gemma 4 E4B** running in the browser through Transformers.js/ONNX. There is no OpenAI API, Firebase Function, or remote inference call in the service-name AI path. The current UI contract is unchanged: the user types in the service field and the proposed Russian wording appears **above the field**.
 
 The model is downloaded on first use and cached by the browser; after the model is cached, generation is performed on the user's device. WebGPU is used when available; CPU/WASM is used when it is not. Transformers.js supports browser-side ONNX execution and browser caching for models.
 
@@ -21,17 +21,17 @@ The smaller local model still cannot guarantee a correct interpretation of liter
 
 ### Processing layers
 
-1. Local Qwen3 generative model: reconstruct meaning and formulate a professional Russian service name.
+1. Local Gemma 4 E4B generative model: reconstruct meaning and formulate a professional Russian service name.
 2. Existing deterministic Master Group language engine as a fast fallback.
 3. Catalog grounding for known services without restricting unknown services.
 4. Guardrails for quantities, units, prices, locations and unsupported facts.
 5. Optional browser-native on-device LanguageModel enhancement when the platform exposes it.
 
-Qwen3 is multilingual and explicitly supports both Russian and Romanian, which is useful for this application.
+Gemma 4 E4B is multilingual and explicitly supports both Russian and Romanian, which is useful for this application.
 
 ### First-run behavior
 
-The local model is approximately **570 MB** for the `q4f16` WebGPU weight currently used by this build. It is not embedded into the small application archive because doing that would turn a ~1–2 MB app into a several-hundred-megabyte deployment. The browser downloads it once and caches it.
+The model is several hundred MB in the browser cache for the `q4f16` WebGPU weight currently used by this build. It is not embedded into the small application archive because doing that would turn a ~1–2 MB app into a several-hundred-megabyte deployment. The browser downloads it once and caches it.
 
 This means:
 

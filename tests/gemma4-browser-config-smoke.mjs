@@ -1,0 +1,13 @@
+import fs from 'fs';
+import assert from 'assert';
+const ai=fs.readFileSync(new URL('../js/mg-ai-service.js',import.meta.url),'utf8');
+assert(ai.includes("const LOCAL_LLM_MODEL='onnx-community/gemma-4-E4B-it-ONNX'"));
+assert(ai.includes("const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0'"));
+assert(ai.includes("Gemma4ForConditionalGeneration"));
+assert(ai.includes("buildGenerator('webgpu','q4f16')"));
+assert(ai.includes("buildGenerator('wasm','q4')"));
+assert(ai.includes('num_logits_to_keep:1'));
+assert(ai.includes("enable_thinking:false"));
+assert(ai.includes("remoteInference:false"));
+assert(ai.includes("warmupLocalLlm"));
+console.log('Gemma 4 browser config smoke: PASS');
