@@ -27,6 +27,16 @@
   let nativeState='unknown';
   let nativePromise=null;
 
+  // Real local generative layer. No OpenAI/Firebase/remote inference is used.
+  // The model is downloaded once, cached by Transformers.js, and then runs on
+  // the user's device (WebGPU when available, otherwise the local fallback).
+  const LOCAL_LLM_MODEL='onnx-community/Qwen3-0.6B-ONNX';
+  const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+  let localLlmPipeline=null;
+  let localLlmState='not-loaded';
+  let localLlmPromise=null;
+
+
   const RU_VOWELS='аеёиоуыэюя';
   const RO_VOWELS='aeiouăâî';
   const escRe=/[&<>"']/g;
@@ -614,6 +624,101 @@
     return {corrected,suggestions:suggestions.slice(0,3),changed:norm(corrected)!==norm(text),engine:'master-local-ai-open-v4',offline:true,confidence:suggestions[0]?.confidence||.35};
   }
 
+  function isBrowserRuntime(){
+    try{return typeof window!=='undefined' && typeof document!=='undefined';}catch(_){return false;}
+  }
+
+  function isWebGPUAvailable(){
+    try{return typeof navigator!=='undefined' && !!navigator.gpu;}catch(_){return false;}
+  }
+
+  async function ensureLocalLlm(){
+    if(!isBrowserRuntime())return null;
+    if(localLlmPipeline)return localLlmPipeline;
+    if(localLlmState==='unavailable')return null;
+    if(localLlmPromise)return localLlmPromise;
+    localLlmState='loading';
+    localLlmPromise=(async()=>{
+      try{
+        const mod=await import(LOCAL_LLM_CDN);
+        const {pipeline,env}=mod;
+        // Use browser cache so that after the first model download, inference is
+        // local even with the network switched off. Remote models are allowed
+        // only for that initial model acquisition.
+        if(env?.useBrowserCache!==undefined)env.useBrowserCache=true;
+        if(env?.allowRemoteModels!==undefined)env.allowRemoteModels=true;
+        const webgpu=isWebGPUAvailable();
+        const options=webgpu
+          ? {device:'webgpu',dtype:'q4f16'}
+          : {device:'wasm',dtype:'q4'};
+        localLlmPipeline=await pipeline('text-generation',LOCAL_LLM_MODEL,options);
+        localLlmState=webgpu?'ready-webgpu':'ready-wasm';
+        return localLlmPipeline;
+      }catch(err){
+        localLlmState='unavailable';
+        console.warn('Master Group local LLM unavailable',err);
+        return null;
+      }finally{localLlmPromise=null;}
+    })();
+    return localLlmPromise;
+  }
+
+  function extractGeneratedText(output){
+    let out='';
+    try{
+      const item=Array.isArray(output)?output[0]:output;
+      if(typeof item==='string')out=item;
+      else if(Array.isArray(item?.generated_text)){
+        const last=item.generated_text[item.generated_text.length-1];
+        out=typeof last==='string'?last:String(last?.content||'');
+      }else out=String(item?.generated_text||item?.text||'');
+    }catch(_){out='';}
+    out=String(out||'')
+      .replace(/<think>[\s\S]*?<\/think>/gi,'')
+      .replace(/```[\s\S]*?```/g,'')
+      .replace(/^(?:ответ|правильная формулировка|название услуги)\s*[:—-]\s*/i,'')
+      .split(/\n+/).map(x=>x.trim()).find(Boolean)||'';
+    return cleanupGenerated(out);
+  }
+
+  async function localLlmSuggest(text,direction,selectedServices){
+    const generator=await ensureLocalLlm();
+    if(!generator)return null;
+    const system=`Ты локальный AI-помощник приложения Master Group.\nТвоя единственная задача — восстановить и грамотно сформулировать название услуги по тексту пользователя.\nПользователь может писать с грубыми орфографическими ошибками, пропускать буквы, писать по-русски на слух, русскими словами в латинице, по-румынски, смешивать русский/румынский/латиницу и использовать разговорные сокращения.\nПонимай СМЫСЛ по всему вводу, а не ищи точное совпадение в каталоге. Не ограничивайся известными услугами каталога: неизвестные объекты и новые услуги разрешены.\nВерни ОДНУ короткую профессиональную формулировку на русском языке, без объяснений, кавычек, списков и рассуждений.\nНе добавляй цену, количество, единицу измерения, материалы, размеры, адрес или другие факты, которых нет во вводе.\nНапример: «крепл мотора» → «Крепление мотора»; «krеpl motora» → «Крепление мотора»; «prindere motor» → «Крепление мотора»; «свeрл дырк бет» → «Сверление отверстия в бетоне».`;
+    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\n\nВерни только правильное название услуги на русском.`;
+    const messages=[{role:'system',content:system},{role:'user',content:user}];
+    try{
+      let output;
+      try{
+        const tokenizer=generator.tokenizer;
+        if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
+          const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
+          output=await generator(prompt,{max_new_tokens:48,do_sample:false,return_full_text:false});
+        }else{
+          output=await generator(messages,{max_new_tokens:48,do_sample:false});
+        }
+      }catch(firstErr){
+        output=await generator(messages,{max_new_tokens:48,do_sample:false});
+      }
+      const corrected=extractGeneratedText(output);
+      if(!corrected||corrected.length<2||corrected.length>180)return null;
+      if(/^(не могу|я не могу|не знаю|не удалось|как исправить)/i.test(corrected))return null;
+      return {
+        corrected,
+        suggestions:[{text:corrected,note:localLlmState==='ready-webgpu'?'Локальная AI-модель Qwen3 на устройстве':'Локальная AI-модель Qwen3 (CPU)',confidence:.96}],
+        changed:norm(corrected)!==norm(text),
+        engine:'local-llm-qwen3-0.6b',
+        offline:true,
+        modelCached:true,
+        remoteInference:false,
+        confidence:.96
+      };
+    }catch(err){
+      console.warn('Master Group local LLM generation failed',err);
+      return null;
+    }
+  }
+
   async function ensureNativeSession(){
     if(nativeState==='unavailable')return null;
     if(nativeSession)return nativeSession;
@@ -646,21 +751,39 @@
   }
 
   async function suggestServiceName({text,direction='',selectedServices=[]}={}){
-    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai-open-v4',offline:true,confidence:1};
+    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'local-llm-qwen3-0.6b',offline:true,confidence:1};
     const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
     if(CACHE.has(key))return CACHE.get(key);
 
     const local=fallback(input,direction,services);
-    // Native on-device generation is an optional enhancement. The autonomous
-    // Master Group engine remains fully functional without it.
-    const native=await nativeSuggest(input,direction,services);
-    const result=native||local;
+    // Real local generative AI is primary. A short timeout prevents the UI from
+    // becoming unusable on the very first visit while the ~570 MB model is
+    // downloading/caching. Once cached, generation stays on-device.
+    let llm=null;
+    try{
+      llm=await Promise.race([
+        localLlmSuggest(input,direction,services),
+        new Promise(resolve=>setTimeout(()=>resolve(null),2600))
+      ]);
+    }catch(_){llm=null;}
+    // The native browser on-device model is another fully local enhancement.
+    const native=llm?null:await nativeSuggest(input,direction,services);
+    const result=llm||native||local;
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
     return result;
   }
 
   function clearCache(){CACHE.clear();}
-  function getStatus(){return {engine:nativeState==='available'?'native-local-ai':'master-local-ai-v2',native:nativeState,offline:true,remoteApi:false,remoteHost:false};}
+  function getStatus(){return {
+    engine:localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-local-ai-v2'),
+    native:nativeState,
+    localLlm:localLlmState,
+    model:LOCAL_LLM_MODEL,
+    offline:true,
+    remoteInference:false,
+    remoteApi:false,
+    remoteHost:false
+  };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v380-local-ai-open-v4'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v381-local-llm-qwen3'};
 })();
