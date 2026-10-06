@@ -1,0 +1,27 @@
+Master Group v35 — AI-like fuzzy dictionary verification
+
+Verified on 2026-10-06.
+
+Checks passed:
+- JavaScript syntax check for all application, dictionary and test files.
+- calculations-smoke.js
+- data-model-smoke.js
+- finance-sync-smoke.js
+- firebase-sync-boundary-smoke.js
+- offline-engine-smoke.js
+- settings-navigation-smoke.js
+- smart-dictionary-load-order-smoke.js
+- smart-dictionary-smoke.js
+- smart-dictionary-v29-input-smoke.js
+- smart-dictionary-v35-fuzzy-stress.js
+
+Fuzzy engine features verified:
+- Strong typo tolerance with missing, extra and transposed letters.
+- Phonetic/consonant-skeleton matching for heavily damaged Russian words.
+- Context-aware suggestions inside estimate service names.
+- Protection of already-correct/common words from destructive rewrites.
+- Grammar-aware surface matching for common inflected forms such as `трави` -> `травы`.
+- Service-worker cache version bumped to master-group-v35-ai-fuzzy-final.
+
+Important limitation:
+The app is an offline deterministic fuzzy engine, not a hosted generative AI model. It cannot honestly guarantee 100% semantic accuracy for every possible Russian word or sentence, especially a completely unrelated or extremely ambiguous string. The implemented behavior is designed to recover strongly damaged words when the intended word exists in the local vocabulary/context.

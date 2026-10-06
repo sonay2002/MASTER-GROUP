@@ -1,4 +1,4 @@
-# Master Group v32 — GitHub-ready
+# Master Group v35 — GitHub-ready
 
 This is a static PWA. The application entry point is `index.html` in the repository root.
 
@@ -24,4 +24,5 @@ node tests/offline-engine-smoke.js
 node tests/smart-dictionary-load-order-smoke.js
 node tests/smart-dictionary-smoke.js
 node tests/smart-dictionary-v29-input-smoke.js
+node tests/smart-dictionary-v35-fuzzy-stress.js
 ```

@@ -216,8 +216,9 @@ function insertServiceWord(word){
 }
 function addOneTimeDirectionService(){
  const el=$('directionServiceQuickInput');
- const n=String(el?.value||'').trim();
- if(!n)return toast('Введите название услуги');
+ const raw=String(el?.value||'').trim();
+ if(!raw)return toast('Введите название услуги');
+ const n=window.MG_SMART_DICT?.correctText ? window.MG_SMART_DICT.correctText(raw).trim() : raw;
  let d=activeDir();
  if(!d && state.pendingDirectionName){
    d={name:state.pendingDirectionName,items:[]};

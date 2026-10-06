@@ -1,5 +1,5 @@
 /* Master Group v375 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v32-smart-dictionary-final';
+const CACHE = 'master-group-v35-ai-fuzzy-final';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
