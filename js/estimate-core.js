@@ -126,10 +126,10 @@ function resetServiceAiState(){
   const main=card?.querySelector('[data-ai-apply]');
   const alts=$('directionServiceAiAlternatives');
   const status=$('directionServiceAiStatus');
-  if(card)card.hidden=true;
-  if(main){main.textContent='';main.disabled=true;main.dataset.aiApply='';}
+  if(card)card.hidden=false;
+  if(main){main.textContent='Введите название услуги — AI поможет исправить';main.disabled=true;main.dataset.aiApply='';}
   if(alts){alts.innerHTML='';alts.hidden=true;}
-  if(status)status.textContent='';
+  if(status)status.textContent='AI готов к работе';
 }
 window.__mgResetServiceAi=resetServiceAiState;
 
@@ -139,8 +139,24 @@ function aiSetSuggestion(result,inputValue){
   aiLastResult=result||null;
   const suggestions=Array.isArray(result?.suggestions)?result.suggestions.filter(x=>x?.text):[];
   const corrected=String(result?.corrected||suggestions[0]?.text||'').trim();
-  if(!corrected || corrected===String(inputValue||'').trim()){
-    card.hidden=true;
+  if(!corrected){
+    main.dataset.aiApply='';
+    main.textContent='AI не нашёл готовую формулировку';
+    main.disabled=true;
+    alts.innerHTML='';
+    alts.hidden=true;
+    status.textContent='Можно продолжить ввод или добавить исходный текст';
+    card.hidden=false;
+    return;
+  }
+  if(corrected===String(inputValue||'').trim()){
+    main.dataset.aiApply=corrected;
+    main.textContent='Текст уже выглядит корректно';
+    main.disabled=true;
+    alts.innerHTML='';
+    alts.hidden=true;
+    status.textContent='AI проверил введённый текст';
+    card.hidden=false;
     return;
   }
   main.dataset.aiApply=corrected;
@@ -167,7 +183,11 @@ async function serviceWordSuggestions(){
   const seq=++aiRequestSeq;
   clearTimeout(aiSuggestTimer);
   aiActiveValue=value;
-  if(value.length<2){hideServiceWordSuggestions();return;}
+  if(value.length<2){
+    resetServiceAiState();
+    aiActiveValue=value;
+    return;
+  }
   const card=$('directionServiceAiSuggestion');
   const main=card?.querySelector('[data-ai-apply]');
   const alts=$('directionServiceAiAlternatives');

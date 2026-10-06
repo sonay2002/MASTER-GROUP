@@ -72,9 +72,11 @@
     const quick=ctx.$('directionServiceQuickInput');
     if(quick)quick.value='';
     const ai=ctx.$('directionServiceAiSuggestion');
-    if(ai)ai.hidden=true;
+    if(ai)ai.hidden=false;
     const aiStatus=ctx.$('directionServiceAiStatus');
-    if(aiStatus)aiStatus.textContent='';
+    if(aiStatus)aiStatus.textContent='AI готов к работе';
+    const aiMain=ai?.querySelector('[data-ai-apply]');
+    if(aiMain){aiMain.textContent='Введите название услуги — AI поможет исправить';aiMain.disabled=true;aiMain.dataset.aiApply='';}
   }
   function openDirectionServiceModal(){
     const overlay=ctx.$('directionServiceOverlay');

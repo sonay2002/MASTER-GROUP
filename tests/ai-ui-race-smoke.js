@@ -41,7 +41,7 @@ vm.createContext(context);vm.runInContext(source,context,{filename:'estimate-cor
   if(els.aiMain.textContent!=='Второе слово — актуальный результат') throw new Error('Stale AI result overwrote current input');
   context.window.__mgResetServiceAi();
   await new Promise(r=>setTimeout(r,100));
-  if(!els.directionServiceAiSuggestion.hidden) throw new Error('Reset did not hide AI card');
+  if(els.directionServiceAiSuggestion.hidden) throw new Error('Reset incorrectly hid persistent AI card');
   if(calls<2) throw new Error('Expected both test requests to run');
   console.log('AI UI race smoke: PASS');
 })();
