@@ -756,14 +756,21 @@
     if(CACHE.has(key))return CACHE.get(key);
 
     const local=fallback(input,direction,services);
-    // Real local generative AI is primary. A short timeout prevents the UI from
-    // becoming unusable on the very first visit while the ~570 MB model is
-    // downloading/caching. Once cached, generation stays on-device.
+    // Real local generative AI is primary. A short first-response guard prevents the UI from
+    // waiting on the ~570 MB model during its first download/cache. The model
+    // load itself is not cancelled, so Qwen3 remains available for subsequent
+    // requests and the full local AI pipeline is preserved. Once cached, generation stays on-device.
     let llm=null;
     try{
+      const llmPromise=localLlmSuggest(input,direction,services);
+      // During the first model download, do not block the UI for the whole
+      // download. Once Qwen3 is already loaded, give local inference a little
+      // more time so the real generative model can return instead of being
+      // prematurely replaced by a fallback on slower devices.
+      const responseGuard=localLlmState==='loading'?1200:1800;
       llm=await Promise.race([
-        localLlmSuggest(input,direction,services),
-        new Promise(resolve=>setTimeout(()=>resolve(null),2600))
+        llmPromise,
+        new Promise(resolve=>setTimeout(()=>resolve(null),responseGuard))
       ]);
     }catch(_){llm=null;}
     // The native browser on-device model is another fully local enhancement.
@@ -785,5 +792,5 @@
     remoteHost:false
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v381-local-llm-qwen3'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v384-local-llm-qwen3-stable-ui'};
 })();

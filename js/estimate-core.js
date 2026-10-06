@@ -114,6 +114,24 @@ function aiDirectionContext(){
 let aiSuggestTimer=null;
 let aiRequestSeq=0;
 let aiLastResult=null;
+let aiActiveValue='';
+
+function resetServiceAiState(){
+  aiRequestSeq++;
+  clearTimeout(aiSuggestTimer);
+  aiSuggestTimer=null;
+  aiLastResult=null;
+  aiActiveValue='';
+  const card=$('directionServiceAiSuggestion');
+  const main=card?.querySelector('[data-ai-apply]');
+  const alts=$('directionServiceAiAlternatives');
+  const status=$('directionServiceAiStatus');
+  if(card)card.hidden=true;
+  if(main){main.textContent='';main.disabled=true;main.dataset.aiApply='';}
+  if(alts){alts.innerHTML='';alts.hidden=true;}
+  if(status)status.textContent='';
+}
+window.__mgResetServiceAi=resetServiceAiState;
 
 function aiSetSuggestion(result,inputValue){
   const card=$('directionServiceAiSuggestion'),main=$('directionServiceAiSuggestion')?.querySelector('[data-ai-apply]'),alts=$('directionServiceAiAlternatives'),status=$('directionServiceAiStatus');
@@ -135,11 +153,7 @@ function aiSetSuggestion(result,inputValue){
   card.hidden=false;
 }
 
-function hideServiceWordSuggestions(){
-  const card=$('directionServiceAiSuggestion');
-  if(card){card.hidden=true;}
-  aiLastResult=null;
-}
+function hideServiceWordSuggestions(){resetServiceAiState();}
 
 function setAiStatus(text){
   const status=$('directionServiceAiStatus');
@@ -150,32 +164,35 @@ async function serviceWordSuggestions(){
   const input=$('directionServiceQuickInput');
   if(!input)return;
   const value=String(input.value||'').trim();
-  if(value.length<2){hideServiceWordSuggestions();return;}
   const seq=++aiRequestSeq;
   clearTimeout(aiSuggestTimer);
+  aiActiveValue=value;
+  if(value.length<2){hideServiceWordSuggestions();return;}
+  const card=$('directionServiceAiSuggestion');
+  const main=card?.querySelector('[data-ai-apply]');
+  const alts=$('directionServiceAiAlternatives');
+  // Keep one stable card for the current input instead of letting previous
+  // results blink in and out while debounce/model stages are running.
+  if(card)card.hidden=false;
+  if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
+  if(alts){alts.innerHTML='';alts.hidden=true;}
+  setAiStatus('AI анализирует…');
   aiSuggestTimer=setTimeout(async()=>{
     try{
       const ctx=aiDirectionContext();
-      const card=$('directionServiceAiSuggestion');
-      const main=card?.querySelector('[data-ai-apply]');
-      const alts=$('directionServiceAiAlternatives');
-      if(card)card.hidden=false;
-      if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
-      if(alts){alts.innerHTML='';alts.hidden=true;}
-      setAiStatus('Локальный интеллект понимает смысл и формулирует правильное название');
       const result=await window.MG_AI_SERVICE.suggestServiceName({text:value,direction:ctx.direction,selectedServices:ctx.selectedServices});
-      if(seq!==aiRequestSeq || value!==String(input.value||'').trim())return;
+      if(seq!==aiRequestSeq || value!==String(input.value||'').trim() || value!==aiActiveValue)return;
       aiSetSuggestion(result,value);
     }catch(err){
-      if(seq!==aiRequestSeq)return;
+      if(seq!==aiRequestSeq || value!==aiActiveValue)return;
       const card=$('directionServiceAiSuggestion');
       const main=card?.querySelector('[data-ai-apply]');
       const alts=$('directionServiceAiAlternatives');
       if(card)card.hidden=false;
-      if(main){main.textContent='';main.disabled=true;main.dataset.aiApply='';}
+      if(main){main.textContent='AI временно не дал результат';main.disabled=true;main.dataset.aiApply='';}
       if(alts){alts.innerHTML='';alts.hidden=true;}
       const code=String(err?.code||'').toLowerCase();
-      let message='AI временно недоступен — можно добавить исходный текст.';
+      let message='Можно добавить исходный текст вручную.';
       if(code.includes('unauthenticated')) message='Войдите в аккаунт Master Group, чтобы использовать AI.';
       else if(code.includes('failed-precondition')) message='AI ещё не настроен на сервере.';
       else if(code.includes('not-found')) message='AI-сервис не опубликован на сервере.';
@@ -184,7 +201,7 @@ async function serviceWordSuggestions(){
       setAiStatus(message);
       console.warn('MG AI suggestions failed',err);
     }
-  },650);
+  },220);
 }
 
 function insertServiceWord(word){

@@ -56,6 +56,7 @@
     const icon=ctx.$('directionServiceIcon');
     const d=ctx.state.directions?.[ctx.state.activeDirection] || (ctx.state.pendingDirectionName ? {name:ctx.state.pendingDirectionName,items:[]} : null);
     if(!overlay||!list||!d)return;
+    try{window.__mgResetServiceAi?.()}catch(_){}
     const cd=ctx.catalog.find(x=>x.name===d.name);
     const services=cd?.services||[];
     if(title)title.textContent=d.name;
@@ -83,6 +84,7 @@
     requestAnimationFrame(()=>overlay.classList.add('open'));
   }
   function closeDirectionServiceModal(){
+    try{window.__mgResetServiceAi?.()}catch(_){}
     const overlay=ctx.$('directionServiceOverlay');
     if(!overlay)return;
     // A direction is considered selected only after at least one service is chosen.

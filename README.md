@@ -1,4 +1,4 @@
-# Master Group v382 — Local Generative AI + Floating Suggestion
+# Master Group v383 — Local Generative AI + Floating Suggestion
 
 ## AI assistant
 
@@ -59,5 +59,5 @@ node tests/settings-navigation-smoke.js
 ```
 
 
-## UI change in v382
+## UI change in v383
 The AI suggestion is now positioned as a compact floating layer above the service input. It is removed from normal document flow, so the input, Add button, service list, and modal height do not move when the suggestion appears.
