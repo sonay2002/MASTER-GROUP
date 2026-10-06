@@ -411,9 +411,14 @@
       <button type="button" class="direction-service-close" data-direction-service-close aria-label="Закрыть">×</button>
     </div>
     <div id="directionServiceList" class="direction-service-list"></div>
-    <div id="directionServiceWordSuggestions" class="direction-service-word-suggestions" aria-label="Подсказки слов" hidden></div>
+    <div id="directionServiceAiSuggestion" class="direction-service-ai-suggestion" hidden aria-live="polite">
+      <div class="direction-service-ai-head"><span class="direction-service-ai-badge">AI</span><span>Возможная формулировка</span><button type="button" class="direction-service-ai-close" data-ai-hide-suggestion aria-label="Скрыть подсказку">×</button></div>
+      <button type="button" class="direction-service-ai-main" data-ai-apply=""></button>
+      <div id="directionServiceAiAlternatives" class="direction-service-ai-alternatives" hidden></div>
+      <div id="directionServiceAiStatus" class="direction-service-ai-status"></div>
+    </div>
     <div class="direction-service-quick-add">
-      <input id="directionServiceQuickInput" type="text" autocomplete="off" placeholder="Название услуги" aria-label="Название услуги">
+      <input id="directionServiceQuickInput" type="text" autocomplete="off" placeholder="Напишите услугу как умеете — AI поможет исправить" aria-label="Название услуги">
       <button type="button" class="btn primary" data-direction-service-quick-add>Добавить</button>
     </div>
   </div>
@@ -740,14 +745,7 @@
 <script src="js/calculations.js"></script>
 <script src="js/finance-service.js"></script>
 <script src="js/estimate-ui.js"></script>
-<script src="js/mg-dict/dictionary-actions.js"></script>
-<script src="js/mg-dict/dictionary-works.js"></script>
-<script src="js/mg-dict/dictionary-01.js"></script>
-<script src="js/mg-dict/dictionary-02.js"></script>
-<script src="js/mg-dict/dictionary-03.js"></script>
-<script src="js/mg-dict/dictionary-04.js"></script>
-<script src="js/mg-dict/dictionary-05.js"></script>
-<script src="js/mg-dict/smart-search.js"></script>
+<script src="js/mg-ai-service.js"></script>
 <script src="js/estimate-core.js"></script>
 <script src="js/finance-ui.js"></script>
 <script src="js/estimate-templates.js"></script>
@@ -816,6 +814,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <script src="js/offline-engine.js"></script>
 <script src="js/firebase-client.js"></script>
 <script src="js/firebase-repository.js"></script>

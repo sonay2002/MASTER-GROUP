@@ -1,0 +1,12 @@
+{
+  "name": "master-group-functions",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-functions": "7.4.0",
+    "openai": "7.17.0"
+  }
+}

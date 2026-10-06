@@ -70,6 +70,10 @@
     }).join(''):'<div class="direction-service-empty">Для этого направления пока нет услуг в каталоге.</div>';
     const quick=ctx.$('directionServiceQuickInput');
     if(quick)quick.value='';
+    const ai=ctx.$('directionServiceAiSuggestion');
+    if(ai)ai.hidden=true;
+    const aiStatus=ctx.$('directionServiceAiStatus');
+    if(aiStatus)aiStatus.textContent='';
   }
   function openDirectionServiceModal(){
     const overlay=ctx.$('directionServiceOverlay');

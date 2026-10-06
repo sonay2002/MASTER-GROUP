@@ -1,6 +1,0 @@
-MASTER GROUP v17
-Dictionary: exactly 1,000,000 unique single-token terms
-No entries contain spaces.
-Dictionary split into 200 JS chunks of 5,000 terms each.
-Sorted globally for prefix lookup.
-Universal across directions.

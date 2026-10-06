@@ -1,0 +1,18 @@
+Master Group v36 — AI service-name setup
+
+1. Install/login to Firebase CLI and select the project:
+   firebase login
+   firebase use master-group-3e18e
+
+2. Store the OpenAI key as a Firebase Secret Manager secret. Never put the key in index.html, JavaScript, GitHub, or .env committed to the repository:
+   firebase functions:secrets:set OPENAI_API_KEY
+
+3. Deploy the AI function:
+   firebase deploy --only functions:correctServiceText
+
+4. Push the repository to GitHub Pages as usual.
+
+The browser calls the authenticated Firebase callable function in europe-west1. The OpenAI key stays server-side.
+The model defaults to gpt-6-luna. To use another model, set OPENAI_MODEL during Firebase deployment when prompted.
+
+Cloud Functions deployment requires the Firebase project to meet the current Cloud Functions billing/runtime requirements.

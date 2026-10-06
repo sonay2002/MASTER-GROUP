@@ -1,5 +1,5 @@
 /* Master Group v375 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v35-ai-fuzzy-final';
+const CACHE = 'master-group-v36-ai-assistant';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -15,6 +15,7 @@ const CORE = [
   "./js/calculations.js",
   "./js/finance-service.js",
   "./js/estimate-ui.js",
+  "./js/mg-ai-service.js",
   "./js/estimate-core.js",
   "./js/finance-ui.js",
   "./js/estimate-templates.js",
@@ -44,54 +45,7 @@ const CORE = [
   "./js/settings-hub-v357.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./js/mg-dict/dictionary-actions.js",
-  "./js/mg-dict/dictionary-works.js",
-  "./js/mg-dict/dictionary-01.js",
-  "./js/mg-dict/dictionary-02.js",
-  "./js/mg-dict/dictionary-03.js",
-  "./js/mg-dict/dictionary-04.js",
-  "./js/mg-dict/dictionary-05.js",
-  "./js/mg-dict/smart-search.js",
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ];
-
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
@@ -99,7 +53,6 @@ self.addEventListener('install', event => {
       .then(() => self.skipWaiting())
   );
 });
-
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
@@ -107,21 +60,16 @@ self.addEventListener('activate', event => {
       .then(() => self.clients.claim())
   );
 });
-
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
-
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-
   const url = new URL(event.request.url);
   // Never handle cross-origin resources (Firebase CDN, etc.) here.
   if (url.origin !== self.location.origin) return;
-
   const isNavigation = event.request.mode === 'navigate' || url.pathname.endsWith('/index.html');
   const isAppAsset = /\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
-
   if (isNavigation) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
@@ -136,7 +84,6 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
-
   // JS/CSS/config files are network-first so GitHub Pages never gets stuck
   // on an old cached build after a new commit. Offline fallback remains available.
   if (isAppAsset) {
@@ -153,7 +100,6 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
-
   // Images and other local resources: cache-first with network fallback.
   event.respondWith(
     caches.match(event.request)
