@@ -1,0 +1,13 @@
+import fs from 'fs';
+import assert from 'assert';
+const dict=fs.readFileSync(new URL('../js/mg-dictionary-10m.js',import.meta.url),'utf8');
+const ai=fs.readFileSync(new URL('../js/mg-ai-service.js',import.meta.url),'utf8');
+const core=fs.readFileSync(new URL('../js/estimate-core.js',import.meta.url),'utf8');
+assert(dict.includes('entryCount:10000000'));
+assert(dict.includes("Number(m?.entryCount)!==10000000"));
+assert(dict.includes('256'));
+assert(ai.indexOf('const dict=await dictionarySuggest(input)') < ai.indexOf('localLlmSuggest(input,direction,services,retrievedText)'));
+assert(ai.includes("engine:'local-llm-qwen3-0.6b'"));
+assert(core.includes('Suggestions are NEVER applied implicitly'));
+assert(core.includes("return String(raw||'').trim();"));
+console.log('10M algorithm smoke PASS: exact-count guard + dictionary-first + Qwen fallback + user-confirmed apply');

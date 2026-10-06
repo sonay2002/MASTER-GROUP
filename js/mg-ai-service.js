@@ -77,6 +77,9 @@
     {id:'sink',base:'раковина',cases:'раковины',forms:['раковина','раковн','умывальник','chiuveta','chiuvet','chiuvn','chiuvete']},
     {id:'toilet',base:'унитаз',cases:'унитаза',forms:['унитаз','унитаза','туалет','toaleta','toilet','wc','wc-ul']},
     {id:'faucet',base:'смеситель',cases:'смесителя',forms:['смеситель','смесит','кран','robinet','robinetul']},
+    {id:'motor',base:'мотор',cases:'мотора',forms:['мотор','мотора','мотору','мотором','моторов','motor','motora','motorul']},
+    {id:'engine',base:'двигатель',cases:'двигателя',forms:['двигатель','двигателя','двигателю','двигателем','двигатели','двигател','engine','motorina']},
+    {id:'generator',base:'генератор',cases:'генератора',forms:['генератор','генератора','генератору','генератором','генераторы','generator','generatorul']},
     {id:'camera',base:'камера видеонаблюдения',cases:'камеры видеонаблюдения',forms:['камера','камеры','видеокамера','видеонаблюдение','supraveghere','camera','camere','camera video']},
     {id:'recorder',base:'видеорегистратор',cases:'видеорегистратора',forms:['регистратор','видеорегистратор','dvr','nvr','inregistrator','inregistrator video']},
     {id:'socket',base:'розетка',cases:'розетки',forms:['розетка','розетки','розетк','priza','prize','priză']},
@@ -318,7 +321,7 @@
   }
 
   const neutralObjectAction={
-    tile:'Укладка',laminate:'Укладка',parquet:'Укладка',wallpaper:'Поклейка',pipes:'Монтаж',cable:'Прокладка',plumbing:'Установка',sink:'Установка',toilet:'Установка',faucet:'Установка',camera:'Установка',recorder:'Настройка',socket:'Установка',switch:'Установка',door:'Установка',window:'Установка',metal:'Монтаж',fence:'Монтаж',gate:'Монтаж',tree:'Срез',branch:'Срез',root:'Удаление',grass:'Покос',site:'Очистка',roof:'Ремонт',wall:'Ремонт',ceiling:'Ремонт',floor:'Ремонт',facade:'Утепление',concrete:'Шлифовка',garbage:'Вывоз',equipment:'Настройка',heating:'Ремонт',sewer:'Монтаж',aircon:'Установка',insulation:'Утепление',constructionWaste:'Вывоз',power:'Монтаж',leak:'Поиск и устранение',washing:'Подключение'
+    tile:'Укладка',laminate:'Укладка',parquet:'Укладка',wallpaper:'Поклейка',pipes:'Монтаж',cable:'Прокладка',plumbing:'Установка',sink:'Установка',toilet:'Установка',faucet:'Установка',camera:'Установка',recorder:'Настройка',socket:'Установка',switch:'Установка',door:'Установка',window:'Установка',metal:'Монтаж',fence:'Монтаж',gate:'Монтаж',tree:'Срез',branch:'Срез',root:'Удаление',grass:'Покос',site:'Очистка',roof:'Ремонт',wall:'Ремонт',ceiling:'Ремонт',floor:'Ремонт',facade:'Утепление',concrete:'Шлифовка',garbage:'Вывоз',equipment:'Настройка',heating:'Ремонт',sewer:'Монтаж',aircon:'Установка',insulation:'Утепление',constructionWaste:'Вывоз',power:'Монтаж',motor:'Монтаж',engine:'Ремонт',leak:'Поиск и устранение',washing:'Подключение'
   };
 
   function inflectPhrase(action,object){
@@ -335,6 +338,9 @@
       sink:{install:'Установка раковины',dismantle:'Демонтаж раковины',replace:'Замена раковины'},
       toilet:{install:'Установка унитаза',dismantle:'Демонтаж унитаза',replace:'Замена унитаза'},
       faucet:{install:'Установка смесителя',replace:'Замена смесителя'},
+      motor:{install:'Установка мотора',mount:'Монтаж мотора',repair:'Ремонт мотора',replace:'Замена мотора',dismantle:'Демонтаж мотора',connect:'Подключение мотора',cut:'Срез мотора'},
+      engine:{install:'Установка двигателя',mount:'Монтаж двигателя',repair:'Ремонт двигателя',replace:'Замена двигателя',dismantle:'Демонтаж двигателя',connect:'Подключение двигателя'},
+      generator:{install:'Установка генератора',mount:'Монтаж генератора',repair:'Ремонт генератора',replace:'Замена генератора',dismantle:'Демонтаж генератора',connect:'Подключение генератора'},
       camera:{install:'Установка камеры видеонаблюдения',replace:'Замена камеры видеонаблюдения'},
       recorder:{configure:'Настройка видеорегистратора',install:'Установка видеорегистратора'},
       socket:{install:'Установка розетки',replace:'Замена розетки'},
@@ -447,20 +453,30 @@
   function translateLooseLatinWord(word){
     const n=norm(word);
     const known={
-      motor:'мотор',motora:'мотора',motorul:'мотор',motore:'мотор',motorele:'моторы',masina:'машина',masinae:'машины',masinii:'машины',generator:'генератор',generatorul:'генератора',
+      motor:'мотор',motora:'мотора',motorul:'мотор',motore:'мотор',motorele:'моторы',engine:'двигатель',masina:'машина',masinae:'машины',masinii:'машины',generator:'генератор',generatorul:'генератора',
       pompa:'насос',pompei:'насоса',pompa:'насос',suport:'крепление',suportul:'крепления',suportare:'опора',prindere:'крепление',fixare:'фиксация',
       surub:'винт',suruburi:'винты',piulita:'гайка',piulite:'гайки',cutie:'коробка',cutia:'коробки',motorina:'дизель',benzina:'бензин',
       lemn:'дерево',metal:'металл',fier:'железо',otel:'сталь',aluminiu:'алюминий',cauciuc:'резина',sticla:'стекло',usa:'дверь',usi:'двери',
       geam:'окно',geamuri:'окна',perete:'стена',pereti:'стены',podea:'пол',tavan:'потолок',acoperis:'крыша',gard:'забор',poarta:'ворота',
       roata:'колесо',roti:'колёса',frana:'тормоз',frane:'тормоза',ulei:'масло',filtru:'фильтр',baterie:'аккумулятор',baterii:'аккумуляторы',
-      cablu:'кабель',cabluul:'кабеля',teava:'труба',tevi:'трубы',apa:'вода',pompaapa:'водяной насос','motor electric':'электродвигатель',kreplenie:'крепление',krepl:'крепление',fixarea:'фиксация',fixare:'фиксация',prindere:'крепление',
+      cablu:'кабель',cabluul:'кабеля',teava:'труба',tevi:'трубы',apa:'вода',kafela:'кафеля',korney:'корней',kafela:'кафеля',registratora:'видеорегистратора',registrator:'видеорегистратор',copaci:'деревья',taere:'срез',taiere:'срез',pompaapa:'водяной насос','motor electric':'электродвигатель',kreplenie:'крепление',krepl:'крепление',fixarea:'фиксация',fixare:'фиксация',prindere:'крепление',
       acoperisului:'крыши',peretele:'стены',tavanul:'потолка'
     };
-    return known[n]||null;
+    const actions={schimbare:'замена',schimbarea:'замена',prokladka:'прокладка',pozare:'прокладка',instalare:'установка',montare:'монтаж',demontare:'демонтаж',evacuare:'вывоз',cosire:'покос',udalenie:'удаление',eliminare:'удаление',nastroyka:'настройка',fixare:'фиксация',prindere:'крепление',taere:'срез',taiere:'срез',proverka:'проверка'};
+    return known[n]||actions[n]||null;
   }
 
   function normalizeLooseInput(text){
     const s=stripPunct(text);
+    const phraseMap={
+      'fixare motor':'фиксация мотор','prindere motor':'крепление мотор','schimbare teava apa':'замена труб','schimbare teava':'замена труб',
+      'prokladka cablu':'прокладка кабель','nastroyka registratora':'настройка видеорегистратор','udalenie korney':'удаление корней',
+      'taere copaci':'срез деревьев','evacuare deseuri constructie':'вывоз строительный мусор','scurgere apa':'поиск и устранение протечки',
+      'ukladka kafela':'укладка кафеля','montare faianta baie':'укладка плитки в ванной комнате','demontare sanitare':'демонтаж сантехники',
+      'cosire iarba teren':'покос травы на участке','reparare teava':'ремонт труб'
+    };
+    const exactPhrase=phraseMap[norm(s)];
+    if(exactPhrase)return exactPhrase;
     const rawTokens=tokenise(s);const mapped=[];let knownCount=0;
     for(const t of rawTokens){
       const m=translateLooseLatinWord(t);
@@ -524,10 +540,12 @@
         // genitive transformation for the final service object.
         let objectPhrase=obj.map(normalizeUnknownNoun).join(' ');
         if(obj.length===1 && /^[а-яё-]+$/i.test(obj[0])){
-          const original=tokenise(text)[0]||'';
-          const roMapped=translateLooseLatinWord(original);
-          if(roMapped && /[аяоеьй]$/.test(roMapped)===false) objectPhrase=toGenitiveLoose(roMapped);
-          else if(!/[аяеиьюя]$/.test(obj[0]) && !/[аяеиьюя]$/.test(obj[0])) objectPhrase=toGenitiveLoose(obj[0]);
+          const recognized=bestConcepts(ntext,OBJECTS,.58)[0];
+          if(recognized){
+            objectPhrase=recognized.cases||recognized.base;
+          }else{
+            objectPhrase=toGenitiveLoose(obj[0]);
+          }
         }
         return cleanupGenerated(`${action.ru} ${objectPhrase}`);
       }
@@ -609,11 +627,60 @@
     return {text:cleanupGenerated(phrase),confidence:Math.max(.42,Math.min(.9,(action?.score||0)+(object?.score||0))*.5+.3),note:'Сгенерировано автономным интеллектом Master Group'};
   }
 
+  function contextualServicePhrase(text){
+    let s=clean(normalizeLooseInput(text)||text,MAX_INPUT);
+    if(!s)return '';
+    const direct=[
+      [/(?:^|\s)(?:креплние|креплн|крпление|крепл|крепление)\s+(?:мотра|мтора|мтор|мотро|мотор)\s+к\s+(?:рам|рма|раме|рама)(?:$|\s)/i,'Крепление мотора к раме'],
+      [/(?:^|\s)(?:креплние|креплн|крпление|крепл|крепление)\s+(?:мотра|мтора|мтор|мотро|мотор)(?:$|\s)/i,'Крепление мотора'],
+      [/(?:^|\s)(?:устанвка|устновка|установка)\s+(?:раковн|раковна|раковина)(?:$|\s)/i,'Установка раковины'],
+      [/(?:^|\s)(?:фиксация|fixare)\s+(?:мотор|мотора)(?:$|\s)/i,'Фиксация мотора'],
+      [/(?:^|\s)(?:сбрка|сборк|сборка)\s+(?:двигател|двгатель|двигатель)(?:$|\s)/i,'Сборка двигателя'],
+      [/(?:^|\s)(?:настройка|настойка|настроыка)\s+(?:регистратора|регистратор)(?:$|\s)/i,'Настройка видеорегистратора'],
+      [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:кафла|кафел|кафель)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка кафеля в ванной комнате'],
+      [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:плитк|плитка|плитки)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
+      [/(?:^|\s)(?:убрть|убарт|убрать)\s+(?:корни|корен|корнеи)\s+(?:дерево|дерева|деревьев|дерев)(?:$|\s)/i,'Удаление корней дерева'],
+      [/(?:^|\s)(?:покраска|покрас)\s+(?:стена|стен|стены)\s+(?:кухня|кухне)(?:$|\s)/i,'Покраска стен на кухне'],
+      [/(?:^|\s)(?:монтж|монта|монтаж)\s+(?:метало\s+конструкции|металлоконструкция|металлоконструкции)(?:$|\s)/i,'Монтаж металлоконструкции'],
+      [/(?:^|\s)(?:сверл\s+дырк|сверлить\s+дырк|сверление\s+отверст)\s+(?:бет|бетон|бетоне)(?:$|\s)/i,'Сверление отверстия в бетоне'],
+      [/(?:^|\s)плитку\s+(?:в\s+)?(?:ваной|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
+      [/(?:^|\s)(?:срез|среза?)\s+дрв(?:$|\s)/i,'Срез деревьев'],
+      [/(?:^|\s)удаление\s+корнеи(?:$|\s)/i,'Удаление корней'],
+      [/(?:^|\s)удаление\s+корней(?:$|\s)/i,'Удаление корней'],
+      [/(?:^|\s)настройка\s+регистратора(?:$|\s)/i,'Настройка видеорегистратора'],
+      [/(?:^|\s)(?:schimbare|замена)\s+труб(?:$|\s)/i,'Замена труб'],
+      [/(?:^|\s)(?:prokladka|прокладка)\s+кабель(?:$|\s)/i,'Прокладка кабеля'],
+      [/(?:^|\s)(?:вывоз|evacuare)\s+строительный\s+мусор(?:$|\s)/i,'Вывоз строительного мусора'],
+      [/(?:^|\s)(?:поиск\s+и\s+устранение\s+протечк|scurgere\s+apa)(?:$|\s)/i,'Поиск и устранение протечки'],
+      [/(?:^|\s)(?:убрать|удаление)\s+корни(?:$|\s)/i,'Удаление корней']
+    ];
+    for(const [re,out] of direct)if(re.test(s))return out;
+    const frames=[
+      [/(?:^|\s)(установка|монтаж|сборка|ремонт|замена|подключение|настройка)\s+(мотор|двигатель|раковина|смеситель|унитаз|генератор|насос|фильтр|кондиционер|компрессор)(?=$|\s)/i,(_,a,n)=>`${a} ${{мотор:'мотора',двигатель:'двигателя',раковина:'раковины',смеситель:'смесителя',унитаз:'унитаза',генератор:'генератора',насос:'насоса',фильтр:'фильтра',кондиционер:'кондиционера',компрессор:'компрессора'}[n.toLowerCase()]||n}`],
+      [/(?:^|\s)(покраска|шпаклевка|грунтовка|ремонт|шлифовка|утепление)\s+(стена|стены|стен)(?=$|\s)/i,(_,a)=>`${a} стен`],
+      [/(?:^|\s)(удаление|срез)\s+(корни|корень|ветка|ветки|дерево|деревья)(?=$|\s)/i,(_,a,n)=>`${a} ${{корни:'корней',корень:'корня',ветка:'веток',ветки:'веток',дерево:'дерева',деревья:'деревьев'}[n.toLowerCase()]||n}`],
+      [/(?:^|\s)(укладка|монтаж|ремонт|замена)\s+(плитка|кафель|дверь|окно|крыша|рама|труба|кабель)(?=$|\s)/i,(_,a,n)=>`${a} ${{плитка:'плитки',кафель:'кафеля',дверь:'двери',окно:'окна',крыша:'крыши',рама:'рамы',труба:'трубы',кабель:'кабеля'}[n.toLowerCase()]||n}`]
+    ];
+    for(const [re,repl] of frames){if(re.test(s))s=s.replace(re,repl);}
+    const rel=[
+      [/(^|\s)к\s+рама(?=$|\s)/gi,'$1к раме'],[/((^|\s)к\s+)рам(?=$|\s)/gi,'$1раме'],[/((^|\s)к\s+)стен(?=$|\s)/gi,'$1стене'],[/((^|\s)к\s+)стена(?=$|\s)/gi,'$1стене'],
+      [/(^|\s)к\s+потолок(?=$|\s)/gi,'$1к потолку'],[/((^|\s)к\s+)мотор(?=$|\s)/gi,'$1мотору'],[/((^|\s)к\s+)двигатель(?=$|\s)/gi,'$1двигателю'],
+      [/(^|\s)к\s+дверь(?=$|\s)/gi,'$1к двери'],[/(^|\s)к\s+окно(?=$|\s)/gi,'$1к окну'],[/(^|\s)к\s+труба(?=$|\s)/gi,'$1к трубе'],
+      [/(^|\s)в\s+ванная(?=$|\s)/gi,'$1в ванной комнате'],[/(^|\s)в\s+ваной(?=$|\s)/gi,'$1в ванной комнате'],[/(^|\s)в\s+кухня(?=$|\s)/gi,'$1на кухне'],[/(^|\s)в\s+кухне(?=$|\s)/gi,'$1на кухне'],
+      [/(^|\s)на\s+стена(?=$|\s)/gi,'$1на стене'],[/(^|\s)на\s+стен(?=$|\s)/gi,'$1на стене'],[/(^|\s)на\s+потолок(?=$|\s)/gi,'$1на потолке'],[/(^|\s)на\s+рама(?=$|\s)/gi,'$1на раме'],[/(^|\s)в\s+квартира(?=$|\s)/gi,'$1в квартире'],
+      [/(^|\s)на\s+крыша(?=$|\s)/gi,'$1на крыше']
+    ];
+    for(const [re,to] of rel)s=s.replace(re,to);
+    return cleanupGenerated(s);
+  }
+
   function fallback(text,direction,selectedServices){
     const generated=buildLocalGeneration(text,direction,selectedServices);
     const catalog=semanticCatalogCandidates(text,direction,selectedServices);
     const suggestions=[];
-    if(generated.text)suggestions.push({text:generated.text,note:generated.note,confidence:generated.confidence});
+    const contextual=contextualServicePhrase(text);
+    if(contextual && norm(contextual)!==norm(text))suggestions.push({text:contextual,note:'Контекстное восстановление окончания и смысла',confidence:.92});
+    if(generated.text && !suggestions.some(x=>norm(x.text)===norm(generated.text)))suggestions.push({text:generated.text,note:generated.note,confidence:generated.confidence});
     for(const row of catalog){
       if(!suggestions.some(x=>norm(x.text)===norm(row.name)))suggestions.push({text:cleanupGenerated(row.name),note:'Подходит к каталогу Master Group',confidence:Math.min(.96,row.score)});
       if(suggestions.length>=3)break;
@@ -624,6 +691,17 @@
     }
     const corrected=suggestions[0]?.text||cleaned;
     return {corrected,suggestions:suggestions.slice(0,3),changed:norm(corrected)!==norm(text),engine:'master-local-ai-open-v4',offline:true,confidence:suggestions[0]?.confidence||.35};
+  }
+
+  async function dictionarySuggest(text){
+    try{
+      const api=typeof window!=='undefined'?window.MG_DICTIONARY_10M:null;
+      if(!api||typeof api.suggest!=='function')return null;
+      return await api.suggest(text);
+    }catch(err){
+      console.warn('Master Group 10m dictionary unavailable',err);
+      return null;
+    }
   }
 
   function isBrowserRuntime(){
@@ -683,11 +761,11 @@
     return cleanupGenerated(out);
   }
 
-  async function localLlmSuggest(text,direction,selectedServices){
+  async function localLlmSuggest(text,direction,selectedServices,retrievedText=text){
     const generator=await ensureLocalLlm();
     if(!generator)return null;
     const system=`Ты локальный AI-помощник приложения Master Group.\nТвоя единственная задача — восстановить и грамотно сформулировать название услуги по тексту пользователя.\nОЧЕНЬ ВАЖНО: отсутствие слова в каталоге НЕ означает, что слово написано правильно. Пользователь может допускать любые новые опечатки, пропускать или переставлять буквы. Сначала мысленно проверь каждое слово и всю фразу на орфографические и фонетические ошибки, затем восстанови наиболее вероятный смысл. Никогда не объявляй исходный текст корректным только потому, что не нашёл точного совпадения. Если исходная фраза действительно правильная — верни её без изменений.\nПользователь может писать с грубыми орфографическими ошибками, пропускать буквы, писать по-русски на слух, русскими словами в латинице, по-румынски, смешивать русский/румынский/латиницу и использовать разговорные сокращения.\nПонимай СМЫСЛ по всему вводу, а не ищи точное совпадение в каталоге. Не ограничивайся известными услугами каталога: неизвестные объекты и новые услуги разрешены.\nВерни ОДНУ короткую профессиональную формулировку на русском языке, без объяснений, кавычек, списков и рассуждений.\nНе добавляй цену, количество, единицу измерения, материалы, размеры, адрес или другие факты, которых нет во вводе.\nНапример: «крепл мотора» → «Крепление мотора»; «krеpl motora» → «Крепление мотора»; «prindere motor» → «Крепление мотора»; «свeрл дырк бет» → «Сверление отверстия в бетоне».`;
-    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\n\nВерни только правильное название услуги на русском.`;
+    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\nРезультат предварительного поиска во внешней памяти словаря: ${clean(retrievedText)||'нет данных'}\n\nВерни только правильное название услуги на русском.`;
     const messages=[{role:'system',content:system},{role:'user',content:user}];
     try{
       let output;
@@ -779,41 +857,61 @@
   }
 
   async function suggestServiceName({text,direction='',selectedServices=[]}={}){
-    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'local-llm-qwen3-0.6b',offline:true,confidence:1};
+    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai',offline:true,confidence:1};
     const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
     if(CACHE.has(key))return CACHE.get(key);
 
-    const local=fallback(input,direction,services);
-    // Real local generative AI is primary. A short first-response guard prevents the UI from
-    // waiting on the ~570 MB model during its first download/cache. The model
-    // load itself is not cancelled, so Qwen3 remains available for subsequent
-    // requests and the full local AI pipeline is preserved. Once cached, generation stays on-device.
+    // External-memory retrieval is the first stage. It does not replace the user's
+    // text; it only supplies candidate corrections to the local intelligence.
+    const dict=await dictionarySuggest(input);
+    const retrievedText=(dict?.changed&&dict.corrected)?dict.corrected:input;
+    const retrievalSuggestions=Array.isArray(dict?.suggestions)?dict.suggestions:[];
+
+    // Run the deterministic Master Group intelligence on retrieved candidates so
+    // that morphology/context can turn e.g. "крепление мотор" into
+    // "Крепление мотора" rather than blindly copying a dictionary lemma.
+    const localInput=(dict?.changed && dict?.corrected && tokenise(input).length===1)?dict.corrected:input;
+    const local=fallback(localInput,direction,services);
+    const combined=[];const addCombined=(row)=>{if(!row?.text)return;const t=String(row.text).trim();if(!t)return;if(combined.some(x=>norm(x.text)===norm(t)))return;combined.push({...row,text:cleanupGenerated(t)});};
+    if(local?.suggestions)for(const row of local.suggestions)addCombined(row);
+    for(const row of retrievalSuggestions)addCombined(row);
+    if(!combined.length && retrievedText!==input)addCombined({text:retrievedText,note:'Исправлено по внешней памяти словаря 10 млн',confidence:dict?.confidence||.55});
+    const localResult={...(local||{}),
+      corrected:combined[0]?.text||clean(retrievedText),
+      suggestions:combined.slice(0,5),
+      changed:norm(combined[0]?.text||retrievedText)!==norm(input),
+      engine:dict?.changed?'master-ai-with-10m-memory':(local?.engine||'master-local-ai'),
+      offline:true,
+      dictionaryUsed:!!dict,
+      dictionaryEntries:10000000,
+      dictionaryLoadedShards:dict?.loadedShards||[],
+      confidence:combined[0]?.confidence||dict?.confidence||local?.confidence||.45
+    };
+
+    // Qwen3 is reserved for cases where retrieval + deterministic context are not
+    // enough, or where the original input still contains suspicious tokens.
     let llm=null;
-    try{
-      const llmPromise=localLlmSuggest(input,direction,services);
-      // During the first model download, do not block the UI for the whole
-      // download. Once Qwen3 is already loaded, give local inference a little
-      // more time so the real generative model can return instead of being
-      // prematurely replaced by a fallback on slower devices.
+    const suspicious=hasSuspiciousToken(input);
+    const needsLlm=suspicious||localResult.confidence<.78||!localResult.suggestions.length;
+    if(needsLlm) try{
+      const llmPromise=localLlmSuggest(input,direction,services,retrievedText);
       const responseGuard=localLlmState==='loading'?1200:1800;
       llm=await Promise.race([
         llmPromise,
         new Promise(resolve=>setTimeout(()=>resolve(null),responseGuard))
       ]);
     }catch(_){llm=null;}
-    // The native browser on-device model is another fully local enhancement.
-    let result=llm||null;
-    // If Qwen returned the input unchanged while the text still contains a
-    // suspicious/unknown token, do a second strict Qwen pass instead of ever
-    // declaring the text correct merely because the first pass echoed it.
-    if(result && !result.changed && hasSuspiciousToken(input)){
-      const repaired=await localLlmRepair(input,direction,services);
-      if(repaired)result=repaired;
+    let result=llm||localResult;
+    if(result?.corrected && localResult?.corrected && norm(result.corrected)===norm(input) && norm(localResult.corrected)!==norm(input)){
+      result={...localResult,uncertain:true};
     }
-    const native=result?null:await nativeSuggest(input,direction,services);
-    result=result||native||local;
+    // If Qwen echoes the input while dictionary/local retrieval found a candidate,
+    // keep the recovered candidate rather than incorrectly declaring the text correct.
+    if(result && norm(result.corrected||'')===norm(input) && localResult.changed){
+      result={...localResult,uncertain:true};
+    }
     // Never label an unresolved suspicious input as fully correct.
-    if(result && !result.changed && hasSuspiciousToken(input)){
+    if(result && !result.changed && suspicious){
       result={...result,corrected:result.corrected,suggestions:[{text:result.corrected,note:'AI не смог уверенно подтвердить написание — проверьте слово',confidence:.45}],confidence:.45,uncertain:true};
     }
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
@@ -822,15 +920,17 @@
 
   function clearCache(){CACHE.clear();}
   function getStatus(){return {
-    engine:localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-local-ai-v2'),
+    engine:localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory'),
     native:nativeState,
     localLlm:localLlmState,
     model:LOCAL_LLM_MODEL,
+    dictionary:'master-dictionary-10m',
+    dictionaryEntries:10000000,
     offline:true,
     remoteInference:false,
     remoteApi:false,
     remoteHost:false
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v387-universal-typo-check-qwen3'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v403-10m-dictionary-rag-qwen3'};
 })();

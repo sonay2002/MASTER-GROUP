@@ -1,4 +1,4 @@
-# Master Group v383 — Local Generative AI + Floating Suggestion
+# Master Group v403 — Local Generative AI + 10M external correction memory
 
 ## AI assistant
 

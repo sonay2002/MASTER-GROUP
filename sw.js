@@ -1,11 +1,11 @@
-/* Master Group v379 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v379';
+/* Master Group v403 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v403';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=352",
+  "./css/styles.css?v=401",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -15,6 +15,7 @@ const CORE = [
   "./js/calculations.js",
   "./js/finance-service.js",
   "./js/estimate-ui.js",
+  "./js/mg-dictionary-10m.js",
   "./js/mg-ai-service.js",
   "./js/estimate-core.js",
   "./js/finance-ui.js",
@@ -69,6 +70,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
   const isNavigation = event.request.mode === 'navigate' || url.pathname.endsWith('/index.html');
   const isAppAsset = /\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
+  const isDictionaryShard = /\/dictionary-10m\/shards\/shard-\d{3}\.txt\.gz$/i.test(url.pathname);
   if (isNavigation) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
@@ -80,6 +82,23 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+  // Dictionary shards are immutable within a build and are cached lazily.
+  // Only shards actually queried by the correction engine are downloaded.
+  if (isDictionaryShard) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(cached => cached || fetch(event.request)
+          .then(response => {
+            if (response.ok) {
+              const copy=response.clone();
+              caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {});
+            }
+            return response;
+          }))
+        .catch(() => caches.match(event.request))
     );
     return;
   }
