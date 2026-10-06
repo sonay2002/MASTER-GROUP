@@ -162,7 +162,7 @@ async function serviceWordSuggestions(){
       if(card)card.hidden=false;
       if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
       if(alts){alts.innerHTML='';alts.hidden=true;}
-      setAiStatus('AI понимает смысл и формулирует правильное название');
+      setAiStatus('Локальный интеллект понимает смысл и формулирует правильное название');
       const result=await window.MG_AI_SERVICE.suggestServiceName({text:value,direction:ctx.direction,selectedServices:ctx.selectedServices});
       if(seq!==aiRequestSeq || value!==String(input.value||'').trim())return;
       aiSetSuggestion(result,value);
@@ -174,8 +174,14 @@ async function serviceWordSuggestions(){
       if(card)card.hidden=false;
       if(main){main.textContent='';main.disabled=true;main.dataset.aiApply='';}
       if(alts){alts.innerHTML='';alts.hidden=true;}
-      const code=String(err?.code||'');
-      setAiStatus(code.includes('unauthenticated')?'Войдите в аккаунт, чтобы использовать AI.':'AI временно недоступен — можно добавить исходный текст.');
+      const code=String(err?.code||'').toLowerCase();
+      let message='AI временно недоступен — можно добавить исходный текст.';
+      if(code.includes('unauthenticated')) message='Войдите в аккаунт Master Group, чтобы использовать AI.';
+      else if(code.includes('failed-precondition')) message='AI ещё не настроен на сервере.';
+      else if(code.includes('not-found')) message='AI-сервис не опубликован на сервере.';
+      else if(code.includes('permission-denied')) message='Нет доступа к AI-сервису.';
+      else if(code.includes('network')||code.includes('unavailable')) message='Нет связи с AI-сервисом. Проверьте интернет.';
+      setAiStatus(message);
       console.warn('MG AI suggestions failed',err);
     }
   },650);

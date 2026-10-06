@@ -1,15 +1,37 @@
-Master Group v36 — verification report
+Master Group v380 — local AI verification
 
-Verified changes:
-- Removed the previous client-side fuzzy dictionary and its 5 large corpus files.
-- Removed dictionary-specific smoke/stress tests and deployment references.
-- Added js/mg-ai-service.js for AI-backed service-name assistance.
-- Added Firebase Cloud Function correctServiceText with OpenAI Responses API structured output.
-- OpenAI API key is server-side only and bound as a Firebase Secret Manager secret.
-- Added AI suggestion UI directly above the service-name input.
-- Service name is AI-corrected again when the user presses Add.
-- Offline/unavailable AI does not block creating a custom service; original text is preserved.
-- Service worker no longer precaches deleted dictionary assets and cache name is bumped to v36.
-- GitHub Actions validates functions/ JavaScript syntax and runs the AI smoke test.
+AI architecture
+- Removed remote AI dependency from the service-name suggestion path.
+- Service-name AI is local/offline and does not call OpenAI or Firebase Functions.
+- Preserved the existing UI: generated correction is displayed above the service input.
+- Added open-vocabulary generation so unseen service/object words do not require an exact catalog entry.
+- Added conservative ambiguity handling so unrelated unknown phrases are not aggressively mapped to random catalog services.
+- Added tests for Russian typos, strong damage, Romanian input, transliteration, unknown words and open-vocabulary actions.
 
-Deployment note: the Firebase function must be deployed and OPENAI_API_KEY configured before live AI suggestions become available.
+Verification
+- node --check all project JS files: PASS
+- AI local smoke: PASS
+- AI stress smoke: PASS
+- AI open-vocabulary smoke: PASS
+- calculations-smoke: PASS
+- data-model-smoke: PASS
+- finance-sync-smoke: PASS
+- firebase-sync-boundary-smoke: PASS
+- offline-engine-smoke: PASS
+- pwa-update-smoke: PASS
+- settings-navigation-smoke: PASS
+- AI dependency boundary scan: PASS
+- index.html direct AI service reference: PASS
+
+Representative open-vocabulary results
+- крепл мотора -> Крепление мотора
+- крепление мотор -> Крепление мотора
+- fixare motor -> Фиксация мотора
+- prindere motor -> Крепление мотора
+- kreplenie motora -> Крепление мотора
+- сверл дырк -> Сверление дырки
+- montare faianta baie -> Укладка плитки в ванной комнате
+- неизвестная новая услуга -> Неизвестная новая услуга
+
+Note
+- This version is a specialized autonomous linguistic engine, not a full general-purpose LLM. A browser on-device LanguageModel may optionally enhance generation when supported; it is never required for offline operation.

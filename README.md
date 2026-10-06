@@ -1,42 +1,46 @@
-# Master Group v36 — AI assistant
+# Master Group v380 — Autonomous Local AI
 
-This is a static PWA. The application entry point is `index.html` in the repository root.
+## AI assistant
 
-## AI assistant for service names
+The service-name assistant runs independently from OpenAI and Firebase Functions. Its main engine is local and works offline. The current UI contract is unchanged: the user types in the service field and the suggested professional Russian wording is shown above the field.
 
-The previous offline fuzzy dictionary has been removed from the project. The 1M-term client-side dictionary, fuzzy search scripts, dictionary autocomplete and dictionary-specific tests are gone.
+### Open-vocabulary behavior
+The engine does not require an exact catalog entry for every service name. It can recover unseen action stems and preserve previously unknown objects, for example:
 
-The service-name field now uses an AI assistant. A user can write Russian with spelling errors, missing letters, phonetic/keyboard mistakes or incomplete wording. The assistant uses the current direction and already selected services as context, understands construction terms and ordinary phrases, and can infer intent from Russian with errors, transliteration, mixed-language input, Romanian or English. It proposes a natural professional Russian formulation. The user can tap the suggestion or simply press **Добавить**. When AI is unavailable (for example, offline), the app keeps the original text instead of blocking the estimate.
+- `крепл мотора` → `Крепление мотора`
+- `крепление мотор` → `Крепление мотора`
+- `fixare motor` → `Фиксация мотора`
+- `prindere motor` → `Крепление мотора`
+- `kreplenie motora` → `Крепление мотора`
+- `сверл дырк` → `Сверление дырки`
+- `montare faianta baie` → `Укладка плитки в ванной комнате`
+- `неизвестная новая услуга` → `Неизвестная новая услуга`
 
-The browser never contains the OpenAI API key. The frontend calls the Firebase callable function `correctServiceText`; the server stores `OPENAI_API_KEY` in Firebase Secret Manager. OpenAI recommends routing API requests through your own backend rather than shipping an API key to a browser.
+The catalog is used as grounding when a close known service exists, not as a hard whitelist of allowed words.
 
-## Firebase Functions
+### Processing layers
+1. Input normalization (Russian, Romanian/Latin, transliteration and keyboard-layout recovery).
+2. Conservative typo/phonetic recovery.
+3. Semantic grounding against the live Master Group catalog.
+4. Open-vocabulary local generation for unseen service names.
+5. Guardrails to avoid inventing locations, quantities, prices or unsupported facts.
+6. Optional browser on-device LanguageModel can improve generation when the device exposes it; there is no remote fallback.
 
-The backend is in `functions/` and uses Node.js 22, Firebase Functions 7.4.0 and the OpenAI Responses API with structured JSON output. Firebase currently supports Node.js 22 for Cloud Functions, and parameterized secrets are the recommended configuration mechanism.
+### Firebase role
+Firebase can remain responsible for authentication, cloud data and synchronization elsewhere in Master Group. The service-name AI does not require Firebase Functions or OpenAI.
 
-From the repository root:
+### Tests
+Run from the project root:
 
 ```bash
-firebase use master-group-3e18e
-firebase functions:secrets:set OPENAI_API_KEY
-firebase deploy --only functions:correctServiceText
-```
-
-The model defaults to `gpt-6-luna`. You can change it with the `OPENAI_MODEL` parameter. The callable requires a signed-in Master Group user.
-
-## GitHub Pages
-
-The existing GitHub Actions workflow still deploys the PWA to GitHub Pages. The AI backend is deployed separately to Firebase Cloud Functions.
-
-## Local tests
-
-Run from the repository root:
-
-```bash
+node tests/ai-service-smoke.js
+node tests/ai-stress-smoke.js
+node tests/ai-open-vocabulary-smoke.js
 node tests/calculations-smoke.js
 node tests/data-model-smoke.js
 node tests/finance-sync-smoke.js
 node tests/firebase-sync-boundary-smoke.js
 node tests/offline-engine-smoke.js
-node tests/ai-service-smoke.js
+node tests/pwa-update-smoke.js
+node tests/settings-navigation-smoke.js
 ```

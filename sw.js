@@ -1,5 +1,5 @@
-/* Master Group v375 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v36-ai-assistant';
+/* Master Group v379 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v379';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -50,7 +50,6 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
       .then(cache => cache.addAll(CORE))
-      .then(() => self.skipWaiting())
   );
 });
 self.addEventListener('activate', event => {
