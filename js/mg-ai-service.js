@@ -1,16 +1,17 @@
-/* Master Group — Autonomous Service Intelligence v2
+/* Master Group — Autonomous Service Intelligence v3 · whole-text semantic memory
  *
  * No remote AI/API is required for the service-name assistant.
  * The public API is intentionally unchanged so the current UI continues to
  * show the generated correction ABOVE the service field.
  *
  * Architecture:
- *  1) input normalization: keyboard-layout, transliteration, Romanian/Latin;
- *  2) typo recovery: edit distance + phonetic/skeleton similarity + token repair;
- *  3) semantic grounding: dynamic index built from the Master Group catalog;
- *  4) local generation: compose a professional Russian service name from the
- *     recovered meaning, even when no exact phrase exists in the catalog;
- *  5) confidence/guardrails: never invent prices, quantities, units or facts.
+ *  1) whole-text semantic request: the entire input is interpreted as one unit;
+ *  2) reverse phrase-memory retrieval: find professional action/object combinations
+ *     in the Master Group catalog + concept memory;
+ *  3) 10M external word memory: supporting recognition evidence only, never a
+ *     visible per-token correction path for multi-word service requests;
+ *  4) local generation (Qwen3) only for genuinely unresolved phrases;
+ *  5) confidence/relevance guardrails: reject unrelated or malformed candidates.
  *
  * Where a browser exposes a native on-device LanguageModel, it may be used as
  * an optional local generative layer. It is never a network fallback.
@@ -63,7 +64,8 @@
     {id:'load',ru:'Погрузка',forms:['погрузка','погрузить','загрузить','загрузка','incarcare','incarcarea','a incarca']},
     {id:'clean',ru:'Очистка',forms:['очистка','очистить','чистка','уборка','curatare','curatarea','curatat','a curata']},
     {id:'sand',ru:'Шлифовка',forms:['шлифовка','шлифовать','шлифов','ошкуривание','slefuire','slefuirea','slefuit','a slefui']},
-    {id:'insulate',ru:'Утепление',forms:['утепление','утеплить','утепл','теплоизоляция','izolare','izolarea','izolat','a izola']}
+    {id:'insulate',ru:'Утепление',forms:['утепление','утеплить','утепл','теплоизоляция','izolare','izolarea','izolat','a izola']},
+    {id:'chase',ru:'Штробление',forms:['штробление','штробить','штробовка','штробов','штробавк','штробовк','штробан','штроблен','штроб','штроба','chasing','frezare santuri','frezare canale']}
   ];
 
   const OBJECTS=[
@@ -226,7 +228,7 @@
   };
 
   const ACTION_HINTS={
-    install:['установка'],lay:['укладка'],mount:['монтаж'],repair:['ремонт'],dismantle:['демонтаж'],replace:['замена'],paint:['покраска'],putty:['шпаклевка'],prime:['грунтовка'],route:['прокладка'],connect:['подключение'],configure:['настройка'],weld:['сварка'],fabricate:['изготовление'],cut:['срез'],remove:['удаление'],mow:['покос'],haul:['вывоз'],load:['погрузка'],clean:['очистка'],sand:['шлифовка'],insulate:['утепление']
+    install:['установка'],lay:['укладка'],mount:['монтаж'],repair:['ремонт'],dismantle:['демонтаж'],replace:['замена'],paint:['покраска'],putty:['шпаклевка'],prime:['грунтовка'],route:['прокладка'],connect:['подключение'],configure:['настройка'],weld:['сварка'],fabricate:['изготовление'],cut:['срез'],remove:['удаление'],mow:['покос'],haul:['вывоз'],load:['погрузка'],clean:['очистка'],sand:['шлифовка'],insulate:['утепление'],chase:['штробление']
   };
 
   function clean(v,max=MAX_INPUT){return String(v??'').replace(/\s+/g,' ').trim().slice(0,max);}
@@ -430,6 +432,8 @@
       [/(?:^|\s)(?:сверл\s+дырк|сверлить\s+дырк|сверление\s+отверст)\s+(?:бет|бетон|бетоне)(?:$|\s)/i,'Сверление отверстия в бетоне'],
       [/(?:^|\s)(?:поиск|найти)\s+(?:протеч|протечки|протечку)\s+(?:вода|воды|вод)(?:$|\s)/i,'Поиск и устранение протечки воды'],
       [/(?:^|\s)(?:покос|кос)\s+(?:трава|травы|трав)\s+(?:на\s+)?(?:участок|участке|участка)(?:$|\s)/i,'Покос травы на участке'],
+      [/(?:^|\s)(?:штробавк|штробовк|штробовка|штроблен|штробление|штробить|штробан).*(?:канал(?:а|у)?|канализац(?:ия|ии|ию|ией)|канализ)/i,'Штробление канала канализации'],
+      [/(?:^|\s)(?:штробавк|штробовк|штробовка|штроблен|штробление|штробить|штробан).*(?:стен|стену|стена)/i,'Штробление стен'],
       [/(?:^|\s)(?:вывоз|вывез|вывезти)\s+(?:строй\s+)?(?:мусор|мусора)(?:$|\s)/i,'Вывоз строительного мусора']
     ];
     for(const [re,out] of direct)if(re.test(prepared))return {text:out,confidence:.98,note:'Понято по смыслу всей фразы'};
@@ -484,6 +488,7 @@
       const nn=norm(prepared);
       if(action==='Покос' && /(?:трава|травы|трав)/i.test(nn) && /участ(?:ок|ке|ка)/i.test(nn)) out='Покос травы на участке';
       else if(action==='Вывоз' && /(?:строй\s+)?мусор/i.test(nn)) out='Вывоз строительного мусора';
+      else if(/(?:штробавк|штробовк|штробовка|штроблен|штробление|штробить|штробан)/i.test(nn) && /(?:канал(?:а|у)?|канализац)/i.test(nn)) out='Штробление канала канализации';
       else if(action==='Поиск' && /протеч/i.test(nn) && /вод/i.test(nn)) out='Поиск и устранение протечки воды';
       else {
       const filler=new Set(['мне','нада','надо','нодо','нужен','нужна','нужно','пожалуйста']);
@@ -508,6 +513,7 @@
       }
     }
     out=cleanupGenerated(out);
+    if(/(?:травы|трав)\s+канализац|канализац\s+канализации|\b(?:задняя|передняя)\s+(?:багажник|бампер|капот|двигатель|мотор)\b/i.test(out))return null;
     if(out)out=out.charAt(0).toUpperCase()+out.slice(1);
     if(!out)return null;
     if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(out))return null;
@@ -538,45 +544,122 @@
   // recognized concept to retrieve professionally valid phrase combinations
   // from the Master Group phrase memory/catalog. The language model can then
   // choose or compose the best phrase from these candidates.
+  // Whole-text reverse memory. The input is treated as one semantic request.
+  // We never build the visible answer by replacing each token independently.
+  // Tokens are only evidence for finding the action/object concepts that unlock
+  // professional phrase memory.
   function memoryPhraseCandidates(text,direction='',selectedServices=[]){
     const raw=stripPunct(text); if(!raw)return [];
-    const n=norm(raw); const rows=catalogRows(); const out=[]; const seen=new Set();
-    const add=(text,note='Фраза найдена во внешней памяти')=>{
-      const t=cleanupGenerated(text); if(!t||norm(t)===n||seen.has(norm(t)))return;
-      seen.add(norm(t)); out.push({text:t,note,confidence:.82});
+    const inputN=norm(raw);
+    const phraseWordCount=tokenise(raw).length;
+    const out=[]; const seen=new Set();
+    const add=(phrase,note,confidence=.8,score=0)=>{
+      const t=cleanupGenerated(phrase);
+      if(!t||norm(t)===inputN||seen.has(norm(t)))return;
+      seen.add(norm(t)); out.push({text:t,note,confidence,score});
     };
-    // Existing user/catalog memory has priority.
+
+    // 1) Search the existing Master Group catalog by the whole phrase first.
+    // For a lone concept we intentionally wait until concept-memory phrases are
+    // added, otherwise a weak fuzzy catalog hit can reorder good phrase options.
+    const rows=catalogRows();
+    if(phraseWordCount>=2){
     for(const row of rows){
-      const rn=norm(row.name); const rd=norm(row.direction||'');
-      if(rn.includes(n)||n.includes(rn)){
-        let score=.72;
-        if(direction && rd===norm(direction))score+=.12;
-        add(row.name,'Найдено в каталоге Master Group');
-        out[out.length-1].confidence=Math.min(.96,score);
+      const variantsIn=variants(raw);
+      const phraseSim=Math.max(...variantsIn.map(v=>similarity(v,row.name)));
+      const inTokens=tokenise(raw), rowTokens=tokenise(row.name);
+      let coverage=0;
+      if(inTokens.length && rowTokens.length){
+        for(const t of inTokens){
+          let best=0; for(const r of rowTokens) best=Math.max(best,similarity(t,r));
+          coverage+=best;
+        }
+        coverage/=inTokens.length;
       }
+      let score=.62*phraseSim+.38*coverage;
+      if(direction && norm(row.direction)===norm(direction))score+=.10;
+      if(selectedServices?.some(s=>similarity(s,row.name)>=.78))score+=.04;
+      if(score>=.48)add(row.name,'Найдено по смыслу в памяти каталога Master Group',Math.min(.97,score+.12),score);
     }
-    // Concept memory: retrieve combinations even when the exact phrase was
-    // never entered in the catalog. This is the reverse of typo correction.
-    const object=bestConcepts(raw,OBJECTS,.54)[0]||bestConcepts(raw,Object.values(COMMON_NOUNS).map((x,i)=>({id:'cn'+i,base:x.base,cases:x.gen,forms:x.forms})),.54)[0];
+    }
+
+    // 2) Recognize the two core concepts from the entire request.
+    // The spelling of individual words is never emitted as the answer.
+    // A lone noun such as «багажник» is a concept query, not an action.
+    // Do not let fuzzy matching invent «ремонт»/«подключение» from one word.
+    let action=null;
+    if(phraseWordCount>=2){
+      action=inferAction(raw,[]);
+    }else{
+      // For a single-token query, accept only an explicit action word/stem.
+      // Fuzzy action matching on one noun is too ambiguous and was the source
+      // of bad results such as «сантехика» -> «Ремонт сантехники».
+      const exact=ACTIONS.find(a=>a.forms.some(f=>norm(f)===norm(raw))||norm(a.ru)===norm(raw));
+      if(exact)action={...exact,score:1};
+    }
+    const object = inferObject(raw,[]);
+
+    // 3) If the user gave a lone concept, open its phrase neighborhood.
+    // If an action + object are present, retrieve the matching professional phrase.
     if(object?.id){
-      const fixed={
+      const objectPhrases={
         trunk:['Установка багажника','Монтаж багажника','Ремонт багажника','Замена багажника','Демонтаж багажника','Покраска багажника'],
         bumper:['Установка бампера','Ремонт бампера','Замена бампера','Демонтаж бампера','Покраска бампера'],
         hood:['Установка капота','Ремонт капота','Замена капота','Демонтаж капота'],
-        motor:['Установка мотора','Крепление мотора','Ремонт мотора','Замена мотора','Демонтаж мотора'],
-        engine:['Установка двигателя','Ремонт двигателя','Замена двигателя','Демонтаж двигателя'],
+        motor:['Установка мотора','Крепление мотора','Ремонт мотора','Замена мотора','Демонтаж мотора','Подключение мотора'],
+        engine:['Установка двигателя','Ремонт двигателя','Замена двигателя','Демонтаж двигателя','Подключение двигателя'],
         sink:['Установка раковины','Замена раковины','Подключение раковины'],
+        faucet:['Установка смесителя','Замена смесителя','Ремонт смесителя'],
+        toilet:['Установка унитаза','Замена унитаза','Ремонт унитаза'],
+        camera:['Установка камеры','Замена камеры','Ремонт камеры'],
+        recorder:['Настройка видеорегистратора','Установка видеорегистратора'],
         tile:['Укладка плитки','Резка плитки','Затирка швов плитки'],
         root:['Удаление корней'],tree:['Срез деревьев','Удаление деревьев'],
-        metal:['Изготовление металлоконструкции','Монтаж металлоконструкции','Сварка металлоконструкций'],
+        metal:['Изготовление металлоконструкции','Монтаж металлоконструкции','Сварка металлоконструкций','Покраска металла'],
         cable:['Прокладка кабеля','Монтаж кабеля','Подключение кабеля'],
-        pipe:['Монтаж трубы','Прокладка труб','Замена трубы'],
+        plumbing:['Установка сантехники','Демонтаж сантехники','Ремонт сантехники','Подключение сантехники'],
+        pipes:['Монтаж труб','Прокладка труб','Замена труб','Ремонт труб','Демонтаж труб'],
+        pipe:['Монтаж труб','Прокладка труб','Замена труб','Ремонт труб','Демонтаж труб'],
         roof:['Ремонт крыши','Монтаж крыши','Утепление крыши'],
-        wall:['Покраска стен','Шпаклевка стен','Грунтовка стен','Ремонт стен']
+        wall:['Покраска стен','Шпаклевка стен','Грунтовка стен','Ремонт стен','Штробление стен'],
+        sewer:['Монтаж канализации','Прокладка канализации','Ремонт канализации','Штробление канала канализации'],
+        constructionWaste:['Вывоз строительного мусора','Погрузка строительного мусора','Удаление строительного мусора']
       };
-      for(const phrase of (fixed[object.id]||[]))add(phrase,'Подобрано из памяти сочетаний для найденного объекта');
+      const phraseList=objectPhrases[object.id]||[];
+      if(action?.id){
+        let phrase='';
+        try{ phrase=inflectPhrase(action,object); }catch(_){ phrase=''; }
+        if(phrase)add(phrase,'Собрано из памяти сочетаний: действие + объект',.96,.94);
+        // Retrieve all compatible remembered phrases, keeping the action first.
+        for(const phrase2 of phraseList){
+          if(action?.ru && new RegExp('^'+action.ru.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i').test(phrase2))
+            add(phrase2,'Найдено в памяти профессиональных сочетаний',.92,.88);
+        }
+      } else {
+        for(const phrase of phraseList)add(phrase,'Подобрано из памяти сочетаний для найденного объекта',.92,.88);
+      }
     }
-    return out.slice(0,8);
+
+    // 4) Special whole-phrase semantic frames that are stronger than a token match.
+    const n=inputN;
+    if(/штроб(?:авк|овк|ов|лен|ление|ить|ан)?/i.test(n) && /канал(?:изац|иза|изац)/i.test(n))
+      add('Штробление канала канализации','Понятно по смыслу всей фразы',.99,.99);
+    if(/штроб(?:авк|овк|ов|лен|ление|ить|ан)?/i.test(n) && /стен/i.test(n))
+      add('Штробление стен','Понятно по смыслу всей фразы',.99,.99);
+    if(/задн|передн/i.test(n) && /багажн|богаж/i.test(n))
+      add(/передн/i.test(n)?'Передний багажник':'Задний багажник','Восстановлено по смыслу всей фразы',.98,.97);
+    if(/задн|передн/i.test(n) && /бампр|бампер/i.test(n))
+      add(/передн/i.test(n)?'Передний бампер':'Задний бампер','Восстановлено по смыслу всей фразы',.98,.97);
+
+    // A lone action word opens the corresponding catalog neighborhood.
+    if(phraseWordCount===1 && action?.ru){
+      for(const row of rows){
+        const a=bestConcepts(row.name,ACTIONS,.72)[0];
+        if(a?.id===action.id)add(row.name,'Открыта память услуг по найденному действию',.78,.74);
+      }
+    }
+
+    return out.sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,10);
   }
 
   function semanticCatalogCandidates(text,direction,selectedServices){
@@ -655,7 +738,7 @@
       grass:{mow:'Покос травы'},
       site:{clean:'Очистка участка'},
       roof:{repair:'Ремонт крыши',mount:'Монтаж крыши',insulate:'Утепление крыши'},
-      wall:{paint:'Покраска стен',putty:'Шпаклевка стен',prime:'Грунтовка стен',sand:'Шлифовка стен',insulate:'Утепление стен',repair:'Ремонт стен'},
+      wall:{paint:'Покраска стен',putty:'Шпаклевка стен',prime:'Грунтовка стен',sand:'Шлифовка стен',insulate:'Утепление стен',repair:'Ремонт стен',chase:'Штробление стен'},
       ceiling:{paint:'Покраска потолка',putty:'Шпаклевка потолка',prime:'Грунтовка потолка',sand:'Шлифовка потолка',repair:'Ремонт потолка'},
       floor:{lay:'Укладка пола',repair:'Ремонт пола',sand:'Шлифовка пола'},
       facade:{paint:'Покраска фасада',insulate:'Утепление фасада',repair:'Ремонт фасада'},
@@ -663,7 +746,7 @@
       garbage:{haul:'Вывоз мусора',load:'Погрузка мусора',clean:'Очистка от мусора',remove:'Удаление мусора'},
       equipment:{configure:'Настройка оборудования',install:'Установка оборудования',repair:'Ремонт оборудования'},
       heating:{repair:'Ремонт системы отопления',install:'Установка системы отопления'},
-      sewer:{mount:'Монтаж канализации',route:'Прокладка канализации',repair:'Ремонт канализации'},
+      sewer:{mount:'Монтаж канализации',route:'Прокладка канализации',repair:'Ремонт канализации',chase:'Штробление канала канализации'},
       aircon:{install:'Установка кондиционера',configure:'Настройка кондиционера',repair:'Ремонт кондиционера'},
       insulation:{insulate:'Утепление',remove:'Удаление утепления'},
       constructionWaste:{haul:'Вывоз строительного мусора',load:'Погрузка строительного мусора',remove:'Удаление строительного мусора'},
@@ -704,6 +787,7 @@
     {ru:'Штукатурка',forms:['штукатурка','штукатур','штукатурить','tencuire','tencuiala','a tencui']},
     {ru:'Гидроизоляция',forms:['гидроизоляция','гидроизоляц','hidroizolatie','hidroizolație','hidroizolarea']},
     {ru:'Звукоизоляция',forms:['звукоизоляция','звукоизоляц','izolare fonica','izolare fonică']},
+    {ru:'Штробление',forms:['штробление','штробить','штробовка','штробов','штробавк','штробовк','штробан','штроблен','штроб','chasing','frezare santuri','frezare canale']},
     {ru:'Монтаж',forms:['собрать и установить']}
   ];
 
@@ -712,7 +796,7 @@
     'прокладка','подключение','настройка','сварка','изготовление','срез','удаление','покос','вывоз',
     'погрузка','очистка','шлифовка','утепление','крепление','фиксация','сверление','герметизация',
     'диагностика','обслуживание','регулировка','сборка','разработка','бурение','штукатурка',
-    'гидроизоляция','звукоизоляция'
+    'гидроизоляция','звукоизоляция','штробление'
   ]);
 
   function bestOpenAction(text){
@@ -737,7 +821,7 @@
     const rules=[
       [/^(?:при)?крепл/i,'Крепление'],[/^фикс/i,'Фиксация'],[/^уклад|^улож|^полож/i,'Укладка'],[/^герметиз/i,'Герметизация'],[/^диагност/i,'Диагностика'],[/^обслуж/i,'Обслуживание'],
       [/^регулир/i,'Регулировка'],[/^сверл/i,'Сверление'],[/^бур/i,'Бурение'],[/^штукатур/i,'Штукатурка'],[/^гидроизоляц/i,'Гидроизоляция'],
-      [/^звукоизоляц/i,'Звукоизоляция'],[/^монта/i,'Монтаж'],[/^устан/i,'Установка'],[/^ремонт/i,'Ремонт'],[/^демонт/i,'Демонтаж'],
+      [/^звукоизоляц/i,'Звукоизоляция'],[/^штроб/i,'Штробление'],[/^монта/i,'Монтаж'],[/^устан/i,'Установка'],[/^ремонт/i,'Ремонт'],[/^демонт/i,'Демонтаж'],
       [/^замен/i,'Замена'],[/^покрас|^окрас/i,'Покраска'],[/^шпаклев|^шпатлев/i,'Шпаклевка'],[/^грунт/i,'Грунтовка'],[/^проклад|^пролож/i,'Прокладка'],
       [/^подключ/i,'Подключение'],[/^настр|^налад/i,'Настройка'],[/^свар/i,'Сварка'],[/^изготов/i,'Изготовление'],[/^срез|^спил/i,'Срез'],
       [/^удал|^убер/i,'Удаление'],[/^покос|^кос/i,'Покос'],[/^вывоз|^вывез/i,'Вывоз'],[/^погруз|^загруз/i,'Погрузка'],[/^очист|^чист/i,'Очистка'],
@@ -1196,23 +1280,18 @@
     const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
     if(CACHE.has(key))return CACHE.get(key);
 
-    // External-memory retrieval is the first stage. It does not replace the user's
-    // text; it only supplies candidate corrections to the local intelligence.
-    const dict=await dictionarySuggest(input);
+    // WHOLE-TEXT semantic retrieval is the primary stage. The 10M word memory
+    // supports recognition, but is not allowed to manufacture the visible answer
+    // by correcting one token at a time.
     const memorySuggestions=memoryPhraseCandidates(input,direction,services);
-    const retrievedText=[
-      (dict?.changed&&dict.corrected)?dict.corrected:'',
-      ...memorySuggestions.slice(0,6).map(x=>x.text)
-    ].filter(Boolean).join(' | ')||input;
-    const retrievalSuggestions=[
-      ...(Array.isArray(dict?.suggestions)?dict.suggestions:[]),
-      ...memorySuggestions
-    ];
+    const dict=await dictionarySuggest(input); // supporting evidence only
+    const retrievedText=memorySuggestions.slice(0,8).map(x=>x.text).join(' | ') || input;
+    const retrievalSuggestions=memorySuggestions;
 
-    // Run the deterministic Master Group intelligence on retrieved candidates so
-    // that morphology/context can turn e.g. "крепление мотор" into
-    // "Крепление мотора" rather than blindly copying a dictionary lemma.
-    const localInput=(dict?.changed && dict?.corrected && tokenise(input).length===1)?dict.corrected:input;
+    // Local deterministic intelligence receives the ORIGINAL sentence. It may
+    // interpret it, but it must never turn a per-word correction into the final UI
+    // suggestion when whole-phrase memory already found a semantic candidate.
+    const localInput=input;
     const local=fallback(localInput,direction,services);
     const combined=[];
     const isQualitySuggestion=(t)=>{
@@ -1226,6 +1305,17 @@
       if(/^\s*(?:установить|поставить|сделать|починить|заменить|прикрепить|закрепить|смонтировать|удалить|убрать|снять)\b/i.test(x))return false;
       if(/\bметалл(?:о)?\s+конструк/i.test(x)&&!/металлоконструк/i.test(x))return false;
       if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(x))return false;
+      // Main-object relevance: once the request has a recognizable object,
+      // unrelated candidates are not allowed through (e.g. «раковина» must
+      // never surface «Установка камеры» just because the action is «Установка»).
+      const requestObject=inferObject(input,[]);
+      if(requestObject?.id){
+        const candidateObjects=bestConcepts(x,OBJECTS,.62);
+        if(candidateObjects.length && !candidateObjects.some(o=>o.id===requestObject.id)){
+          const canonicalForms=(requestObject.forms||[]).map(norm);
+          if(!canonicalForms.some(f=>f && norm(x).includes(f)))return false;
+        }
+      }
       // Do not show a candidate that simply copies a clearly malformed token
       // from the request while claiming to be a correction.
       const src=inputWords; const dst=tokenise(x);
@@ -1237,10 +1327,23 @@
       return true;
     };
     const addCombined=(row)=>{if(!row?.text)return;const t=cleanupGenerated(row.text);if(!isQualitySuggestion(t))return;if(combined.some(x=>norm(x.text)===norm(t)))return;combined.push({...row,text:t});};
-    if(local?.suggestions)for(const row of local.suggestions)addCombined(row);
+    // Phrase memory first. Deterministic/local model can add candidates only after it.
     for(const row of memorySuggestions)addCombined(row);
-    for(const row of retrievalSuggestions)addCombined(row);
-    if(!combined.length && retrievedText!==input)addCombined({text:retrievedText,note:'Исправлено по внешней памяти словаря 10 млн',confidence:dict?.confidence||.55});
+    if(local?.suggestions)for(const row of local.suggestions)addCombined(row);
+    // Dictionary corrections remain hidden retrieval evidence; never surface them
+    // as standalone suggestions for multi-word input.
+    if(!combined.length && tokenise(input).length===1 && dict?.suggestions?.length){
+      // A lone ordinary word is the one case where the 10M spelling memory may
+      // return a word correction directly. Service concepts still use phrase memory.
+      const wordRows=dict.suggestions
+        .map(row=>({...row,text:cleanupGenerated(row.text)}))
+        .filter(row=>row.text && norm(row.text)!==norm(input))
+        .filter(row=>tokenise(row.text).length===1)
+        .slice(0,3);
+      for(const row of wordRows){
+        combined.push({...row,note:row.note||'Исправлено по внешней памяти словаря 10 млн'});
+      }
+    }
     const localResult={...(local||{}),
       corrected:combined[0]?.text||clean(retrievedText),
       suggestions:combined.slice(0,5),
@@ -1259,9 +1362,13 @@
     const suspicious=hasSuspiciousToken(input);
     const semanticCandidate=semanticBrainPhrase(input,direction,services);
     const semanticStrong=!!semanticCandidate&&semanticCandidate.confidence>=.90&&norm(semanticCandidate.text)!==norm(input);
+    const phraseMemoryStrong=memorySuggestions.some(x=>Number(x.confidence||0)>=.90 && tokenise(x.text).length>=2);
     const multiToken=tokenise(input).length>=2;
     const shortInput=tokenise(input).length<=2;
-    const needsDeep=!semanticStrong&&(suspicious||shortInput||multiToken&&localResult.confidence<.90||!localResult.suggestions.length);
+    // Qwen is reserved for cases where whole-text phrase memory and deterministic
+    // reasoning are genuinely uncertain. This keeps normal typing fast and avoids
+    // loading the 0.6B model for every short word.
+    const needsDeep=!phraseMemoryStrong&&!semanticStrong&&(suspicious||shortInput||multiToken&&localResult.confidence<.90||!localResult.suggestions.length);
     if(needsDeep) try{
       const nativePromise=nativeSuggest(input,direction,services);
       llm=await Promise.race([nativePromise,new Promise(resolve=>setTimeout(()=>resolve(null),1400))]);
@@ -1282,10 +1389,17 @@
     }
     // Never label an unresolved suspicious input as fully correct.
     if(result && semanticCandidate && norm(semanticCandidate.text)!==norm(input)){
+      const semanticWords=tokenise(semanticCandidate.text).length;
+      const inputWords=tokenise(input).length;
+      // Reverse-memory rule: a single concept such as «багажник» or «сантехика»
+      // must resolve to useful professional phrase candidates, never to the bare
+      // corrected noun. A one-word semantic output is therefore not allowed to
+      // override a multi-word phrase already retrieved from memory.
+      const bareSingleConcept=(inputWords===1);
       const modelBacked=['native-local-ai','local-llm-qwen3-0.6b'].includes(result.engine);
-      const semanticIsBetter=!modelBacked || !result.changed || result.confidence<semanticCandidate.confidence;
+      const semanticIsBetter=!bareSingleConcept && (!modelBacked || !result.changed || result.confidence<semanticCandidate.confidence);
       if(semanticIsBetter){
-        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v408'};
+        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v410'};
       }
     }
     if(result && !result.changed && suspicious){
@@ -1309,5 +1423,5 @@
     remoteHost:false
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v408-10m-reverse-memory-brain-qwen3'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v410-10m-whole-text-semantic-memory-qwen3'};
 })();

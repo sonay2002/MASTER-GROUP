@@ -66,3 +66,13 @@ The AI suggestion is now positioned as a compact floating layer above the servic
 
 ## AI v408 semantic brain
 The service-name assistant treats the 10,000,000-entry index as external memory, not as a phrase database. It repairs candidate word forms, resolves morphology/context, constructs unseen phrases, and uses a local language model only for hard cases. The user's original text is never replaced without an explicit tap on the suggestion.
+
+
+## v410 fixes
+- Contact card title reduced to roughly one-third of the previous mobile visual height.
+- Added semantic sewer/trenching phrase recovery: noisy forms such as `штробавко канала канализации` resolve to `Штробление канала канализации`.
+- Rejects known malformed generated combinations such as `травы канализац канализации`.
+
+
+## v410 whole-text semantic memory
+The service-name assistant treats the entire user string as a semantic request first. The 10M dictionary is supporting external memory; visible suggestions are taken from phrase/catalog memory and action+object concept retrieval, not from per-token replacement. A relevance gate rejects candidates that lose the main object of the request. Single nouns open a phrase neighborhood (e.g. “багажник” → “Установка багажника”, “Монтаж багажника”, …).

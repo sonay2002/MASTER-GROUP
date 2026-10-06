@@ -7229,3 +7229,21 @@ html,body,#app,.app,.screen{
   #step4 .contact-card-v2 .contact-heading-v2{margin-bottom:17px!important;}
   #step4 .contact-card-v2 .contact-heading-v2 .title{font-size:22px!important;white-space:nowrap!important;}
 }
+
+/* v411 — FINAL client-card title override: compact, one line, no clipping. */
+#step4 .contact-card-v2 .contact-heading-v2 .title{
+  font-size:16px!important;
+  line-height:18px!important;
+  letter-spacing:-.015em!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  max-width:none!important;
+  margin:0!important;
+}
+@media(max-width:520px){
+  #step4 .contact-card-v2 .contact-heading-v2 .title{
+    font-size:16px!important;
+    line-height:18px!important;
+  }
+}

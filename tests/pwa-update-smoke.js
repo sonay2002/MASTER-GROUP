@@ -6,5 +6,5 @@ if (!pwa.includes("if(applyingUpdate)finishReload();")) throw new Error('update 
 if (!pwa.includes("target.postMessage({type:'SKIP_WAITING'})")) throw new Error('manual activation message missing');
 if (sw.includes(".then(() => self.skipWaiting())")) throw new Error('service worker must not skipWaiting during install');
 if (!sw.includes("event.data?.type === 'SKIP_WAITING'")) throw new Error('service worker update message handler missing');
-if (!sw.includes("master-group-v408")) throw new Error('cache version not bumped');
+if (!sw.includes("master-group-v410")) throw new Error('cache version not bumped');
 console.log('PWA update smoke test passed');

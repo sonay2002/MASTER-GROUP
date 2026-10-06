@@ -46,7 +46,7 @@
 
 #step4 .contact-heading-v2 .title{
   margin:0!important;
-  font-size:22px!important;
+  font-size:12px!important;
   line-height:1.12!important;
   letter-spacing:-.028em!important;
   color:#162033!important;
@@ -164,7 +164,7 @@
     flex-basis:58px!important;
   }
   #step4 .contact-heading-v2 .title{
-    font-size:21px!important;
+    font-size:8px!important;
     letter-spacing:-.026em!important;
   }
   #step4 .contact-fields-v2{
@@ -193,6 +193,6 @@
 }
 
 @media(max-width:380px){
-  #step4 .contact-heading-v2 .title{font-size:19px!important;}
+  #step4 .contact-heading-v2 .title{font-size:7px!important;}
   #step4 .contact-field-v2{column-gap:10px!important;}
 }
