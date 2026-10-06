@@ -76,3 +76,11 @@ The service-name assistant treats the 10,000,000-entry index as external memory,
 
 ## v410 whole-text semantic memory
 The service-name assistant treats the entire user string as a semantic request first. The 10M dictionary is supporting external memory; visible suggestions are taken from phrase/catalog memory and action+object concept retrieval, not from per-token replacement. A relevance gate rejects candidates that lose the main object of the request. Single nouns open a phrase neighborhood (e.g. “багажник” → “Установка багажника”, “Монтаж багажника”, …).
+
+
+## v415 — Whole-text AI brain
+- Gemma 4 E4B is the primary local AI stage for multi-word service phrases.
+- The 10M dictionary is external retrieval memory only; it cannot produce visible multi-word answers through token-by-token substitution.
+- Model loading is lazy: the model is not warmed at page start, reducing unnecessary memory pressure on iPhone/PWA.
+- AI analysis is debounced to 650 ms after typing stops.
+- A final relevance/quality guard rejects malformed, duplicated, irrelevant, or grammatically broken candidates.

@@ -217,7 +217,6 @@ async function serviceWordSuggestions(){
   if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
   if(alts){alts.innerHTML='';alts.hidden=true;}
   setAiStatus('AI анализирует…');
-  try{window.MG_AI_SERVICE?.warmupLocalLlm?.();}catch(err){console.warn('MG Gemma warmup failed',err)}
   aiSuggestTimer=setTimeout(async()=>{
     try{
       const ctx=aiDirectionContext();
@@ -242,7 +241,7 @@ async function serviceWordSuggestions(){
       setAiStatus(message);
       console.warn('MG AI suggestions failed',err);
     }
-  },220);
+  },650);
 }
 
 function insertServiceWord(word){

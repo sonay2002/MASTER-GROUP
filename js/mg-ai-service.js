@@ -1,4 +1,4 @@
-/* Master Group — Autonomous Service Intelligence v4 · whole-text semantic memory + Gemma 4 E4B
+/* Master Group — Autonomous Service Intelligence v5 · whole-text AI brain + external 10M memory + Gemma 4 E4B
  *
  * No remote AI/API is required for the service-name assistant.
  * The public API is intentionally unchanged so the current UI continues to
@@ -32,6 +32,7 @@
   // The model is downloaded once, cached by Transformers.js, and then runs on
   // the user's device (WebGPU when available, otherwise the local fallback).
   const LOCAL_LLM_MODEL='onnx-community/gemma-4-E4B-it-ONNX';
+  const AI_BRAIN_MODE='whole-text-primary';
   const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.0';
   let localLlmPipeline=null;
   let localLlmState='not-loaded';
@@ -120,7 +121,8 @@
     {id:'mirror',base:'зеркало',cases:'зеркала',forms:['зеркало','зеркала','зеркалу','зеркалом']},
     {id:'wheel',base:'колесо',cases:'колеса',forms:['колесо','колеса','колесу','колесом','колёса','колес']},
     {id:'brake',base:'тормоз',cases:'тормоза',forms:['тормоз','тормоза','тормозу','тормозом','тормозы']},
-    {id:'battery',base:'аккумулятор',cases:'аккумулятора',forms:['аккумулятор','аккумулятора','аккумулятору','аккумулятором','акумулятор','акумлятор']}
+    {id:'battery',base:'аккумулятор',cases:'аккумулятора',forms:['аккумулятор','аккумулятора','аккумулятору','аккумулятором','акумулятор','акумлятор']},
+    {id:'quadricycle',base:'квадроцикл',cases:'квадроцикла',forms:['квадроцикл','квадроцикла','квадроциклу','квадроциклом','квадроциклы','квадроциклов','квадрашкла','квадрашк','квадроцкл','квадрацикл','квадрацик','квадрик','квадрики']}
   ];
 
   const LOCATIONS=[
@@ -413,6 +415,9 @@
     // language and automotive/construction expressions. New phrases continue
     // through the generic pipeline and the language model.
     const direct=[
+      [/(?:^|\s)(?:разборк(?:а|о)|разбор|разобр(?:ать|ка)?)\s*[-–—]\s*(?:сборк(?:а|и|у)|зборк(?:а|и|у)|собр(?:ать|ка))\s+(?:квадроцикл(?:а|у|ом|ы|ов)?|квадрашкла|квадрашк|квадрацикл|квадрацик|квадроцкл|квадрик(?:а|у|ом|и)?)(?:$|\s)/i,'Разборка и сборка квадроцикла'],
+      [/(?:^|\s)(?:разборк(?:а|о)|разбор|разобр(?:ать|ка)?)\s+(?:сборк(?:а|и|у)|зборк(?:а|и|у)|собр(?:ать|ка))\s+(?:квадроцикл(?:а|у|ом|ы|ов)?|квадрашкла|квадрашк|квадрацикл|квадрацик|квадроцкл|квадрик(?:а|у|ом|и)?)(?:$|\s)/i,'Разборка и сборка квадроцикла'],
+      [/(?:^|\s)(?:разборк(?:а|о)|разбор|разобр(?:ать|ка)?)\s+(?:и|[-–—])\s*(?:сборк(?:а|и|у)|зборк(?:а|и|у)|собр(?:ать|ка))\s+(?:квадроцикл(?:а|у|ом|ы|ов)?|квадрашкла|квадрашк|квадрацикл|квадрацик|квадроцкл|квадрик(?:а|у|ом|и)?)(?:$|\s)/i,'Разборка и сборка квадроцикла'],
       [/(?:^|\s)(?:задняя|задн|заднй)\s+(?:багажник|богажник|багажн|богашек)(?:$|\s)/i,'Задний багажник'],
       [/(?:^|\s)(?:передняя|передн|переднй)\s+(?:багажник|богажник)(?:$|\s)/i,'Передний багажник'],
       [/(?:^|\s)(?:задняя|задн|заднй)\s+(?:бампер|бампр)(?:$|\s)/i,'Задний бампер'],
@@ -599,11 +604,16 @@
       if(exact)action={...exact,score:1};
     }
     const object = inferObject(raw,[]);
+    // Paired operations are a single service concept, not two independent words.
+    if(/(?:разборк|разбор|разобр)/i.test(inputN) && /(?:сборк|зборк|собр)/i.test(inputN) && /(?:квадроцикл|квадрашкл|квадрацикл|квадроцкл|квадрик)/i.test(inputN)){
+      add('Разборка и сборка квадроцикла','Понятно по смыслу всей фразы: две связанные операции над одним объектом',.995,1);
+    }
 
     // 3) If the user gave a lone concept, open its phrase neighborhood.
     // If an action + object are present, retrieve the matching professional phrase.
     if(object?.id){
       const objectPhrases={
+        quadricycle:['Разборка квадроцикла','Сборка квадроцикла','Разборка и сборка квадроцикла','Ремонт квадроцикла','Техническое обслуживание квадроцикла'],
         trunk:['Установка багажника','Монтаж багажника','Ремонт багажника','Замена багажника','Демонтаж багажника','Покраска багажника'],
         bumper:['Установка бампера','Ремонт бампера','Замена бампера','Демонтаж бампера','Покраска бампера'],
         hood:['Установка капота','Ремонт капота','Замена капота','Демонтаж капота'],
@@ -704,7 +714,7 @@
   }
 
   const neutralObjectAction={
-    tile:'Укладка',laminate:'Укладка',parquet:'Укладка',wallpaper:'Поклейка',pipes:'Монтаж',cable:'Прокладка',plumbing:'Установка',sink:'Установка',toilet:'Установка',faucet:'Установка',camera:'Установка',recorder:'Настройка',socket:'Установка',switch:'Установка',door:'Установка',window:'Установка',metal:'Монтаж',fence:'Монтаж',gate:'Монтаж',tree:'Срез',branch:'Срез',root:'Удаление',grass:'Покос',site:'Очистка',roof:'Ремонт',wall:'Ремонт',ceiling:'Ремонт',floor:'Ремонт',facade:'Утепление',concrete:'Шлифовка',garbage:'Вывоз',equipment:'Настройка',heating:'Ремонт',sewer:'Монтаж',aircon:'Установка',insulation:'Утепление',constructionWaste:'Вывоз',power:'Монтаж',motor:'Монтаж',engine:'Ремонт',leak:'Поиск и устранение',washing:'Подключение'
+    tile:'Укладка',laminate:'Укладка',parquet:'Укладка',wallpaper:'Поклейка',pipes:'Монтаж',cable:'Прокладка',plumbing:'Установка',sink:'Установка',toilet:'Установка',faucet:'Установка',camera:'Установка',recorder:'Настройка',socket:'Установка',switch:'Установка',door:'Установка',window:'Установка',metal:'Монтаж',fence:'Монтаж',gate:'Монтаж',tree:'Срез',branch:'Срез',root:'Удаление',grass:'Покос',site:'Очистка',roof:'Ремонт',wall:'Ремонт',ceiling:'Ремонт',floor:'Ремонт',facade:'Утепление',concrete:'Шлифовка',garbage:'Вывоз',equipment:'Настройка',heating:'Ремонт',sewer:'Монтаж',aircon:'Установка',insulation:'Утепление',constructionWaste:'Вывоз',power:'Монтаж',motor:'Монтаж',engine:'Ремонт',leak:'Поиск и устранение',washing:'Подключение',quadricycle:'Установка'
   };
 
   function inflectPhrase(action,object){
@@ -754,6 +764,7 @@
       power:{install:'Установка блока питания',replace:'Замена блока питания',mount:'Монтаж блока питания'},
       leak:{repair:'Поиск и устранение протечки'},
       washing:{install:'Установка стиральной машины',connect:'Подключение стиральной машины',repair:'Ремонт стиральной машины'},
+      quadricycle:{install:'Установка квадроцикла',repair:'Ремонт квадроцикла',dismantle:'Демонтаж квадроцикла',assemble:'Сборка квадроцикла'},
       trunk:{install:'Установка багажника',mount:'Монтаж багажника',repair:'Ремонт багажника',replace:'Замена багажника',dismantle:'Демонтаж багажника',paint:'Покраска багажника'},
       bumper:{install:'Установка бампера',repair:'Ремонт бампера',replace:'Замена бампера',dismantle:'Демонтаж бампера',paint:'Покраска бампера'},
       hood:{install:'Установка капота',repair:'Ремонт капота',replace:'Замена капота',dismantle:'Демонтаж капота'},
@@ -981,6 +992,7 @@
     // being misclassified as an unrelated catalog service. The catalog is used
     // as a high-confidence fallback/grounding layer.
     let phrase='';
+    if(/(?:разборк|разбор|разобр)/i.test(analysisText) && /(?:сборк|зборк|собр)/i.test(analysisText) && /(?:квадроцикл|квадрашкл|квадрацикл|квадроцкл|квадрик)/i.test(analysisText)) phrase='Разборка и сборка квадроцикла';
     const preferOpen = strongOpen;
     if(preferOpen){
       phrase=openVocabularyGeneration(analysisText)||'';
@@ -1024,6 +1036,8 @@
     let s=clean(normalizeLooseInput(text)||text,MAX_INPUT);
     if(!s)return '';
     const direct=[
+      [/(?:^|\s)(?:разборк(?:а|о)|разбор|разобр(?:ать|ка)?)\s*[-–—]\s*(?:сборк(?:а|и|у)|зборк(?:а|и|у)|собр(?:ать|ка))\s+(?:квадроцикл(?:а|у|ом|ы|ов)?|квадрашкла|квадрашк|квадрацикл|квадрацик|квадроцкл|квадрик(?:а|у|ом|и)?)(?:$|\s)/i,'Разборка и сборка квадроцикла'],
+      [/(?:^|\s)(?:разборк(?:а|о)|разбор|разобр(?:ать|ка)?)\s+(?:сборк(?:а|и|у)|зборк(?:а|и|у)|собр(?:ать|ка))\s+(?:квадроцикл(?:а|у|ом|ы|ов)?|квадрашкла|квадрашк|квадрацикл|квадрацик|квадроцкл|квадрик(?:а|у|ом|и)?)(?:$|\s)/i,'Разборка и сборка квадроцикла'],
       [/(?:^|\s)(?:креплние|креплн|крпление|крепл|крепление)\s+(?:мотра|мтора|мтор|мотро|мотор)\s+к\s+(?:рам|рма|раме|рама)(?:$|\s)/i,'Крепление мотора к раме'],
       [/(?:^|\s)(?:креплние|креплн|крпление|крепл|крепление)\s+(?:мотра|мтора|мтор|мотро|мотор)(?:$|\s)/i,'Крепление мотора'],
       [/(?:^|\s)(?:устанвка|устновка|установка)\s+(?:раковн|раковна|раковина)(?:$|\s)/i,'Установка раковины'],
@@ -1226,15 +1240,28 @@
   async function localLlmSuggest(text,direction,selectedServices,retrievedText=text){
     const generator=await ensureLocalLlm();
     if(!generator)return null;
-    const system=`Ты — языковой мозг приложения Master Group.
-Работай как человек: сначала пойми, что пользователь хотел сказать, затем исправь слова и грамматику всей фразы.
-Пользователь может писать с пропущенными буквами, переставленными буквами, неправильными окончаниями, на слух, по-румынски, латиницей или смешанно.
-Слова из внешней памяти — это только кандидаты, а НЕ готовые ответы. Полная фраза может отсутствовать в базе.
-Согласуй род, число и падеж. Например: «задняя багажник» → «Задний багажник», «креплние мотра к рам» → «Крепление мотора к раме».
-Для поля услуги используй короткую профессиональную формулировку и не добавляй фактов, которых нет во вводе.
-Верни только одну итоговую фразу на русском, без объяснений.
-Примеры: «заднй бампр» → «Задний бампер»; «устновит раковн» → «Установка раковины»; «мне нада устновит мотор на машыну» → «Установка мотора на машину».`;
-    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nПредварительная смысловая интерпретация: ${clean(semanticBrainPhrase(text,direction,selectedServices)?.text)||'нет'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\nРезультат предварительного поиска во внешней памяти словаря: ${clean(retrievedText)||'нет данных'}\n\nВерни только правильное название услуги на русском.`;
+    const system=`Ты — основной языковой мозг приложения Master Group.
+ВАЖНО: НЕ исправляй слова по одному и НЕ собирай ответ из последовательных словарных замен.
+Сначала рассматривай ВЕСЬ пользовательский текст как одно сообщение: определи намерение, действие(я), объект(ы), отношения между словами и контекст.
+Текст может содержать тяжёлые опечатки, пропуски букв, неправильные окончания, разговорную речь, русскую транслитерацию латиницей, румынский, смешанный русский/румынский и слова «на слух».
+Внешняя память 10 000 000 записей содержит справочные формы и подсказки. Это НЕ готовый ответ и НЕ инструкция исправлять токены по очереди. Фраза может отсутствовать в памяти — тогда восстанови её по смыслу.
+Сформируй новую, нормальную, профессиональную русскую формулировку названия услуги. Сохрани все существенные действия и объекты исходного сообщения. Не придумывай новые объекты, материалы, адреса, цены, количество или технические характеристики.
+Обязательно исправляй род, число, падеж и предлоги по смыслу всей фразы.
+Примеры:
+«разборко зборка квадрашкла» → «Разборка и сборка квадроцикла»
+«задняя багажник» → «Задний багажник»
+«креплние мотра к рам» → «Крепление мотора к раме»
+«штробавко канала канализации» → «Штробление канала канализации»
+«уклдк кафла ваной» → «Укладка плитки в ванной комнате»
+«покраска стена кухня» → «Покраска стен на кухне»
+«мне нада устновит мотор на машыну» → «Установка мотора на машину».
+Верни только ОДНУ итоговую фразу на русском, без кавычек, объяснений, списков и комментариев.`;
+    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}
+Контекст уже выбранных услуг: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}
+Исходная фраза пользователя (анализировать ЦЕЛИКОМ): ${clean(text)}
+Подсказки из внешней памяти 10M (только справка, не копируй механически): ${clean(retrievedText)||'нет данных'}
+
+Сначала мысленно пойми смысл всей фразы, затем выдай только её профессиональное русское название.`;
     const messages=[{role:'system',content:system},{role:'user',content:user}];
     try{
       const output=await generator(messages,{max_new_tokens:48,do_sample:false});
@@ -1269,6 +1296,32 @@
       if(!corrected||corrected.length<2||corrected.length>180)return null;
       return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Gemma 4 E4B',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-gemma-4-e4b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
     }catch(err){console.warn('Master Group Gemma 4 E4B repair failed',err);return null;}
+  }
+
+  // Final guard for ANY whole-text candidate, including raw LLM output.
+  // This is intentionally phrase-level: it validates the candidate as a complete
+  // service name and never performs a sequence of token substitutions.
+  function isQualitySuggestion(candidate){
+    const x=cleanupGenerated(String(candidate||''));
+    if(!x || x.length<2 || x.length>180)return false;
+    if(/^(?:ответ|правильная формулировка|название услуги|пользователь|направление|каталог)/i.test(x))return false;
+    if(/(?:не могу|я не могу|не знаю|не удалось|как исправить|извините)/i.test(x))return false;
+    if(/[!?]{2,}|[<>]{2,}|\b(?:травы|трава)\s+канализац\b/i.test(x))return false;
+    if(/\b(?:задняя|передняя|левая|правая|верхняя|нижняя)\s+(?:багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(x))return false;
+    const words=tokenise(x);
+    if(!words.length || words.length>18)return false;
+    // A multi-word request should not collapse to a bare noun/fragment.
+    if(words.length===1 && words[0].length<3)return false;
+    // Reject duplicated or near-duplicated adjacent words (common LLM failure).
+    for(let i=0;i<words.length-1;i++){
+      const a=norm(words[i]),b=norm(words[i+1]);
+      if(a===b && a.length>=4)return false;
+      if(a.length>=6 && b.length>=6 && levenshtein(a,b,3)<=2 && a.slice(0,Math.min(6,a.length))===b.slice(0,Math.min(6,b.length)))return false;
+    }
+      // Object-only phrases are valid too (for example, «Задний багажник»).
+    // Service action consistency is checked later against the original request,
+    // so this validator stays focused on phrase integrity and relevance.
+    return true;
   }
 
   function hasSuspiciousToken(text){
@@ -1311,154 +1364,111 @@
 
   async function suggestServiceName({text,direction='',selectedServices=[]}={}){
     const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai',offline:true,confidence:1};
-    const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
+    const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);
+    const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services,brain:AI_BRAIN_MODE});
     if(CACHE.has(key))return CACHE.get(key);
 
-    // WHOLE-TEXT semantic retrieval is the primary stage. The 10M word memory
-    // supports recognition, but is not allowed to manufacture the visible answer
-    // by correcting one token at a time.
-    const memorySuggestions=memoryPhraseCandidates(input,direction,services);
-    const dict=await dictionarySuggest(input); // supporting evidence only
-    const retrievedText=memorySuggestions.slice(0,8).map(x=>x.text).join(' | ') || input;
-    const retrievalSuggestions=memorySuggestions;
-
-    // Local deterministic intelligence receives the ORIGINAL sentence. It may
-    // interpret it, but it must never turn a per-word correction into the final UI
-    // suggestion when whole-phrase memory already found a semantic candidate.
-    const localInput=input;
-    const local=fallback(localInput,direction,services);
-    const combined=[];
-    const isQualitySuggestion=(t)=>{
-      const x=cleanupGenerated(t); if(!x||norm(x)===norm(input))return false;
-      const words=tokenise(x); const inputWords=tokenise(input);
-      if(inputWords.length>=2 && words.length<2)return false;
-      // A single noun is a query for phrase memory, not a request to turn it
-      // into an isolated genitive/inflected fragment. Return useful service
-      // combinations instead.
-      if(inputWords.length===1 && words.length<2)return false;
-      if(/^\s*(?:установить|поставить|сделать|починить|заменить|прикрепить|закрепить|смонтировать|удалить|убрать|снять)\b/i.test(x))return false;
-      if(/\bметалл(?:о)?\s+конструк/i.test(x)&&!/металлоконструк/i.test(x))return false;
-      if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(x))return false;
-      // Main-object relevance: once the request has a recognizable object,
-      // unrelated candidates are not allowed through (e.g. «раковина» must
-      // never surface «Установка камеры» just because the action is «Установка»).
-      const requestObject=inferObject(input,[]);
-      if(requestObject?.id){
-        const candidateObjects=bestConcepts(x,OBJECTS,.62);
-        if(candidateObjects.length && !candidateObjects.some(o=>o.id===requestObject.id)){
-          const canonicalForms=(requestObject.forms||[]).map(norm);
-          if(!canonicalForms.some(f=>f && norm(x).includes(f)))return false;
-        }
-      }
-      // Reject malformed/redundant word sequences that are a common signature
-      // of degenerate local-model output (for example: «канализац канализации»).
-      const candWords=tokenise(x);
-      for(let i=0;i<candWords.length-1;i++){
-        const a=norm(candWords[i]),b=norm(candWords[i+1]);
-        if(a===b && a.length>=5)return false;
-        const min=Math.min(a.length,b.length), max=Math.max(a.length,b.length);
-        if(min>=6 && max-min<=3 && a.slice(0,Math.min(8,min))===b.slice(0,Math.min(8,min)) && levenshtein(a,b,3)<=3)return false;
-      }
-      if(/\b(?:травы|трава)\s+канализац\b/i.test(x))return false;
-      // Do not show a candidate that simply copies a clearly malformed token
-      // from the request while claiming to be a correction.
-      const src=inputWords; const dst=tokenise(x);
-      for(const bad of src){
-        if(bad.length<5)continue;
-        const still=dst.includes(bad);
-        if(still && !Object.values(COMMON_NOUNS).some(v=>v.forms.some(f=>norm(f)===norm(bad))) && !/^(?:крепление|установка|монтаж|ремонт|замена|покраска|укладка|удаление|демонтаж|сварка|изготовление)$/i.test(bad))return false;
-      }
-      return true;
-    };
-    const addCombined=(row)=>{if(!row?.text)return;const t=cleanupGenerated(row.text);if(!isQualitySuggestion(t))return;if(combined.some(x=>norm(x.text)===norm(t)))return;combined.push({...row,text:t});};
-    // Phrase memory first. Deterministic/local model can add candidates only after it.
-    for(const row of memorySuggestions)addCombined(row);
-    if(local?.suggestions)for(const row of local.suggestions)addCombined(row);
-    // Dictionary corrections remain hidden retrieval evidence; never surface them
-    // as standalone suggestions for multi-word input.
-    if(!combined.length && tokenise(input).length===1 && dict?.suggestions?.length){
-      // A lone ordinary word is the one case where the 10M spelling memory may
-      // return a word correction directly. Service concepts still use phrase memory.
-      const wordRows=dict.suggestions
-        .map(row=>({...row,text:cleanupGenerated(row.text)}))
-        .filter(row=>row.text && norm(row.text)!==norm(input))
-        .filter(row=>tokenise(row.text).length===1)
-        .slice(0,3);
-      for(const row of wordRows){
-        combined.push({...row,note:row.note||'Исправлено по внешней памяти словаря 10 млн'});
-      }
-    }
-    const localResult={...(local||{}),
-      corrected:combined[0]?.text||clean(retrievedText),
-      suggestions:combined.slice(0,5),
-      changed:norm(combined[0]?.text||retrievedText)!==norm(input),
-      engine:dict?.changed?'master-ai-with-10m-memory':(local?.engine||'master-local-ai'),
-      offline:true,
-      dictionaryUsed:!!dict,
-      dictionaryEntries:10000000,
-      dictionaryLoadedShards:dict?.loadedShards||[],
-      confidence:combined[0]?.confidence||dict?.confidence||local?.confidence||.45
-    };
-
-    // Gemma 4 E4B is reserved for cases where retrieval + deterministic context are not
-    // enough, or where the original input still contains suspicious tokens.
-    let llm=null;
+    const tokens=tokenise(input);
+    const multiToken=tokens.length>=2;
     const suspicious=hasSuspiciousToken(input);
-    const semanticCandidate=semanticBrainPhrase(input,direction,services);
-    const semanticStrong=!!semanticCandidate&&semanticCandidate.confidence>=.90&&norm(semanticCandidate.text)!==norm(input);
-    const phraseMemoryStrong=memorySuggestions.some(x=>Number(x.confidence||0)>=.90 && tokenise(x.text).length>=2);
-    const multiToken=tokenise(input).length>=2;
-    const shortInput=tokenise(input).length<=2;
-    // Gemma 4 E4B is reserved for cases where whole-text phrase memory and deterministic
-    // reasoning are genuinely uncertain. This keeps normal typing fast and avoids
-    // loading the Gemma 4 E4B model for every short word.
-    const needsDeep=!phraseMemoryStrong&&!semanticStrong&&(suspicious||shortInput||multiToken&&localResult.confidence<.90||!localResult.suggestions.length);
-    if(needsDeep) try{
-      // Gemma 4 E4B is the configured generative brain. On the first use we
-      // start loading it in the background rather than blocking the field.
-      if(localLlmState==='not-loaded')warmupLocalLlm();
-      if(localLlmState==='ready-webgpu' || localLlmState==='ready-wasm'){
-        llm=await localLlmSuggest(input,direction,services,retrievedText);
-      }
-      // Native LanguageModel is only a last-resort device fallback when Gemma
-      // could not be loaded; it is never preferred over Gemma.
-      if(!llm && localLlmState==='unavailable'){
-        const nativePromise=nativeSuggest(input,direction,services);
-        llm=await Promise.race([nativePromise,new Promise(resolve=>setTimeout(()=>resolve(null),1400))]);
-      }
-    }catch(_){llm=null;}
 
-    // Never allow raw model text to bypass the same relevance guardrails used
-    // by deterministic candidates. This is the protection against nonsense
-    // like an unrelated noun, malformed agreement, or repeated garbage.
-    const safeLlm = llm && isQualitySuggestion(llm.corrected) ? llm : null;
-    let result=safeLlm||localResult;
-    if(result?.corrected && localResult?.corrected && norm(result.corrected)===norm(input) && norm(localResult.corrected)!==norm(input)){
-      result={...localResult,uncertain:true};
+    // 10M memory = external reference. It is retrieval evidence only.
+    // Multi-word visible correction NEVER comes from sequential dictionary edits.
+    const memorySuggestions=memoryPhraseCandidates(input,direction,services);
+    const dict=await dictionarySuggest(input);
+    const memoryHints=memorySuggestions.slice(0,8).map(x=>x.text).join(' | ') || '';
+    const semanticCandidate=semanticBrainPhrase(input,direction,services);
+
+    // Whole-text AI is PRIMARY for phrases. This is intentionally the opposite
+    // of the previous token-by-token pipeline.
+    let llm=null;
+    if(multiToken || suspicious){
+      try{
+        if(localLlmState==='not-loaded' || localLlmState==='loading')await ensureLocalLlm();
+        if(localLlmState==='ready-webgpu' || localLlmState==='ready-wasm'){
+          llm=await localLlmSuggest(input,direction,services,memoryHints);
+        }
+      }catch(err){console.warn('Master Group whole-text Gemma stage failed',err)}
     }
-    // If the local model echoes the input while dictionary/local retrieval found a candidate,
-    // keep the recovered candidate rather than incorrectly declaring the text correct.
-    if(result && norm(result.corrected||'')===norm(input) && localResult.changed){
-      result={...localResult,uncertain:true};
-    }
-    // Never label an unresolved suspicious input as fully correct.
-    if(result && semanticCandidate && norm(semanticCandidate.text)!==norm(input)){
-      const semanticWords=tokenise(semanticCandidate.text).length;
-      const inputWords=tokenise(input).length;
-      // Reverse-memory rule: a single concept such as «багажник» or «сантехика»
-      // must resolve to useful professional phrase candidates, never to the bare
-      // corrected noun. A one-word semantic output is therefore not allowed to
-      // override a multi-word phrase already retrieved from memory.
-      const bareSingleConcept=(inputWords===1);
-      const modelBacked=['native-local-ai','local-llm-gemma-4-e4b'].includes(result.engine);
-      const semanticIsBetter=!bareSingleConcept && (!modelBacked || !result.changed || result.confidence<semanticCandidate.confidence);
-      if(semanticIsBetter){
-        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v412'};
+
+    const modelText=cleanupGenerated(llm?.corrected||'');
+    const modelHasUnresolvedTypos=suspicious && hasSuspiciousToken(modelText);
+    const safeModel=llm && !modelHasUnresolvedTypos && isQualitySuggestion(modelText) ? {
+      ...llm,
+      corrected:modelText,
+      suggestions:[{text:modelText,note:'Gemma 4 E4B — анализ всей фразы целиком',confidence:.98}],
+      changed:norm(llm.corrected)!==norm(input),
+      confidence:.98,
+      engine:'local-llm-gemma-4-e4b-whole-text'
+    } : null;
+
+    // Safe whole-text fallbacks. They may construct a phrase, but they do not
+    // perform visible word-by-word replacement for multi-word input.
+    const safe=[];
+    const addSafe=(row,note,confidence)=>{
+      if(!row)return;
+      const t=cleanupGenerated(typeof row==='string'?row:row.text||row.name||'');
+      if(!isQualitySuggestion(t))return;
+      if(norm(t)===norm(input))return;
+      // Once a main object is understood, an unrelated catalog object is not a
+      // valid alternative merely because it shares the same action.
+      const reqObj=inferObject(input,[]); const candObj=inferObject(t,[]);
+      if(reqObj?.id && candObj?.id && reqObj.id!==candObj.id)return;
+      if(safe.some(x=>norm(x.text)===norm(t)))return;
+      safe.push({text:t,note:note||row.note||'Whole-text fallback',confidence:confidence??row.confidence??.85});
+    };
+    addSafe(semanticCandidate?.text,semanticCandidate?.note,.98);
+    addSafe(contextualServicePhrase(input),'Восстановлено по смыслу всей фразы',.97);
+    for(const m of memorySuggestions)addSafe(m,'Память услуг Master Group',Math.min(.94,Number(m.confidence||m.score||.8)));
+    const catalog=semanticCatalogCandidates(input,direction,services);
+    for(const row of catalog.slice(0,4))addSafe(row,'Подходит к каталогу Master Group',Math.min(.93,Number(row.score||.8)));
+    const generated=buildLocalGeneration(input,direction,services);
+    addSafe(generated,'Локальное смысловое резервное восстановление',generated?.confidence??.86);
+
+    // Single concepts stay in phrase-memory mode: «багажник» -> useful service
+    // combinations, never an isolated inflected noun.
+    if(tokens.length===1){
+      const phraseOnly=safe.filter(x=>tokenise(x.text).length>=2).slice(0,5);
+      if(phraseOnly.length){
+        const result={corrected:phraseOnly[0].text,suggestions:phraseOnly,changed:norm(phraseOnly[0].text)!==norm(input),engine:'master-whole-text-memory',offline:true,dictionaryUsed:!!dict,dictionaryEntries:10000000,dictionaryLoadedShards:dict?.loadedShards||[],confidence:phraseOnly[0].confidence,remoteInference:false,remoteApi:false,localInference:true};
+        CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);return result;
       }
     }
-    if(result && !result.changed && suspicious){
-      result={...result,corrected:result.corrected,suggestions:[{text:result.corrected,note:'AI не смог уверенно подтвердить написание — проверьте слово',confidence:.45}],confidence:.45,uncertain:true};
+
+    // Model wins after guardrails; deterministic candidates are only fallback.
+    let result=safeModel ? {...safeModel,suggestions:[safeModel.suggestions?.[0]].filter(Boolean)} : (safe[0] ? {corrected:safe[0].text,suggestions:safe.slice(0,5),changed:norm(safe[0].text)!==norm(input),engine:'master-whole-text-memory',offline:true,confidence:safe[0].confidence} : null);
+    if(!result){
+      result={corrected:cleanupGenerated(input),suggestions:[],changed:false,engine:'master-whole-text-memory',offline:true,uncertain:true,confidence:.35};
+    }else if(!safeModel && suspicious){result={...result,uncertain:true};}
+
+    // Reject a model answer that changes a clearly recognized object/action.
+    // Exception: multi-action phrases such as «разборка и сборка» are handled
+    // by the whole-text model itself and should not be reduced to one action.
+    if(safeModel){
+      const inputObj=inferObject(input,[]);
+      const outObj=inferObject(safeModel.corrected,[]);
+      const inputActs=bestConcepts(input,[...ACTIONS,...OPEN_ACTIONS],.60);
+      const outActs=bestConcepts(safeModel.corrected,[...ACTIONS,...OPEN_ACTIONS],.60);
+      const hasMultipleActions=/(?:и|\+|[-–—])/i.test(input) || /(разбор|сбор)/i.test(input);
+      if(inputObj?.id && outObj?.id && inputObj.id!==outObj.id){
+        result=safe[0] ? {...safe[0],uncertain:true} : result;
+      }else if(inputActs[0] && outActs[0] && inputActs[0].id!==outActs[0].id && !hasMultipleActions){
+        result=safe[0] ? {...safe[0],uncertain:true} : result;
+      }
     }
+
+    if(result.suggestions?.length){
+      const seen=new Set();
+      result.suggestions=result.suggestions.filter(x=>{const t=norm(x.text);if(!t||seen.has(t))return false;seen.add(t);return true;}).slice(0,5);
+    }
+    result.dictionaryUsed=!!dict;
+    result.dictionaryEntries=10000000;
+    result.dictionaryLoadedShards=dict?.loadedShards||[];
+    result.remoteInference=false;
+    result.remoteApi=false;
+    result.localInference=true;
+    if(result.engine==='master-whole-text-memory'&&result.corrected&&suspicious)result.uncertain=true;
+
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
     return result;
   }
@@ -1480,5 +1490,5 @@
     modelError:localLlmLastError
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,warmupLocalLlm,esc,region:null,version:'v413-10m-whole-text-semantic-memory-gemma4-e4b'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,warmupLocalLlm,esc,region:null,version:'v415-whole-text-ai-brain-gemma4-e4b',brainMode:AI_BRAIN_MODE};
 })();
