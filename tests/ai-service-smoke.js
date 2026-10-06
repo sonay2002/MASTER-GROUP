@@ -24,7 +24,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v384-local-llm-qwen3-stable-ui') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v387-universal-typo-check-qwen3') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().offline !== true) throw new Error('AI must be offline/local');
 
 (async () => {

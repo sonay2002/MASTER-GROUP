@@ -18,6 +18,7 @@ context.window.window=context.window;vm.createContext(context);vm.runInContext(s
   'неизвестная новая услуга':'Неизвестная новая услуга',
   'что-то совершенно новое':'Что то совершенно новое',
   'montare faianta baie':'Укладка плитки в ванной комнате',
+  'задний богашек':'Задний багажник',
   'покрас стен':'Покраска стен'
  };
  for(const [input,expected] of Object.entries(cases)){

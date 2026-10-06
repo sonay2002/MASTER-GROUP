@@ -484,7 +484,7 @@
 
   function normalizeUnknownNoun(word){
     const w=clean(word,120);if(!w)return w;
-    const known={дырк:'дырка',двер:'дверь',окн:'окно',стен:'стена',потол:'потолок',труб:'труба',кабел:'кабель',раковн:'раковина',мотор:'мотор',генератор:'генератор',двигател:'двигатель',насос:'насос',филтр:'фильтр',моторн:'мотор',сантех:'сантехника'};
+    const known={дырк:'дырка',двер:'дверь',окн:'окно',стен:'стена',потол:'потолок',труб:'труба',кабел:'кабель',раковн:'раковина',мотор:'мотор',генератор:'генератор',двигател:'двигатель',насос:'насос',филтр:'фильтр',моторн:'мотор',сантех:'сантехника',богашек:'багажник',богажник:'багажник',багажн:'багажник',багаж:'багажник'};
     return known[norm(w)]||w;
   }
 
@@ -533,9 +533,11 @@
       }
       return action.ru;
     }
-    // No recognizable action: still make a clean, capitalized phrase rather
-    // than refusing an unseen service name.
-    return cleanupGenerated(ntext);
+    // No recognizable action: repair known noisy/phonetic nouns even when
+    // there is no explicit action word. This prevents an obvious typo such
+    // as "Задний богашек" from being reported as already correct.
+    const repaired=toks.map(t=>normalizeUnknownNoun(t));
+    return cleanupGenerated(repaired.join(' '));
   }
 
   function cleanupGenerated(text){
@@ -684,7 +686,7 @@
   async function localLlmSuggest(text,direction,selectedServices){
     const generator=await ensureLocalLlm();
     if(!generator)return null;
-    const system=`Ты локальный AI-помощник приложения Master Group.\nТвоя единственная задача — восстановить и грамотно сформулировать название услуги по тексту пользователя.\nПользователь может писать с грубыми орфографическими ошибками, пропускать буквы, писать по-русски на слух, русскими словами в латинице, по-румынски, смешивать русский/румынский/латиницу и использовать разговорные сокращения.\nПонимай СМЫСЛ по всему вводу, а не ищи точное совпадение в каталоге. Не ограничивайся известными услугами каталога: неизвестные объекты и новые услуги разрешены.\nВерни ОДНУ короткую профессиональную формулировку на русском языке, без объяснений, кавычек, списков и рассуждений.\nНе добавляй цену, количество, единицу измерения, материалы, размеры, адрес или другие факты, которых нет во вводе.\nНапример: «крепл мотора» → «Крепление мотора»; «krеpl motora» → «Крепление мотора»; «prindere motor» → «Крепление мотора»; «свeрл дырк бет» → «Сверление отверстия в бетоне».`;
+    const system=`Ты локальный AI-помощник приложения Master Group.\nТвоя единственная задача — восстановить и грамотно сформулировать название услуги по тексту пользователя.\nОЧЕНЬ ВАЖНО: отсутствие слова в каталоге НЕ означает, что слово написано правильно. Пользователь может допускать любые новые опечатки, пропускать или переставлять буквы. Сначала мысленно проверь каждое слово и всю фразу на орфографические и фонетические ошибки, затем восстанови наиболее вероятный смысл. Никогда не объявляй исходный текст корректным только потому, что не нашёл точного совпадения. Если исходная фраза действительно правильная — верни её без изменений.\nПользователь может писать с грубыми орфографическими ошибками, пропускать буквы, писать по-русски на слух, русскими словами в латинице, по-румынски, смешивать русский/румынский/латиницу и использовать разговорные сокращения.\nПонимай СМЫСЛ по всему вводу, а не ищи точное совпадение в каталоге. Не ограничивайся известными услугами каталога: неизвестные объекты и новые услуги разрешены.\nВерни ОДНУ короткую профессиональную формулировку на русском языке, без объяснений, кавычек, списков и рассуждений.\nНе добавляй цену, количество, единицу измерения, материалы, размеры, адрес или другие факты, которых нет во вводе.\nНапример: «крепл мотора» → «Крепление мотора»; «krеpl motora» → «Крепление мотора»; «prindere motor» → «Крепление мотора»; «свeрл дырк бет» → «Сверление отверстия в бетоне».`;
     const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\n\nВерни только правильное название услуги на русском.`;
     const messages=[{role:'system',content:system},{role:'user',content:user}];
     try{
@@ -717,6 +719,32 @@
       console.warn('Master Group local LLM generation failed',err);
       return null;
     }
+  }
+
+  async function localLlmRepair(text,direction,selectedServices){
+    const generator=await ensureLocalLlm();
+    if(!generator)return null;
+    const system=`Ты выполняешь второй, строгий этап проверки русского текста услуги. Текст может содержать неизвестные слова и сильные опечатки. Не используй принцип "слова нет в словаре = ошибка" и не придумывай факты. Сравни звучание, соседние буквы, типичные русские окончания и смысл всей фразы. Восстанови наиболее вероятное правильное название услуги. Если фраза уже правильная, верни её без изменений. Верни только одну фразу на русском, без объяснений.`;
+    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nИсходный текст: ${clean(text)}\nПроверь особенно слова с пропущенными, лишними, переставленными или заменёнными буквами. Верни исправленный вариант либо исходный текст, если он действительно без ошибок.`;
+    try{
+      const messages=[{role:'system',content:system},{role:'user',content:user}];
+      let output;
+      const tokenizer=generator.tokenizer;
+      if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
+        const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
+        output=await generator(prompt,{max_new_tokens:48,do_sample:false,return_full_text:false});
+      }else output=await generator(messages,{max_new_tokens:48,do_sample:false});
+      const corrected=extractGeneratedText(output);
+      if(!corrected||corrected.length<2||corrected.length>180)return null;
+      return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Qwen3',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-qwen3-0.6b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
+    }catch(err){console.warn('Master Group Qwen3 repair failed',err);return null;}
+  }
+
+  function hasSuspiciousToken(text){
+    const toks=tokenise(text); if(!toks.length)return false;
+    const forms=[...ACTIONS,...OBJECTS,...OPEN_ACTIONS].flatMap(x=>x.forms||[]).map(norm).filter(x=>x.length>2);
+    const common=new Set(['и','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без','не','все','это','как','или','а','для','внутри','наружный','наружная','задний','задняя','передний','передняя','правый','левый','новый','старая','старый']);
+    return toks.some(t=>t.length>=4 && !common.has(t) && !forms.includes(t) && bestForm(t,forms).score<.62);
   }
 
   async function ensureNativeSession(){
@@ -774,8 +802,20 @@
       ]);
     }catch(_){llm=null;}
     // The native browser on-device model is another fully local enhancement.
-    const native=llm?null:await nativeSuggest(input,direction,services);
-    const result=llm||native||local;
+    let result=llm||null;
+    // If Qwen returned the input unchanged while the text still contains a
+    // suspicious/unknown token, do a second strict Qwen pass instead of ever
+    // declaring the text correct merely because the first pass echoed it.
+    if(result && !result.changed && hasSuspiciousToken(input)){
+      const repaired=await localLlmRepair(input,direction,services);
+      if(repaired)result=repaired;
+    }
+    const native=result?null:await nativeSuggest(input,direction,services);
+    result=result||native||local;
+    // Never label an unresolved suspicious input as fully correct.
+    if(result && !result.changed && hasSuspiciousToken(input)){
+      result={...result,corrected:result.corrected,suggestions:[{text:result.corrected,note:'AI не смог уверенно подтвердить написание — проверьте слово',confidence:.45}],confidence:.45,uncertain:true};
+    }
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
     return result;
   }
@@ -792,5 +832,5 @@
     remoteHost:false
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v384-local-llm-qwen3-stable-ui'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,esc,region:null,version:'v387-universal-typo-check-qwen3'};
 })();
