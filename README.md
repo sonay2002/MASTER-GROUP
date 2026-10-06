@@ -1,4 +1,4 @@
-# Master Group v414 — OpenRouter Gemma 4 Fast Brain
+# Master Group v415 — OpenRouter Gemma 4 Fast Brain + professional normalization
 
 Service-name AI now uses the free Google Gemma 4 26B A4B endpoint through OpenRouter. The phrase is sent as a whole semantic request. Local Qwen inference is not started for normal service-name suggestions.
 

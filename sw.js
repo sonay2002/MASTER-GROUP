@@ -1,5 +1,5 @@
-/* Master Group v414 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v414';
+/* Master Group v415 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v415';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
