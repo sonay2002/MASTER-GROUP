@@ -16,5 +16,6 @@ if(!templates.includes("const allowed=['template1','template2']")) throw new Err
 if(!templates.includes("'template6':'template2'")) throw new Error('Old stored template choices are not normalized');
 if(!index.includes('id="estimateTemplateList" class="estimate-template-list"></div>')) throw new Error('Template list host missing');
 if(!css.includes('.tpl-template2 .tpl-section-row th')) throw new Error('Section template styling missing');
-if(!actions.includes('function printEstimate()')||actions.includes('setTimeout(()=>{try{window.print()}')) throw new Error('Synchronous print action missing');
+if(!actions.includes('async function printEstimate()')||!actions.includes('application/pdf')||!actions.includes('pngToPdf(image)')) throw new Error('PDF export action missing');
+if(index.includes('estimateTemplateDots')||templates.includes('data-template-dot')) throw new Error('Template pagination dots must be removed');
 console.log('estimate-template-routing-two-smoke: OK');

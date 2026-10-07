@@ -45,7 +45,6 @@
     if(list&&!list.dataset.generated){
       list.innerHTML=designs.map((d,i)=>`<article class="estimate-template-card" data-estimate-template="${d.id}"><div class="estimate-template-card-head"><div><span class="estimate-template-number">0${i+1}</span><div><b>${d.name}</b><small>${d.desc}</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="${d.id}">Выбрать</button></div>${preview(d.id)}</article>`).join('');
       list.dataset.generated='true';
-      const dots=document.getElementById('estimateTemplateDots');if(dots)dots.innerHTML=designs.map((_,i)=>`<button type="button" data-template-dot="${i}" aria-label="Шаблон ${i+1}"></button>`).join('');
     }
     document.querySelectorAll('[data-estimate-template]').forEach(card=>{const active=card.dataset.estimateTemplate===value;card.classList.toggle('is-selected',active);const button=card.querySelector('[data-select-estimate-template]');if(button){button.textContent=active?'Выбран':'Выбрать';button.setAttribute('aria-pressed',active?'true':'false')}});
   };
@@ -55,4 +54,3 @@
   render();
 })();
 window.addEventListener('mg-estimate-template-changed',()=>{try{const core=window.MGAppCore,e=core?.state?.estimate;if(e&&core?.state?.screen==='documentScreen'&&typeof core.documentBody==='function')core.documentBody(e)}catch(err){console.warn('MG template refresh failed',err)}});
-(()=>{const list=document.getElementById('estimateTemplateList'),dots=Array.from(document.querySelectorAll('#estimateTemplateDots [data-template-dot]'));if(!list||!dots.length)return;const cards=Array.from(list.querySelectorAll('.estimate-template-card')),setDot=index=>dots.forEach((dot,i)=>dot.classList.toggle('is-active',i===index)),nearestIndex=()=>{if(!cards.length)return 0;const left=list.scrollLeft+list.offsetLeft;let best=0,distance=Infinity;cards.forEach((card,i)=>{const d=Math.abs(card.offsetLeft-left);if(d<distance){distance=d;best=i}});return best},goToCard=(index,smooth=true)=>{const i=Math.max(0,Math.min(cards.length-1,Number(index)||0)),card=cards[i];if(!card)return;list.scrollTo({left:Math.max(0,card.offsetLeft-list.offsetLeft),behavior:smooth?'smooth':'auto'});setDot(i)};dots.forEach(dot=>dot.addEventListener('click',()=>goToCard(dot.dataset.templateDot,true)));let timer;list.addEventListener('scroll',()=>{clearTimeout(timer);timer=setTimeout(()=>setDot(nearestIndex()),40)},{passive:true});setDot(nearestIndex())})();
