@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v437"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v437"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v437</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v438"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v438"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v438</title>
 
 
 
@@ -17,7 +17,7 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css?v=437">
+<link rel="stylesheet" href="css/styles.css?v=438">
 <link rel="stylesheet" href="css/contact-card-final.css?v=409-ui2">
 
 <style id="mg-home-render-gate-v434">
@@ -464,19 +464,19 @@
 <section id="settingsHub" class="settings-hub-v357" aria-label="Все настройки">
   <div class="settings-hub-grid">
     <button type="button" class="settings-hub-card" data-settings-hub="company">
-      <span class="settings-hub-copy"><b>Компания</b></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M9 20.5v-13h6v13M7 7h.01M7 11h.01M17 7h.01M17 11h.01M11 11h2M11 14h2"/></svg></span><span class="settings-hub-copy"><b>Компания</b><small>Реквизиты и профиль</small></span><span class="settings-hub-arrow">›</span>
     </button>
     <button type="button" class="settings-hub-card" data-settings-hub="catalog">
-      <span class="settings-hub-copy"><b>Каталог</b></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16M4 12h16M4 18.5h16"/><circle cx="8" cy="5.5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="18.5" r="1.5"/></svg></span><span class="settings-hub-copy"><b>Каталог</b><small>Направления и услуги</small></span><span class="settings-hub-arrow">›</span>
     </button>
     <button type="button" class="settings-hub-card" data-settings-hub="estimates">
-      <span class="settings-hub-copy"><b>Сметы</b></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v5h4M10 12h5M10 15.5h5M10 19h3"/></svg></span><span class="settings-hub-copy"><b>Сметы</b><small>Шаблоны и оформление</small></span><span class="settings-hub-arrow">›</span>
     </button>
     <button type="button" class="settings-hub-card" data-settings-hub="trash">
-      <span class="settings-hub-copy"><b>Корзина</b></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></span><span class="settings-hub-copy"><b>Корзина</b><small>Удалённые сметы</small></span><span class="settings-hub-arrow">›</span>
     </button>
     <button type="button" class="settings-hub-card" data-settings-hub="updates">
-      <span class="settings-hub-copy"><b>Обновления</b></span><span class="settings-hub-arrow">›</span>
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg></span><span class="settings-hub-copy"><b>Обновления</b><small>Версия приложения</small></span><span class="settings-hub-arrow">›</span>
     </button>
   </div>
 </section>
@@ -1259,4 +1259,24 @@
 <style id="mg-step-indicator-row-v437">
 /* Center the active estimate step on the same control row, below the iPhone safe-area inset. */
 #mgFixedTopNav .mg-editor-step-indicator{top:calc(env(safe-area-inset-top,0px) + 34px)!important}
+</style>
+
+<style id="mg-settings-hub-polish-v438">
+/* Settings landing page: lower the local header and make each section scannable at a glance. */
+#settingsScreen.app{padding-top:calc(env(safe-area-inset-top,0px) + 20px)!important}
+#settingsScreen .settings-topbar{min-height:48px!important;margin-bottom:14px!important;align-items:center!important}
+#settingsScreen .settings-topbar .mg-legacy-top-control{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;flex:0 0 44px!important;border-radius:13px!important;font-size:23px!important}
+#settingsScreen .settings-topbar-title{font-size:21px!important;font-weight:700!important;letter-spacing:-.035em!important}
+#settingsScreen .settings-hub-v357{max-width:1000px!important;padding:0 0 24px!important}
+#settingsScreen .settings-hub-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+#settingsScreen .settings-hub-card{box-sizing:border-box!important;width:100%!important;height:68px!important;min-height:68px!important;display:grid!important;grid-template-columns:40px minmax(0,1fr) 15px!important;align-items:center!important;gap:11px!important;padding:0 13px!important;border:1px solid #e2e3e5!important;border-radius:16px!important;background:#fff!important;box-shadow:0 3px 12px rgba(0,0,0,.035)!important;text-align:left!important}
+#settingsScreen .settings-hub-card:active{transform:scale(.99)!important;background:#f7f7f8!important}
+#settingsScreen .settings-hub-icon{box-sizing:border-box!important;width:38px!important;height:38px!important;display:grid!important;place-items:center!important;border:1px solid #e4e5e7!important;border-radius:12px!important;background:#f2f2f3!important;color:#383a3d!important;font-size:16px!important}
+#settingsScreen .settings-hub-icon svg{width:19px!important;height:19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.65!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#settingsScreen .settings-hub-copy{min-width:0!important;display:flex!important;flex-direction:column!important;gap:3px!important}
+#settingsScreen .settings-hub-copy b{display:block!important;overflow:hidden!important;color:#202123!important;font-size:14px!important;font-weight:650!important;line-height:1.15!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#settingsScreen .settings-hub-copy small{display:block!important;overflow:hidden!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.15!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#settingsScreen .settings-hub-arrow{color:#8a8c90!important;font-size:23px!important;line-height:1!important;text-align:center!important}
+@media(max-width:600px){#settingsScreen .settings-hub-grid{grid-template-columns:1fr!important;gap:9px!important}#settingsScreen .settings-hub-card{height:66px!important;min-height:66px!important;border-radius:15px!important}}
+@media(max-width:360px){#settingsScreen .settings-topbar-title{font-size:19px!important}#settingsScreen .settings-hub-card{grid-template-columns:38px minmax(0,1fr) 12px!important;gap:9px!important;padding:0 10px!important}#settingsScreen .settings-hub-copy small{font-size:10px!important}}
 </style>
