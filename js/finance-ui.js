@@ -13,19 +13,19 @@ function v58SaveCompany(){const c={name:$('companyName')?.value.trim()||'',phone
 function v58Normalize(e){if(!e)return e;e.status=v58st(e);Object.assign(e,window.MGCalculations.normalizeFinance(e));return e}
 function v58FinanceSummary(){if(!$('financeSummary'))return;const f=v58Fin(),t=total(),ex=f.material+f.transport+f.salary+f.other,bal=Math.max(0,t-f.prepayment);$('financeSummary').innerHTML=`<div><span>Сумма</span><b>${money(t)} MDL</b></div><div><span>Предоплата</span><b>${money(f.prepayment)} MDL</b></div><div><span>Остаток</span><b>${money(bal)} MDL</b></div><div><span>Расходы</span><b>${money(ex)} MDL</b></div><div class="profit"><span>Прибыль</span><b>${money(t-ex)} MDL</b></div>`}
 function v58SetFinance(e){const f={prepayment:v58n(e?.prepayment),material:v58n(e?.expenseMaterial),transport:v58n(e?.expenseTransport),salary:v58n(e?.expenseSalary),other:v58n(e?.expenseOther)};[['prepayment',f.prepayment],['expenseMaterial',f.material],['expenseTransport',f.transport],['expenseSalary',f.salary],['expenseOther',f.other]].forEach(([id,v])=>{if($(id))$(id).value=v||''});v58FinanceSummary()}
-function v58Build(){const old=state.estimate||{},f=v58Fin(),selectedTemplate=(window.MGEstimateTemplates?.get?.()||localStorage.getItem('master_group_estimate_template_v1')||'classic'),e={id:state.id||uid(),number:old.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:old.date||new Date().toLocaleDateString('ru-RU'),status:v58st(old),template:selectedTemplate,prepayment:f.prepayment,expenseMaterial:f.material,expenseTransport:f.transport,expenseSalary:f.salary,expenseOther:f.other,payments:v59Payments(old),paid:v58n(old.paid)};return v59Normalize(e)}
+function v58Build(){const old=state.estimate||{},f=v58Fin(),selectedTemplate=(window.MGEstimateTemplates?.get?.()||localStorage.getItem('master_group_estimate_template_v2')||'basic'),e={id:state.id||uid(),number:old.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:old.date||new Date().toLocaleDateString('ru-RU'),status:v58st(old),template:selectedTemplate,prepayment:f.prepayment,expenseMaterial:f.material,expenseTransport:f.transport,expenseSalary:f.salary,expenseOther:f.other,payments:v59Payments(old),paid:v58n(old.paid)};return v59Normalize(e)}
 async function v58Create(){let e=v58Build();if(!state.id&&window.__mgAllocateEstimateNumber){try{const n=await window.__mgAllocateEstimateNumber();if(n)e.number=n}catch(err){console.warn('MG number allocation:',err)}}const a=saved(),i=a.findIndex(x=>String(x.id)===String(e.id)),before=i>=0?JSON.parse(JSON.stringify(a[i])):null;if(!state.id)localStorage.setItem('mg_counter',String(Number(localStorage.getItem('mg_counter')||0)+1));if(i>=0)a[i]=e;else a.unshift(e);persist(a);try{const ds=drafts(),clean=ds.filter(x=>String(x?.id)!==String(e.id));if(clean.length!==ds.length)persistDrafts(clean)}catch(err){console.warn('MG archive draft cleanup:',err)}try{recordEstimateNotifications(before,e)}catch(err){}state.id=e.id;state.estimate=e;v58Document(e);let cloudSaved=false;try{if(window.__mgCloudSaveEstimate)cloudSaved=await window.__mgCloudSaveEstimate(e)}catch(err){cloudSaved=false}if(cloudSaved)toast('Смета сохранена в облаке');else if(typeof window.__mgCloudIsConnected==='function'&&window.__mgCloudIsConnected())toast('Смета сохранена на устройстве — повторяем отправку в облако');else toast('Смета сохранена на устройстве')}
 function v58TemplateForEstimate(e){
-  const allowed=window.MGEstimateTemplates?.allowed||['neo','corporate','minimal','premium','accent'];
+  const allowed=window.MGEstimateTemplates?.allowed||['basic','modern','strict','compact','table'];
   if(typeof window.MGEstimateTemplates?.resolveForEstimate==='function'){
     const resolved=window.MGEstimateTemplates.resolveForEstimate(e);
     if(allowed.includes(resolved)) return resolved;
   }
   try{
-    const selected=localStorage.getItem('master_group_estimate_template_v1');
+    const selected=localStorage.getItem('master_group_estimate_template_v2');
     if(allowed.includes(selected)) return selected;
   }catch(_){}
-  return allowed.includes(e?.template)?e.template:'minimal';
+  return allowed.includes(e?.template)?e.template:allowed[0];
 }
 function v58Document(e){
   const currentTemplate=v58TemplateForEstimate(e);
@@ -86,6 +86,7 @@ function v59ShowStats(){screen('statsScreen');v59RenderOverview();v59SetAnalytic
 function v59ShowSettings(){renderSettings();if(typeof renderNewDirectionIconPicker==='function')renderNewDirectionIconPicker();screen('settingsScreen');v59SetSettingsTab(localStorage.getItem(V59_SETTINGS_TAB)||'catalog')}
 /* internal finance must never be rendered in the client document */
 v58Document=function(e){
+ if(window.__mgRenderEstimateDocument){ return window.__mgRenderEstimateDocument(e); }
  e=v59Normalize({...e}); const c=v58Company();
  const dirs=Array.isArray(e.directions)&&e.directions.length?e.directions:(e.category?[{name:e.category,items:e.items||[]}]:[]);
  const money2=v=>money(v);

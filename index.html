@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v415"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v417"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
 <meta name="application-name" content="Master Group v407"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v407</title>
 
 
@@ -528,135 +528,58 @@
   </section>
 </div>
 
-<div id="settingsPanelEstimates" hidden class="settings-panel-v2" aria-label="Настройка сметы">
+<div id="settingsPanelEstimates" hidden class="settings-panel-v2" aria-label="Настройка шаблона сметы">
   <section class="estimate-template-settings">
+    <div class="settings-card-head-v2" style="margin-bottom:14px">
+      <div class="settings-symbol-v2">№</div>
+      <div><span class="settings-overline">Шаблоны сметы</span><h2>Выберите вид документа</h2><p>Все пять вариантов ориентированы на информацию о работах. Выбранный в настройках шаблон используется при просмотре, печати и отправке сметы.</p></div>
+    </div>
     <div id="estimateTemplateList" class="estimate-template-list">
-    <article class="estimate-template-card" data-estimate-template="neo">
-      <div class="estimate-template-card-head">
-        <div><span class="estimate-template-number">01</span><div><b>Нео</b><small>Современный и чистый формат</small></div></div>
-        <button type="button" class="estimate-template-select" data-select-estimate-template="neo">Выбрать</button>
-      </div>
-      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Нео">
-        <div class="estimate-template-page etp-neo">
-          <div class="etp-header">
-            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
-            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
-          </div>
-          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
-          <div class="etp-title">Смета на услуги</div>
-          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
-            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
-            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
-            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
-            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
-          </tbody></table>
-          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
-          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
-        </div>
-      </div>
-    </article>
-    <article class="estimate-template-card" data-estimate-template="corporate">
-      <div class="estimate-template-card-head">
-        <div><span class="estimate-template-number">02</span><div><b>Корпоративный</b><small>Строгий деловой документ</small></div></div>
-        <button type="button" class="estimate-template-select" data-select-estimate-template="corporate">Выбрать</button>
-      </div>
-      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Корпоративный">
-        <div class="estimate-template-page etp-corporate">
-          <div class="etp-header">
-            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
-            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
-          </div>
-          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
-          <div class="etp-title">Смета на услуги</div>
-          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
-            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
-            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
-            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
-            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
-          </tbody></table>
-          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
-          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
-        </div>
-      </div>
-    </article>
-    <article class="estimate-template-card is-selected" data-estimate-template="minimal">
-      <div class="estimate-template-card-head">
-        <div><span class="estimate-template-number">03</span><div><b>Минималистичный</b><small>Тот самый шаблон №3</small></div></div>
-        <button type="button" class="estimate-template-select" data-select-estimate-template="minimal">Выбран</button>
-      </div>
-      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Минималистичный">
-        <div class="estimate-template-page etp-minimal">
-          <div class="etp-header">
-            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
-            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
-          </div>
-          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
-          <div class="etp-title">Смета на услуги</div>
-          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
-            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
-            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
-            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
-            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
-          </tbody></table>
-          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
-          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
-        </div>
-      </div>
-    </article>
-    <article class="estimate-template-card" data-estimate-template="premium">
-      <div class="estimate-template-card-head">
-        <div><span class="estimate-template-number">04</span><div><b>Премиум</b><small>Элегантный формат для клиента</small></div></div>
-        <button type="button" class="estimate-template-select" data-select-estimate-template="premium">Выбрать</button>
-      </div>
-      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Премиум">
-        <div class="estimate-template-page etp-premium">
-          <div class="etp-header">
-            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
-            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
-          </div>
-          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
-          <div class="etp-title">Смета на услуги</div>
-          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
-            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
-            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
-            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
-            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
-          </tbody></table>
-          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
-          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
-        </div>
-      </div>
-    </article>
-    <article class="estimate-template-card" data-estimate-template="accent">
-      <div class="estimate-template-card-head">
-        <div><span class="estimate-template-number">05</span><div><b>Акцент</b><small>Выразительная шапка и сильный итог</small></div></div>
-        <button type="button" class="estimate-template-select" data-select-estimate-template="accent">Выбрать</button>
-      </div>
-      <div class="estimate-template-preview" aria-label="Предварительный просмотр шаблона Акцент">
-        <div class="estimate-template-page etp-accent">
-          <div class="etp-header">
-            <div><strong>Master Group</strong><span>СМЕТА НА УСЛУГИ</span></div>
-            <div><b>СМЕТА №</b><strong>MG-0035</strong><small>21.09.2026</small></div>
-          </div>
-          <div class="etp-parties"><div><label>КЛИЕНТ</label><b>Иван Иванов</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Улица, дом, квартира</span></div><div><label>ИСПОЛНИТЕЛЬ</label><b>Master Group</b><span>Телефон · +373 XX XXX XXX</span><span>Адрес · Адрес компании</span></div></div>
-          <div class="etp-title">Смета на услуги</div>
-          <table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>
-            <tr><td>1</td><td>Покос травы</td><td>3 сот</td><td>500.00</td><td>1 500.00</td></tr>
-            <tr><td>2</td><td>Срез деревьев</td><td>2 шт</td><td>200.00</td><td>400.00</td></tr>
-            <tr><td>3</td><td>Удаление корней</td><td>1 шт</td><td>200.00</td><td>200.00</td></tr>
-            <tr><td>4</td><td>Вывоз мусора</td><td>2 рейс</td><td>200.00</td><td>400.00</td></tr>
-          </tbody></table>
-          <div class="etp-total"><b>ИТОГО</b><strong>2 500.00 <small>MDL</small></strong></div>
-          <div class="etp-footer"><span>Master Group</span><span>MG-0035 · 21.09.2026</span></div>
-        </div>
-      </div>
-    </article>
+      <article class="estimate-template-card" data-estimate-template="basic">
+        <div class="estimate-template-card-head"><div><span class="estimate-template-number">01</span><div><b>Базовый</b><small>Чистый документ с большим местом под работы</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="basic">Выбрать</button></div>
+        <div class="estimate-template-preview"><div class="estimate-template-page mg-tpl-preview tpl-basic">
+          <div class="mg-tpl-head"><div><strong>СМЕТА</strong><span>№ MG-0035</span></div><div><span>14.04.2025</span><small>Стр. 1/1</small></div></div>
+          <table><thead><tr><th>№</th><th>Работа</th><th>Ед.</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody><tr><td>1</td><td>Изготовление рамы</td><td>шт</td><td>1</td><td>5 000</td><td>5 000</td></tr><tr><td>2</td><td>Сварочные работы</td><td>час</td><td>12</td><td>250</td><td>3 000</td></tr><tr><td>3</td><td>Монтаж металлоконструкции</td><td>шт</td><td>1</td><td>1 000</td><td>1 000</td></tr><tr><td>4</td><td>Покраска и обработка</td><td>м²</td><td>15</td><td>120</td><td>1 800</td></tr><tr><td>5</td><td>Доставка материалов</td><td>рейс</td><td>1</td><td>700</td><td>700</td></tr></tbody></table>
+          <div class="mg-tpl-notes"><b>Примечание</b><div>Здесь можно разместить подробности по работам, материалам и этапам.</div></div>
+          <div class="mg-tpl-total"><span>Итого</span><b>14 000 MDL</b><span>Скидка 5%</span><strong>13 300 MDL</strong></div>
+        </div></div>
+      </article>
+      <article class="estimate-template-card" data-estimate-template="modern">
+        <div class="estimate-template-card-head"><div><span class="estimate-template-number">02</span><div><b>Современный</b><small>Простой заголовок и сильный итог</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="modern">Выбрать</button></div>
+        <div class="estimate-template-preview"><div class="estimate-template-page mg-tpl-preview tpl-modern">
+          <div class="mg-tpl-head"><div><small>Master Group</small><strong>Смета на работы</strong></div><div><b>MG-0035</b><span>14.04.2025</span></div></div>
+          <div class="mg-tpl-section-title">Перечень работ</div>
+          <table><thead><tr><th>Работа</th><th>Ед.</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody><tr><td>Изготовление рамы</td><td>шт</td><td>1</td><td>5 000</td><td>5 000</td></tr><tr><td>Сварочные работы</td><td>час</td><td>12</td><td>250</td><td>3 000</td></tr><tr><td>Монтаж металлоконструкции</td><td>шт</td><td>1</td><td>1 000</td><td>1 000</td></tr><tr><td>Покраска и обработка</td><td>м²</td><td>15</td><td>120</td><td>1 800</td></tr><tr><td>Доставка материалов</td><td>рейс</td><td>1</td><td>700</td><td>700</td></tr></tbody></table>
+          <div class="mg-tpl-total"><span>Итого</span><b>14 000 MDL</b><small>Скидка 5%: −700</small><strong>13 300 MDL</strong></div>
+        </div></div>
+      </article>
+      <article class="estimate-template-card" data-estimate-template="strict">
+        <div class="estimate-template-card-head"><div><span class="estimate-template-number">03</span><div><b>Строгий</b><small>Линейный деловой формат</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="strict">Выбрать</button></div>
+        <div class="estimate-template-preview"><div class="estimate-template-page mg-tpl-preview tpl-strict">
+          <div class="mg-tpl-title-row"><strong>СМЕТА</strong><span>№ MG-0035 · 14.04.2025</span></div>
+          <table><thead><tr><th>№</th><th>Наименование работ</th><th>Ед.</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead><tbody><tr><td>1</td><td>Изготовление рамы</td><td>шт</td><td>1</td><td>5 000</td><td>5 000</td></tr><tr><td>2</td><td>Изготовление лестницы</td><td>шт</td><td>1</td><td>2 500</td><td>2 500</td></tr><tr><td>3</td><td>Сварочные работы</td><td>час</td><td>12</td><td>250</td><td>3 000</td></tr><tr><td>4</td><td>Покраска и обработка</td><td>м²</td><td>15</td><td>120</td><td>1 800</td></tr></tbody></table>
+          <div class="mg-tpl-total strict-total"><span>ИТОГО</span><b>14 000 MDL</b><span>К оплате</span><strong>13 300 MDL</strong></div>
+        </div></div>
+      </article>
+      <article class="estimate-template-card" data-estimate-template="compact">
+        <div class="estimate-template-card-head"><div><span class="estimate-template-number">04</span><div><b>Компактный</b><small>Больше строк на странице</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="compact">Выбрать</button></div>
+        <div class="estimate-template-preview"><div class="estimate-template-page mg-tpl-preview tpl-compact">
+          <div class="mg-tpl-head"><strong>СМЕТА № MG-0035</strong><span>14.04.2025</span></div>
+          <table><thead><tr><th>№</th><th>Работа</th><th>Ед.</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody><tr><td>1</td><td>Разметка и подготовка</td><td>час</td><td>4</td><td>150</td><td>600</td></tr><tr><td>2</td><td>Изготовление рамы</td><td>шт</td><td>1</td><td>5 000</td><td>5 000</td></tr><tr><td>3</td><td>Монтаж металлоконструкции</td><td>шт</td><td>1</td><td>1 000</td><td>1 000</td></tr><tr><td>4</td><td>Сварка элементов</td><td>час</td><td>12</td><td>250</td><td>3 000</td></tr><tr><td>5</td><td>Грунтовка и покраска</td><td>м²</td><td>15</td><td>120</td><td>1 800</td></tr><tr><td>6</td><td>Доставка материалов</td><td>рейс</td><td>1</td><td>700</td><td>700</td></tr></tbody></table>
+          <div class="mg-tpl-total"><span>Итого</span><b>14 000</b><span>Скидка 5%</span><b>−700</b><strong>13 300 MDL</strong></div>
+        </div></div>
+      </article>
+      <article class="estimate-template-card" data-estimate-template="table">
+        <div class="estimate-template-card-head"><div><span class="estimate-template-number">05</span><div><b>Табличный</b><small>Максимум места под перечень работ</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="table">Выбрать</button></div>
+        <div class="estimate-template-preview"><div class="estimate-template-page mg-tpl-preview tpl-table">
+          <div class="mg-tpl-title-row"><div><strong>СМЕТА</strong><span>№ MG-0035</span></div><small>14.04.2025</small></div>
+          <table><thead><tr><th>№</th><th>Наименование работ</th><th>Ед.</th><th>Кол-во</th><th>Цена</th><th>Сумма</th></tr></thead><tbody><tr><td>1</td><td>Изготовление рамы</td><td>шт</td><td>1</td><td>5 000</td><td>5 000</td></tr><tr><td>2</td><td>Изготовление лестницы</td><td>шт</td><td>1</td><td>2 500</td><td>2 500</td></tr><tr><td>3</td><td>Монтаж металлоконструкции</td><td>шт</td><td>1</td><td>1 000</td><td>1 000</td></tr><tr><td>4</td><td>Сварочные работы</td><td>час</td><td>12</td><td>250</td><td>3 000</td></tr><tr><td>5</td><td>Покраска и обработка</td><td>м²</td><td>15</td><td>120</td><td>1 800</td></tr><tr><td>6</td><td>Доставка материалов</td><td>рейс</td><td>1</td><td>700</td><td>700</td></tr></tbody></table>
+          <div class="mg-tpl-bottom"><div><b>Примечание</b><span>Подробности работ и материалов.</span></div><div><span>Итого</span><b>14 000</b><span>К оплате</span><strong>13 300 MDL</strong></div></div>
+        </div></div>
+      </article>
+    </div>
     <div class="estimate-template-dots" id="estimateTemplateDots" aria-label="Навигация по шаблонам">
-      <button type="button" data-template-dot="0" aria-label="Шаблон 1"></button>
-      <button type="button" data-template-dot="1" aria-label="Шаблон 2"></button>
-      <button type="button" data-template-dot="2" aria-label="Шаблон 3"></button>
-      <button type="button" data-template-dot="3" aria-label="Шаблон 4"></button>
-      <button type="button" data-template-dot="4" aria-label="Шаблон 5"></button>
+      <button type="button" data-template-dot="0" aria-label="Шаблон 1"></button><button type="button" data-template-dot="1" aria-label="Шаблон 2"></button><button type="button" data-template-dot="2" aria-label="Шаблон 3"></button><button type="button" data-template-dot="3" aria-label="Шаблон 4"></button><button type="button" data-template-dot="4" aria-label="Шаблон 5"></button>
     </div>
   </section>
 </div>
@@ -751,6 +674,7 @@
 <script src="js/estimate-core.js"></script>
 <script src="js/finance-ui.js"></script>
 <script src="js/estimate-templates.js"></script>
+<script src="js/estimate-template-pack-v417.js"></script>
 <script src="js/app-core.js"></script>
 
 <!-- extracted JS: v41-fixes-js -->

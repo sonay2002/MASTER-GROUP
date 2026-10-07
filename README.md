@@ -1,4 +1,4 @@
-# Master Group v416 — OpenRouter Gemma 4 Fast Brain + professional normalization
+# Master Group v417 — work-first estimate templates + OpenRouter brain
 
 Service-name AI now uses the free Google Gemma 4 26B A4B endpoint through OpenRouter. The phrase is sent as a whole semantic request. Local Qwen inference is not started for normal service-name suggestions.
 
@@ -87,6 +87,8 @@ The service-name assistant treats the entire user string as a semantic request f
 
 
 ## OpenRouter AI
+
+Version 417 replaces the five estimate document templates with five work-first minimalist layouts. The Settings selection is the single source used for document preview, print, and sharing.
 
 Version 412 moves the heavy service-name reasoning to OpenRouter using the free router `openrouter/free`. The original whole phrase is sent to the remote AI first; the local 10M memory is supporting evidence and is not used for one-word auto-correction.
 

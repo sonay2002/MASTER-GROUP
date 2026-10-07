@@ -1,5 +1,5 @@
-/* Master Group v416 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v416';
+/* Master Group v417 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v417';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -20,6 +20,7 @@ const CORE = [
   "./js/estimate-core.js",
   "./js/finance-ui.js",
   "./js/estimate-templates.js",
+  "./js/estimate-template-pack-v417.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",
   "./js/print.js",

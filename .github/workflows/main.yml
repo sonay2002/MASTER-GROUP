@@ -35,6 +35,7 @@ jobs:
           set -euo pipefail
           node tests/calculations-smoke.js
           node tests/data-model-smoke.js
+          node tests/estimate-templates-v417-smoke.js
           node tests/finance-sync-smoke.js
           node tests/firebase-sync-boundary-smoke.js
           node tests/offline-engine-smoke.js
