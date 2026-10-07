@@ -1142,16 +1142,61 @@
   }
   function hasOpenRouterKey(){return /^sk-or-v1-[A-Za-z0-9_-]+$/.test(getOpenRouterKey());}
 
+  const PRESERVE_STOPWORDS=new Set(['и','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без','не','это','как','или','а','мне','надо','нужно']);
+  function tokenSimilarity(a,b){
+    const aa=norm(translitToRussian(a)), bb=norm(translitToRussian(b));
+    if(!aa||!bb)return 0;
+    if(aa===bb)return 1;
+    const d=dice(aa,bb);
+    const lev=1-(levenshtein(aa,bb)/Math.max(aa.length,bb.length));
+    return Math.max(d,lev);
+  }
+  function inputConceptsMustSurvive(input,candidate){
+    const src=tokenise(input).map(norm).filter(t=>t.length>=4&&!PRESERVE_STOPWORDS.has(t));
+    const dst=tokenise(candidate).map(norm);
+    const inObject=inferObject(input,[]), cObject=inferObject(candidate,[]);
+    const inAction=inferAction(input,[]), cAction=inferAction(candidate,[]);
+    const knownObjectSame=!!(inObject?.id&&cObject?.id&&inObject.id===cObject.id);
+    const knownActionSame=!!(inAction?.id&&cAction?.id&&inAction.id===cAction.id);
+    // Known concepts may be expressed with normal synonyms/morphology
+    // («кафел» -> «плитки»). Preserve the concept, not the literal spelling.
+    // For unknown vocabulary we deliberately do NOT require every context word
+    // to survive (e.g. Romanian «baie» may become «ванной»), but an unknown
+    // object must have a surviving lexical anchor. This is what blocks
+    // «задний маятник» -> «ремонт заднего моста» without requiring a hard-coded
+    // «маятник» entry in the application.
+    const unknownAnchors=src.filter(sw=>{
+      const actionKnown=(inAction?.forms||[]).some(f=>norm(f)===sw);
+      const objectKnown=(inObject?.forms||[]).some(f=>norm(f)===sw);
+      const adjectiveKnown=Object.values(ADJ_FORMS).some(v=>Object.values(v).some(f=>norm(f)===sw));
+      return !actionKnown&&!objectKnown&&!adjectiveKnown;
+    });
+    if(!inObject?.id && unknownAnchors.length===1){
+      let best=0;for(const dw of dst)best=Math.max(best,tokenSimilarity(unknownAnchors[0],dw));
+      if(best<0.56)return false;
+    }
+    for(const sw of src){
+      const objectConcept = knownObjectSame && (inObject.forms||[]).some(f=>norm(f)===sw);
+      const actionConcept = knownActionSame && (inAction.forms||[]).some(f=>norm(f)===sw);
+      if(objectConcept || actionConcept) continue;
+      // If a recognized object is preserved, surrounding words may be
+      // legitimately translated/normalized by the brain.
+      if(knownObjectSame) continue;
+      let best=0;for(const dw of dst)best=Math.max(best,tokenSimilarity(sw,dw));
+      if(best<0.56 && !inAction?.id && !inObject?.id)return false;
+    }
+    return true;
+  }
   function remoteSuggestionCompatible(candidate,input){
     const c=clean(candidate,180); if(!c)return false;
     const inWords=tokenise(input), cWords=tokenise(c);
     if(inWords.length>=2 && cWords.length<2)return false;
+    if(!inputConceptsMustSurvive(input,c))return false;
     const inObject=inferObject(input,[]), cObject=inferObject(c,[]);
     if(inObject?.id && cObject?.id && inObject.id!==cObject.id)return false;
     const inAction=inferAction(input,[]), cAction=inferAction(c,[]);
     // When the user clearly supplied an action, the AI is not allowed to
-    // silently replace it with a different service type (e.g. «крепление» ->
-    // «утепление»). If the action is absent/ambiguous, the AI may choose one.
+    // silently replace it with a different service type.
     if(inAction?.id && cAction?.id && inAction.id!==cAction.id)return false;
     return true;
   }
@@ -1165,10 +1210,10 @@
     }
     let rows=Array.isArray(data?.suggestions)?data.suggestions:[];
     if(!rows.length && typeof data?.corrected==='string')rows=[{text:data.corrected,note:'OpenRouter AI',confidence:.9}];
-    if(!rows.length){
-      const lines=raw.split(/\r?\n/).map(x=>x.replace(/^\s*[-*•\d.)]+\s*/,'').trim()).filter(Boolean);
-      rows=lines.slice(0,5).map(x=>({text:x,note:'OpenRouter AI',confidence:.82}));
-    }
+    // Never treat free-form model prose as a valid service suggestion.
+    // If the structured contract is broken, reject the response and let the
+    // deterministic fallback handle it. This prevents UI text such as
+    // «Text: ...» / «Here's a thinking process» from becoming a suggestion.
     const out=[]; const seen=new Set();
     for(const row of rows){
       const text=cleanupGenerated(row?.text||row?.name||'');
@@ -1213,6 +1258,9 @@
       'Если указан объект, например «мотор», «багажник», «раковина», сохраняй именно этот объект. Не подменяй его другим объектом.',
       'Направление каталога — только слабый контекст. Оно НИКОГДА не может переопределять смысл исходной фразы.',
       'Если исходная фраза из двух и более слов уже грамматически и профессионально нормальна, верни её без изменения.',
+      'НИКОГДА не заменяй существительное/объект пользователя на другой объект только потому, что другой термин чаще встречается в каталоге. Это правило действует даже для неизвестных слов.',
+      'Если не уверен, что слово является опечаткой, сохрани его. Исправление должно быть минимальным: меняй только явно ошибочные буквы/окончания, а не смысл.',
+      'Ты обязан сохранить все смысловые сущности исходной фразы: объект, действие, часть объекта и указание положения (например «задний маятник» не превращается в «ремонт заднего моста»).',
       'Если введён только один объект, предложи 3–5 реальных услуг с этим объектом: например «багажник» → «Установка багажника», «Монтаж багажника», «Ремонт багажника».',
       'Для парных операций используй естественный профессиональный порядок: «разборка и сборка квадроцикла», а не «сборка разборки квадроцикла» и не «сборка разборка квадроцикла».',
       'Если во входе есть одновременно «сборка» и «разборка», сохрани оба действия и соедини их через «и».',
@@ -1604,5 +1652,5 @@
     configured:hasOpenRouterKey()
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v415-openrouter-gemma4-fast'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v416-openrouter-open-vocabulary-guard'};
 })();

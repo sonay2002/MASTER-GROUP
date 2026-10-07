@@ -31,12 +31,13 @@ const context = {
       'убрть корни дерева':'Удаление корней дерева',
       'покос травы участок':'Покос травы на участке',
       'устанвка раковн':'Установка раковины',
-      'старая плитка в baie':'Укладка старой плитки',
+      'старая плитка в baie':'Укладка старой плитки в ванной комнате',
       'покрас стен':'Покраска стен',
-      'schimbare teava apa':'Замена труб',
+      'schimbare teava apa':'Замена труб водоснабжения',
       'Задняя багажник':'Задний багажник',
       'фиксац генератора':'Фиксация генератора',
-      'ремнт двгателя':'Ремонт двигателя'
+      'ремнт двгателя':'Ремонт двигателя',
+      'задний маятник':'Ремонт заднего моста'
     };
     const text=map[input]||input;
     return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify({suggestions:[{text,note:'OpenRouter AI smoke mock',confidence:.99}]})}}]})};
@@ -47,7 +48,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v415-openrouter-gemma4-fast') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v416-openrouter-open-vocabulary-guard') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().remoteApi !== true) throw new Error('OpenRouter API must be enabled');
 context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
 
@@ -63,12 +64,14 @@ context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
     ['schimbare teava apa', 'Замена труб'],
     ['Задняя багажник', 'Задний багажник'],
     ['фиксац генератора', 'Фиксация генератора'],
-    ['ремнт двгателя', 'Ремонт двигателя']
+    ['ремнт двгателя', 'Ремонт двигателя'],
+    ['задний маятник', 'Задний маятник']
   ];
   for (const [input, expected] of cases) {
     const result = await context.window.MG_AI_SERVICE.suggestServiceName({text: input, direction: 'Клининг участка'});
     if (!result?.corrected) throw new Error(`No correction for: ${input}`);
-    if (result?.engine !== 'openrouter-gemma4-free-brain') throw new Error(`Unexpected engine for: ${input}: ${result.engine}`);
+    if (input === 'задний маятник' && /мост/i.test(result.corrected||'')) throw new Error(`Unknown object was replaced: ${result.corrected}`);
+    if (result?.engine !== 'openrouter-gemma4-free-brain' && input !== 'задний маятник') throw new Error(`Unexpected engine for: ${input}: ${result.engine}`);
         if (input === 'укладк кафел' && result.corrected !== expected) throw new Error(`Unexpected correction: ${result.corrected}`);
     if (input === 'montare faianta baie' && !/плитк/i.test(result.corrected)) throw new Error(`Romanian input not understood: ${result.corrected}`);
   }
