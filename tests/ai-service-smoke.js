@@ -24,6 +24,8 @@ const context = {
   localStorage:(()=>{const m=new Map();return {getItem:k=>m.get(k)||null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k)}})(),
   fetch:async (_url,opts)=>{
     const body=JSON.parse(opts.body);
+    if(JSON.stringify(body.models)!==JSON.stringify(['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free'])) throw new Error('Free model fallback list missing');
+    if(body.provider) throw new Error('Provider sorting must remain automatic');
     const msg=String(body.messages?.find(x=>x.role==='user')?.content||'');
     const input=(msg.match(/Исходный текст:\s*(.*)$/m)||[])[1]||'';
     const map={
@@ -52,7 +54,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v426-ai-only') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v427-provider-fallback') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().remoteApi !== true) throw new Error('OpenRouter API must be enabled');
 context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
 

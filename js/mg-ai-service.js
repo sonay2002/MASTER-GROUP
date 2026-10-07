@@ -1126,6 +1126,7 @@
   // selected accidentally.
   const OPENROUTER_ENDPOINT='https://openrouter.ai/api/v1/chat/completions';
   const OPENROUTER_MODEL='google/gemma-4-26b-a4b-it:free';
+  const OPENROUTER_FALLBACK_MODEL='google/gemma-4-31b-it:free';
   const OPENROUTER_KEY_STORAGE='mg_openrouter_api_key_v1';
   let remoteBrainState='not-configured';
   let remoteBrainPromise=null;
@@ -1276,17 +1277,16 @@
       const timer=controller?setTimeout(()=>controller.abort(),15000):null;
       try{
         const res=await fetch(OPENROUTER_ENDPOINT,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Master Group'},signal:controller?.signal,body:JSON.stringify({
-          model:OPENROUTER_MODEL,
+          // OpenRouter tries these free models in order if every provider for
+          // the first one errors or is rate-limited.
+          models:[OPENROUTER_MODEL,OPENROUTER_FALLBACK_MODEL],
           messages:[{role:'system',content:system},{role:'user',content:user}],
           temperature:0,
-          max_tokens:120,
-          seed:7,
-          reasoning:{enabled:false},
+          max_tokens:160,
           // Gemma's free endpoint supports JSON mode, but does not enforce
           // JSON Schema. Asking for strict schema can make the provider reject
           // the request before inference starts.
           response_format:{type:'json_object'},
-          provider:{sort:'throughput',allow_fallbacks:true}
         })});
         if(!res.ok){
           let detail='';try{detail=(await res.json())?.error?.message||'';}catch(_){detail=await res.text().catch(()=> '');}
@@ -1298,7 +1298,7 @@
         if(!suggestions.length)throw new Error('OpenRouter returned no compatible suggestions');
         remoteBrainState='ready';
         remoteBrainError='';
-        return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-gemma4-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:OPENROUTER_MODEL,confidence:suggestions[0].confidence};
+        return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-gemma4-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:data?.model||OPENROUTER_MODEL,confidence:suggestions[0].confidence};
       }catch(err){
         remoteBrainState=hasOpenRouterKey()?'error':'not-configured';
         remoteBrainError=String(err?.message||err||'Ошибка запроса к AI').slice(0,240);
@@ -1510,5 +1510,5 @@
     lastError:remoteBrainError
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v426-ai-only'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v427-provider-fallback'};
 })();
