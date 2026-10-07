@@ -1231,6 +1231,44 @@ body{margin:0}
   #document .grand span:last-child{font-size:16pt!important}
 }
 
+/* v422 — the two approved client estimate layouts. */
+.tpl-template1{border:1px solid #d8d8d8}
+.tpl-template1 .tpl-work-table th{background:#f2f3f4;border-bottom:1px solid #252a30}
+.tpl-template1 .tpl-work-table td{border-left:0;border-right:0}
+.tpl-template2{border:1px solid #d1d5da}
+.tpl-template2 .tpl-head-final{border-bottom:1px solid #9ca3aa}
+.tpl-template2 .tpl-work-table{font-size:8px}
+.tpl-template2 .tpl-work-table th{background:#eef0f2}
+.tpl-template2 .tpl-work-table th:nth-child(1),.tpl-template2 .tpl-work-table td:nth-child(1){width:5%;text-align:center}
+.tpl-template2 .tpl-work-table th:nth-child(2),.tpl-template2 .tpl-work-table td:nth-child(2){width:43%;text-align:left}
+.tpl-template2 .tpl-work-table th:nth-child(3),.tpl-template2 .tpl-work-table td:nth-child(3){width:9%;text-align:center}
+.tpl-template2 .tpl-work-table th:nth-child(4),.tpl-template2 .tpl-work-table td:nth-child(4){width:16%;text-align:right}
+.tpl-template2 .tpl-work-table th:nth-child(5),.tpl-template2 .tpl-work-table td:nth-child(5){width:11%;text-align:right}
+.tpl-template2 .tpl-work-table th:nth-child(6),.tpl-template2 .tpl-work-table td:nth-child(6){width:16%;text-align:right}
+.tpl-template2 .tpl-section-row th{padding:7px 6px;background:#eef0f2;border-top:1px solid #adb4bb;text-align:left;font-weight:700}
+.tpl-template2 .tpl-subtotal-row td{padding-top:6px;padding-bottom:6px;background:#f8f9fa;border-top:1px solid #cbd0d5;font-weight:700}
+.tpl-template2 .tpl-subtotal-row td:last-child{text-align:right}
+.tpl-template2 .tpl-final-total{border-top:1px solid #252a30}
+.estimate-template-card .new-tpl-page.template1 th.numeric,.estimate-template-card .new-tpl-page.template1 td:nth-child(n+4){text-align:right}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(1),.estimate-template-card .new-tpl-page.template1 td:nth-child(1){width:5%}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(2),.estimate-template-card .new-tpl-page.template1 td:nth-child(2){width:12%}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(3),.estimate-template-card .new-tpl-page.template1 td:nth-child(3){width:34%;text-align:left}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(4),.estimate-template-card .new-tpl-page.template1 td:nth-child(4){width:9%}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(5),.estimate-template-card .new-tpl-page.template1 td:nth-child(5){width:16%}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(6),.estimate-template-card .new-tpl-page.template1 td:nth-child(6){width:10%}
+.estimate-template-card .new-tpl-page.template1 th:nth-child(7),.estimate-template-card .new-tpl-page.template1 td:nth-child(7){width:14%}
+.estimate-template-card .new-tpl-page.template2 table{font-size:4.9px}
+.estimate-template-card .new-tpl-page.template2 th,.estimate-template-card .new-tpl-page.template2 td{padding:2.4px 1.8px}
+.estimate-template-card .new-tpl-page.template2 th:nth-child(1),.estimate-template-card .new-tpl-page.template2 td:nth-child(1){width:5%;text-align:center}
+.estimate-template-card .new-tpl-page.template2 th:nth-child(2),.estimate-template-card .new-tpl-page.template2 td:nth-child(2){width:45%;text-align:left}
+.estimate-template-card .new-tpl-page.template2 th:nth-child(3),.estimate-template-card .new-tpl-page.template2 td:nth-child(3){width:9%;text-align:center}
+.estimate-template-card .new-tpl-page.template2 th:nth-child(4),.estimate-template-card .new-tpl-page.template2 td:nth-child(4){width:16%;text-align:right}
+.estimate-template-card .new-tpl-page.template2 th:nth-child(5),.estimate-template-card .new-tpl-page.template2 td:nth-child(5){width:11%;text-align:right}
+.estimate-template-card .new-tpl-page.template2 th:nth-child(6),.estimate-template-card .new-tpl-page.template2 td:nth-child(6){width:14%;text-align:right}
+.estimate-template-card .new-tpl-page.template2 .tpl-section-row th{text-align:left;background:#eef0f2}
+.estimate-template-card .new-tpl-page.template2 .tpl-subtotal-row td{font-weight:700;background:#f8f9fa}
+@media(max-width:600px){#document .tpl-template2 .tpl-work-table{font-size:6.8px}.tpl-template2 .tpl-work-table th{font-size:5.8px;padding:4px 2px}.tpl-template2 .tpl-work-table td{padding:4px 2px}.tpl-template2 .tpl-section-row th{padding:5px 3px}.tpl-template2 .tpl-final-total{padding:7px}.tpl-template2 .cell-direction-mobile{display:none!important}}
+
 /* v419: ten template styles and a phone-width estimate table. */
 .tpl-template6{border-color:#cbd1d8}.tpl-template6 .tpl-head-final{border-bottom:2px solid #35404c}.tpl-template6 .tpl-work-table th{background:#edf0f3}.tpl-template6 .tpl-section-row th{background:#edf0f3;text-align:left}.tpl-template6 .tpl-subtotal-row td{font-weight:700;background:#f7f8fa}
 .tpl-template7{border-color:#c7c7c7}.tpl-template7 .tpl-head-final{border-bottom:1px solid #888}.tpl-template7 .tpl-work-table th{background:#f1f1f1}.tpl-template7 .tpl-section-row th{background:#f3f3f3;text-align:left;border-left:3px solid #666}.tpl-template7 .tpl-subtotal-row td{font-weight:700}
@@ -7303,3 +7341,22 @@ html,body,#app,.app,.screen{
   #document .tpl-work-table{font-size:7.5pt!important}.tpl-work-table th{font-size:6.5pt!important;padding:2.5mm 2mm!important}.tpl-work-table td{font-size:7.5pt!important;padding:2.6mm 2mm!important}
   #document .tpl-final-total{padding:3mm 4mm!important}.tpl-final-total strong{font-size:10.5pt!important}
 }
+/* Final phone overrides for the approved sectioned six-column layout. */
+@media(max-width:600px){
+  #document .tpl-template2 .tpl-work-table th:nth-child(1),#document .tpl-template2 .tpl-work-table td:nth-child(1){width:6%;text-align:center}
+  #document .tpl-template2 .tpl-work-table th:nth-child(2),#document .tpl-template2 .tpl-work-table td:nth-child(2){display:table-cell!important;width:39%;text-align:left}
+  #document .tpl-template2 .tpl-work-table th:nth-child(3),#document .tpl-template2 .tpl-work-table td:nth-child(3){width:9%;text-align:center}
+  #document .tpl-template2 .tpl-work-table th:nth-child(4),#document .tpl-template2 .tpl-work-table td:nth-child(4){width:17%;text-align:right}
+  #document .tpl-template2 .tpl-work-table th:nth-child(5),#document .tpl-template2 .tpl-work-table td:nth-child(5){width:11%;text-align:right}
+  #document .tpl-template2 .tpl-work-table th:nth-child(6),#document .tpl-template2 .tpl-work-table td:nth-child(6){width:18%;text-align:right}
+  #document .tpl-template2 .tpl-work-table th{font-size:5.8px;padding:4px 2px}
+  #document .tpl-template2 .tpl-work-table td{font-size:6.8px;padding:4px 2px}
+  #document .tpl-template2 .tpl-final-total{padding:7px}
+}
+/* Shared date and sign-off fields used by both approved estimate layouts. */
+.tpl-head-date{grid-column:1;font-size:7.5px;line-height:1.2;color:#666;margin-top:2px}
+.tpl-signatures{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:12px 14px 8px;font-size:7px;color:#333;break-inside:avoid;page-break-inside:avoid}
+.tpl-signatures>div{display:grid;gap:12px;min-width:0}
+.tpl-signatures i{display:block;width:86%;height:1px;border-bottom:1px solid #aeb4ba}
+@media(max-width:600px){#document .tpl-signatures{gap:8px;padding:9px 7px 6px;font-size:6px}#document .tpl-signatures>div{gap:9px}}
+@media print{#document .tpl-head-date{font-size:7pt}#document .tpl-signatures{font-size:7pt;padding:4mm 4mm 2mm}}

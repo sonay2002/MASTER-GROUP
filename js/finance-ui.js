@@ -16,7 +16,7 @@ function v58SetFinance(e){const f={prepayment:v58n(e?.prepayment),material:v58n(
 function v58Build(){const old=state.estimate||{},f=v58Fin(),selectedTemplate=(window.MGEstimateTemplates?.get?.()||localStorage.getItem('master_group_estimate_template_v1')||'classic'),e={id:state.id||uid(),number:old.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:old.date||new Date().toLocaleDateString('ru-RU'),status:v58st(old),template:selectedTemplate,prepayment:f.prepayment,expenseMaterial:f.material,expenseTransport:f.transport,expenseSalary:f.salary,expenseOther:f.other,payments:v59Payments(old),paid:v58n(old.paid)};return v59Normalize(e)}
 async function v58Create(){let e=v58Build();if(!state.id&&window.__mgAllocateEstimateNumber){try{const n=await window.__mgAllocateEstimateNumber();if(n)e.number=n}catch(err){console.warn('MG number allocation:',err)}}const a=saved(),i=a.findIndex(x=>String(x.id)===String(e.id)),before=i>=0?JSON.parse(JSON.stringify(a[i])):null;if(!state.id)localStorage.setItem('mg_counter',String(Number(localStorage.getItem('mg_counter')||0)+1));if(i>=0)a[i]=e;else a.unshift(e);persist(a);try{const ds=drafts(),clean=ds.filter(x=>String(x?.id)!==String(e.id));if(clean.length!==ds.length)persistDrafts(clean)}catch(err){console.warn('MG archive draft cleanup:',err)}try{recordEstimateNotifications(before,e)}catch(err){}state.id=e.id;state.estimate=e;v58Document(e);let cloudSaved=false;try{if(window.__mgCloudSaveEstimate)cloudSaved=await window.__mgCloudSaveEstimate(e)}catch(err){cloudSaved=false}if(cloudSaved)toast('Смета сохранена в облаке');else if(typeof window.__mgCloudIsConnected==='function'&&window.__mgCloudIsConnected())toast('Смета сохранена на устройстве — повторяем отправку в облако');else toast('Смета сохранена на устройстве')}
 function v58TemplateForEstimate(e){
-  const allowed=window.MGEstimateTemplates?.allowed||Array.from({length:10},(_,i)=>`template${i+1}`);
+  const allowed=window.MGEstimateTemplates?.allowed||['template1','template2'];
   if(typeof window.MGEstimateTemplates?.resolveForEstimate==='function'){
     const resolved=window.MGEstimateTemplates.resolveForEstimate(e);
     if(allowed.includes(resolved)) return resolved;
@@ -36,7 +36,7 @@ function v58Document(e){
   try{
     currentTemplate=window.MGEstimateTemplates?.get?.() || localStorage.getItem('master_group_estimate_template_v2') || 'template1';
   }catch(_){currentTemplate='template1'}
-  currentTemplate=(window.MGEstimateTemplates?.allowed||Array.from({length:10},(_,i)=>`template${i+1}`)).includes(currentTemplate)?currentTemplate:'template1';
+  currentTemplate=(window.MGEstimateTemplates?.allowed||['template1','template2']).includes(currentTemplate)?currentTemplate:'template1';
   e={...v58Normalize({...e}),template:currentTemplate};
   const c=v58Company();
   const escText=v=>esc(v==null||v===''?'—':v);
@@ -44,24 +44,29 @@ function v58Document(e){
   const clientAddress=e.address||e.object||'';
   let rows='', rowNo=1;
   const directions=Array.isArray(e.directions)?e.directions:[];
+  const grouped=currentTemplate==='template2';
   directions.forEach(d=>{
     const items=Array.isArray(d.items)?d.items:[];
-    if(items.length&&['template6','template7','template10'].includes(currentTemplate)){
-      rows+=`<tr class="tpl-section-row"><th colspan="7">${escText(d.name)}</th></tr>`;
+    if(items.length&&grouped){
+      rows+=`<tr class="tpl-section-row"><th colspan="6">${escText(d.name)}</th></tr>`;
     }
     let sectionTotal=0;
     items.forEach(x=>{
       const q=Number(x.qty)||0, pr=Number(x.price)||0, sum=q*pr;
       sectionTotal+=sum;
-      const cells=`<td class="cell-num">${rowNo++}</td><td class="cell-direction">${escText(d.name)}</td><td class="cell-service">${escText(x.name)}<span class="cell-direction-mobile">${escText(d.name)}</span></td><td class="cell-unit">${escText(x.unit||'шт')}</td><td class="cell-price">${money(pr)}</td><td class="cell-qty">${escText(x.qty??0)}</td><td class="cell-sum">${money(sum)}</td>`;
+      const cells=grouped
+        ? `<td class="cell-num">${rowNo++}</td><td class="cell-service">${escText(x.name)}</td><td class="cell-unit">${escText(x.unit||'шт')}</td><td class="cell-price">${money(pr)}</td><td class="cell-qty">${escText(x.qty??0)}</td><td class="cell-sum">${money(sum)}</td>`
+        : `<td class="cell-num">${rowNo++}</td><td class="cell-direction">${escText(d.name)}</td><td class="cell-service">${escText(x.name)}<span class="cell-direction-mobile">${escText(d.name)}</span></td><td class="cell-unit">${escText(x.unit||'шт')}</td><td class="cell-price">${money(pr)}</td><td class="cell-qty">${escText(x.qty??0)}</td><td class="cell-sum">${money(sum)}</td>`;
       rows+=`<tr>${cells}</tr>`;
     });
-    if(['template6','template7','template10'].includes(currentTemplate)&&items.length){
-      rows+=`<tr class="tpl-subtotal-row"><td colspan="6">Итого по разделу</td><td>${money(sectionTotal)} MDL</td></tr>`;
+    if(grouped&&items.length){
+      rows+=`<tr class="tpl-subtotal-row"><td colspan="5">Подытог раздела</td><td>${money(sectionTotal)} MDL</td></tr>`;
     }
   });
-  const tableColumns=7;
-  const columnHead='<tr><th>№</th><th>Направление</th><th>Услуга / работа</th><th>Ед. изм.</th><th>Цена за единицу</th><th>Количество</th><th>Сумма</th></tr>';
+  const tableColumns=grouped?6:7;
+  const columnHead=grouped
+    ? '<tr><th>№</th><th>Работа / услуга</th><th>Ед.</th><th>Цена за единицу</th><th>Количество</th><th>Сумма</th></tr>'
+    : '<tr><th>№</th><th>Направление</th><th>Работа / услуга</th><th>Ед.</th><th>Цена за единицу</th><th>Количество</th><th>Сумма</th></tr>';
   const dataRows=rows||`<tr><td colspan="${tableColumns}" class="tpl-empty">Услуги не добавлены</td></tr>`;
   const totalValue=money(e.total);
   const clientPhone=e.phone?`Телефон · ${escText(e.phone)}`:'';
@@ -70,12 +75,14 @@ function v58Document(e){
     <div class="tpl-head-final">
       <div class="tpl-head-number">СМЕТА № ${escText(e.number)}</div>
       <div class="tpl-head-company">${companyName}</div>
+      <div class="tpl-head-date">${e.date?`Дата · ${escText(e.date)}`:''}</div>
     </div>
     <div class="tpl-client-final">
       <b>КЛИЕНТ</b><strong>${escText(e.client)}</strong><span>${clientPhone}</span><span>${clientAddr}</span>
     </div>
     <table class="tpl-work-table"><thead>${columnHead}</thead><tbody>${dataRows}</tbody></table>
     <div class="tpl-final-total"><span>ИТОГО:</span><strong>${totalValue} <small>MDL</small></strong></div>
+    <div class="tpl-signatures"><div><span>Исполнитель: ${companyName}</span><i></i></div><div><span>Заказчик: ${escText(e.client)}</span><i></i></div></div>
   </div>`;
   try{if(state.estimate&&String(state.estimate.id)===String(e.id))state.estimate={...state.estimate,template:currentTemplate};}catch(_){}
   screen('documentScreen');

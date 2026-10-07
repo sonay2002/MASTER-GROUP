@@ -1,16 +1,20 @@
+#!/usr/bin/env node
 const fs=require('fs'),path=require('path');
 const root=path.resolve(__dirname,'..');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const templates=fs.readFileSync(path.join(root,'js','estimate-templates.js'),'utf8');
 const finance=fs.readFileSync(path.join(root,'js','finance-ui.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'css','styles.css'),'utf8');
-for(let i=1;i<=10;i++){
- const id=`template${i}`;
- if(!css.includes(`.tpl-${id}`)) throw new Error(`Missing document style ${id}`);
-}
-if(!index.includes('id="estimateTemplateList" class="estimate-template-list"></div>')) throw new Error('Template list should be replaced dynamically');
-if(!templates.includes('length:10')) throw new Error('Template registry is not ten items');
-if(!finance.includes('data-rendered-template="${currentTemplate}"')) throw new Error('Rendered template binding missing');
-if(!finance.includes("['template6','template7','template10']")) throw new Error('Grouped template routing missing');
-for(const col of ['Направление','Услуга / работа','Ед. изм.','Цена за единицу','Количество','Сумма']) if(!finance.includes(col)) throw new Error(`Missing work column: ${col}`);
-console.log('estimate-templates-ten-smoke: OK');
+const app=fs.readFileSync(path.join(root,'js','document-actions-v419.js'),'utf8');
+if(!templates.includes("const allowed=['template1','template2']")) throw new Error('Settings must expose exactly two templates');
+for(const name of ['Классическая','По разделам']) if(!templates.includes(name)) throw new Error(`Missing approved design: ${name}`);
+if(!index.includes('id="estimateTemplateList" class="estimate-template-list"></div>')) throw new Error('Template card host missing');
+if(!templates.includes('data-template-dot="${i}"')) throw new Error('Carousel dots are not generated from approved templates');
+if(!finance.includes("const grouped=currentTemplate==='template2'")) throw new Error('Template 2 is not routed to grouped document output');
+if(!finance.includes('const tableColumns=grouped?6:7')) throw new Error('Document column count does not match selected template');
+if(!finance.includes('data-rendered-template="${currentTemplate}"')) throw new Error('Rendered template marker missing');
+for(const col of ['Направление','Работа / услуга','Ед.','Цена за единицу','Количество','Сумма']) if(!finance.includes(col)) throw new Error(`Missing document column: ${col}`);
+if(!css.includes('.tpl-template2 .tpl-section-row th')) throw new Error('Section layout styling missing');
+if(!css.includes('#document .tpl-template2 .tpl-work-table th:nth-child(2),#document .tpl-template2 .tpl-work-table td:nth-child(2){display:table-cell!important')) throw new Error('Section template work column is hidden on phones');
+if(!app.includes('function printEstimate()')||app.includes('setTimeout(()=>{try{window.print()}')) throw new Error('Print must run synchronously from the tap');
+console.log('estimate-templates-two-smoke: OK');
