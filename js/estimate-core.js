@@ -170,11 +170,11 @@ function aiSetSuggestion(result,inputValue){
   }
   if(corrected===String(inputValue||'').trim()){
     main.dataset.aiApply='';
-    main.textContent=result?.uncertain?'AI не смог уверенно проверить это написание':'Текст уже выглядит корректно';
+    main.textContent=result?.aiUnavailable?'AI сейчас недоступен — исходный текст сохранён':(result?.uncertain?'AI не смог уверенно проверить это написание':'Текст уже выглядит корректно');
     main.disabled=true;
     alts.innerHTML='';
     alts.hidden=true;
-    status.textContent=result?.uncertain?'Попробуйте изменить слово или уточнить услугу':'AI проверил введённый текст';
+    status.textContent=result?.aiUnavailable?(result.aiError||'Проверьте интернет и настройки AI'): (result?.uncertain?'Попробуйте изменить слово или уточнить услугу':'AI проверил введённый текст');
     card.hidden=false;
     return;
   }

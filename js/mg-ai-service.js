@@ -1129,14 +1129,15 @@
   const OPENROUTER_KEY_STORAGE='mg_openrouter_api_key_v1';
   let remoteBrainState='not-configured';
   let remoteBrainPromise=null;
+  let remoteBrainError='';
 
   function getOpenRouterKey(){
     try{return String(localStorage.getItem(OPENROUTER_KEY_STORAGE)||'').trim();}catch(_){return '';}
   }
   function setOpenRouterKey(key){
     const k=String(key||'').trim();
-    if(k){localStorage.setItem(OPENROUTER_KEY_STORAGE,k);remoteBrainState='ready';}
-    else{localStorage.removeItem(OPENROUTER_KEY_STORAGE);remoteBrainState='not-configured';}
+    if(k){localStorage.setItem(OPENROUTER_KEY_STORAGE,k);remoteBrainState='ready';remoteBrainError='';}
+    else{localStorage.removeItem(OPENROUTER_KEY_STORAGE);remoteBrainState='not-configured';remoteBrainError='API-ключ OpenRouter не настроен на этом устройстве.';}
     clearCache();
     return !!k;
   }
@@ -1245,7 +1246,7 @@
       const entered=window.prompt('OpenRouter API-ключ\n\nВставьте ключ sk-or-v1-… . Он сохранится только на этом устройстве и не попадёт в код GitHub Pages.');
       if(entered){setOpenRouterKey(entered);key=getOpenRouterKey();}
     }
-    if(!key){remoteBrainState='not-configured';return null;}
+    if(!key){remoteBrainState='not-configured';remoteBrainError='API-ключ OpenRouter не настроен на этом устройстве.';return null;}
     if(remoteBrainPromise)return remoteBrainPromise;
 
     const inputAction=inferAction(text,[]), inputObject=inferObject(text,[]);
@@ -1272,7 +1273,7 @@
     remoteBrainPromise=(async()=>{
       remoteBrainState='loading';
       const controller=typeof AbortController!=='undefined'?new AbortController():null;
-      const timer=controller?setTimeout(()=>controller.abort(),6500):null;
+      const timer=controller?setTimeout(()=>controller.abort(),15000):null;
       try{
         const res=await fetch(OPENROUTER_ENDPOINT,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Master Group'},signal:controller?.signal,body:JSON.stringify({
           model:OPENROUTER_MODEL,
@@ -1281,7 +1282,10 @@
           max_tokens:120,
           seed:7,
           reasoning:{enabled:false},
-          response_format:{type:'json_schema',json_schema:{name:'master_group_service_suggestions',strict:true,schema:{type:'object',properties:{suggestions:{type:'array',minItems:1,maxItems:5,items:{type:'object',properties:{text:{type:'string'},note:{type:'string'},confidence:{type:'number'}},required:['text','note','confidence'],additionalProperties:false}}},required:['suggestions'],additionalProperties:false}}},
+          // Gemma's free endpoint supports JSON mode, but does not enforce
+          // JSON Schema. Asking for strict schema can make the provider reject
+          // the request before inference starts.
+          response_format:{type:'json_object'},
           provider:{sort:'throughput',allow_fallbacks:true}
         })});
         if(!res.ok){
@@ -1293,9 +1297,11 @@
         const suggestions=parseRemoteSuggestions(content,text);
         if(!suggestions.length)throw new Error('OpenRouter returned no compatible suggestions');
         remoteBrainState='ready';
+        remoteBrainError='';
         return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-gemma4-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:OPENROUTER_MODEL,confidence:suggestions[0].confidence};
       }catch(err){
         remoteBrainState=hasOpenRouterKey()?'error':'not-configured';
+        remoteBrainError=String(err?.message||err||'Ошибка запроса к AI').slice(0,240);
         console.warn('Master Group OpenRouter:',err);
         return null;
       }finally{
@@ -1309,17 +1315,6 @@
   async function testOpenRouter(){
     const result=await remoteBrainSuggest('креплние мотра к рам','',[],[]);
     return !!result?.suggestions?.length;
-  }
-
-  async function dictionarySuggest(text){
-    try{
-      const api=typeof window!=='undefined'?window.MG_DICTIONARY_10M:null;
-      if(!api||typeof api.suggest!=='function')return null;
-      return await api.suggest(text);
-    }catch(err){
-      console.warn('Master Group 10m dictionary unavailable',err);
-      return null;
-    }
   }
 
   function isBrowserRuntime(){
@@ -1492,174 +1487,28 @@
       CACHE.set(key,remote);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
       return remote;
     }
-    const dict=await dictionarySuggest(input);
-    const corrected=String(dict?.corrected||input).trim();
-    const same=norm(corrected)===norm(input);
-    const result={corrected,suggestions:[{text:corrected,note:same?'Написание проверено':'Исправлено по словарю; AI сейчас недоступен',confidence:same?.7:(dict?.confidence||.65)}],changed:!same,engine:dict?'master-dictionary-10m':'master-proofreading-fallback',offline:true,dictionaryUsed:!!dict,dictionaryEntries:10000000,uncertain:!dict&&!same,confidence:same?.7:(dict?.confidence||.45)};
+    // Never surface fuzzy dictionary guesses as corrections: a plausible but
+    // unrelated word is more harmful than clearly reporting that AI is offline.
+    const result={corrected:input,suggestions:[{text:input,note:'AI сейчас недоступен; исходный текст сохранён без исправлений',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:remoteBrainError||'Проверьте подключение и настройки API-ключа.',confidence:0};
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
     return result;
 
-    {
-    // ONLINE BRAIN FIRST: the entire phrase goes to OpenRouter before any
-    // token-by-token correction. Local memory is supporting evidence only.
-    const memorySuggestions=memoryPhraseCandidates(input,direction,services);
-    const remote=await remoteBrainSuggest(input,direction,services,memorySuggestions);
-    if(remote?.suggestions?.length){
-      const result={...remote,dictionaryUsed:false,dictionaryEntries:10000000,dictionaryLoadedShards:[],uncertain:false};
-      CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
-      return result;
-    }
-
-    // If OpenRouter is unavailable, keep the existing local semantic fallback.
-    // This is a safety net only; normal operation uses the remote brain above.
-
-    // WHOLE-TEXT semantic retrieval is the primary stage. The 10M word memory
-    // supports recognition, but is not allowed to manufacture the visible answer
-    // by correcting one token at a time.
-    const dict=await dictionarySuggest(input); // supporting evidence only
-    const retrievedText=memorySuggestions.slice(0,8).map(x=>x.text).join(' | ') || input;
-    const retrievalSuggestions=memorySuggestions;
-
-    // Local deterministic intelligence receives the ORIGINAL sentence. It may
-    // interpret it, but it must never turn a per-word correction into the final UI
-    // suggestion when whole-phrase memory already found a semantic candidate.
-    const localInput=input;
-    const local=fallback(localInput,direction,services);
-    const combined=[];
-    const isQualitySuggestion=(t)=>{
-      const x=cleanupGenerated(t); if(!x||norm(x)===norm(input))return false;
-      const words=tokenise(x); const inputWords=tokenise(input);
-      if(inputWords.length>=2 && words.length<2)return false;
-      // A single noun is a query for phrase memory, not a request to turn it
-      // into an isolated genitive/inflected fragment. Return useful service
-      // combinations instead.
-      if(inputWords.length===1 && words.length<2)return false;
-      if(/^\s*(?:установить|поставить|сделать|починить|заменить|прикрепить|закрепить|смонтировать|удалить|убрать|снять)\b/i.test(x))return false;
-      if(/\bметалл(?:о)?\s+конструк/i.test(x)&&!/металлоконструк/i.test(x))return false;
-      if(/\b(задняя|передняя|левая|правая|верхняя|нижняя)\s+(багажник|бампер|капот|тормоз|двигатель|мотор|генератор|насос|фильтр|компрессор|кабель|провод)\b/i.test(x))return false;
-      // Main-object relevance: once the request has a recognizable object,
-      // unrelated candidates are not allowed through (e.g. «раковина» must
-      // never surface «Установка камеры» just because the action is «Установка»).
-      const requestObject=inferObject(input,[]);
-      if(requestObject?.id){
-        const candidateObjects=bestConcepts(x,OBJECTS,.62);
-        if(candidateObjects.length && !candidateObjects.some(o=>o.id===requestObject.id)){
-          const canonicalForms=(requestObject.forms||[]).map(norm);
-          if(!canonicalForms.some(f=>f && norm(x).includes(f)))return false;
-        }
-      }
-      // Do not show a candidate that simply copies a clearly malformed token
-      // from the request while claiming to be a correction.
-      const src=inputWords; const dst=tokenise(x);
-      for(const bad of src){
-        if(bad.length<5)continue;
-        const still=dst.includes(bad);
-        if(still && !Object.values(COMMON_NOUNS).some(v=>v.forms.some(f=>norm(f)===norm(bad))) && !/^(?:крепление|установка|монтаж|ремонт|замена|покраска|укладка|удаление|демонтаж|сварка|изготовление)$/i.test(bad))return false;
-      }
-      return true;
-    };
-    const addCombined=(row)=>{if(!row?.text)return;const t=cleanupGenerated(row.text);if(!isQualitySuggestion(t))return;if(combined.some(x=>norm(x.text)===norm(t)))return;combined.push({...row,text:t});};
-    // Phrase memory first. Deterministic/local model can add candidates only after it.
-    for(const row of memorySuggestions)addCombined(row);
-    if(local?.suggestions)for(const row of local.suggestions)addCombined(row);
-    // Dictionary corrections remain hidden retrieval evidence; never surface them
-    // as standalone suggestions for multi-word input.
-    if(!combined.length && tokenise(input).length===1 && dict?.suggestions?.length){
-      // A lone ordinary word is the one case where the 10M spelling memory may
-      // return a word correction directly. Service concepts still use phrase memory.
-      const wordRows=dict.suggestions
-        .map(row=>({...row,text:cleanupGenerated(row.text)}))
-        .filter(row=>row.text && norm(row.text)!==norm(input))
-        .filter(row=>tokenise(row.text).length===1)
-        .slice(0,3);
-      for(const row of wordRows){
-        combined.push({...row,note:row.note||'Исправлено по внешней памяти словаря 10 млн'});
-      }
-    }
-    const localResult={...(local||{}),
-      corrected:combined[0]?.text||clean(retrievedText),
-      suggestions:combined.slice(0,5),
-      changed:norm(combined[0]?.text||retrievedText)!==norm(input),
-      engine:dict?.changed?'master-ai-with-10m-memory':(local?.engine||'master-local-ai'),
-      offline:true,
-      dictionaryUsed:!!dict,
-      dictionaryEntries:10000000,
-      dictionaryLoadedShards:dict?.loadedShards||[],
-      confidence:combined[0]?.confidence||dict?.confidence||local?.confidence||.45
-    };
-
-    // Qwen3 is reserved for cases where retrieval + deterministic context are not
-    // enough, or where the original input still contains suspicious tokens.
-    let llm=null;
-    const suspicious=hasSuspiciousToken(input);
-    const semanticCandidate=semanticBrainPhrase(input,direction,services);
-    const semanticStrong=!!semanticCandidate&&semanticCandidate.confidence>=.90&&norm(semanticCandidate.text)!==norm(input);
-    const phraseMemoryStrong=memorySuggestions.some(x=>Number(x.confidence||0)>=.90 && tokenise(x.text).length>=2);
-    const multiToken=tokenise(input).length>=2;
-    const shortInput=tokenise(input).length<=2;
-    // Qwen is reserved for cases where whole-text phrase memory and deterministic
-    // reasoning are genuinely uncertain. This keeps normal typing fast and avoids
-    // loading the 0.6B model for every short word.
-    // Do not start the old on-device Qwen3 fallback on phones: it can consume
-    // substantial WebGPU/WASM memory and was the source of the previous reloads.
-    // The online OpenRouter brain is the heavy reasoning layer now.
-    const needsDeep=false;
-    if(needsDeep) try{
-      const nativePromise=nativeSuggest(input,direction,services);
-      llm=await Promise.race([nativePromise,new Promise(resolve=>setTimeout(()=>resolve(null),1400))]);
-      if(!llm){
-        const llmPromise=localLlmSuggest(input,direction,services,retrievedText);
-        const responseGuard=localLlmState==='loading'?2200:3000;
-        llm=await Promise.race([llmPromise,new Promise(resolve=>setTimeout(()=>resolve(null),responseGuard))]);
-      }
-    }catch(_){llm=null;}
-    let result=llm||localResult;
-    if(result?.corrected && localResult?.corrected && norm(result.corrected)===norm(input) && norm(localResult.corrected)!==norm(input)){
-      result={...localResult,uncertain:true};
-    }
-    // If Qwen echoes the input while dictionary/local retrieval found a candidate,
-    // keep the recovered candidate rather than incorrectly declaring the text correct.
-    if(result && norm(result.corrected||'')===norm(input) && localResult.changed){
-      result={...localResult,uncertain:true};
-    }
-    // Never label an unresolved suspicious input as fully correct.
-    if(result && semanticCandidate && norm(semanticCandidate.text)!==norm(input)){
-      const semanticWords=tokenise(semanticCandidate.text).length;
-      const inputWords=tokenise(input).length;
-      // Reverse-memory rule: a single concept such as «багажник» or «сантехика»
-      // must resolve to useful professional phrase candidates, never to the bare
-      // corrected noun. A one-word semantic output is therefore not allowed to
-      // override a multi-word phrase already retrieved from memory.
-      const bareSingleConcept=(inputWords===1);
-      const modelBacked=['native-local-ai','local-llm-qwen3-0.6b'].includes(result.engine);
-      const semanticIsBetter=!bareSingleConcept && (!modelBacked || !result.changed || result.confidence<semanticCandidate.confidence);
-      if(semanticIsBetter){
-        result={...result,corrected:semanticCandidate.text,suggestions:[semanticCandidate,...(result.suggestions||[]).filter(x=>norm(x.text)!==norm(semanticCandidate.text))].slice(0,5),changed:true,confidence:semanticCandidate.confidence,uncertain:false,engine:'master-semantic-brain-v410'};
-      }
-    }
-    if(result && !result.changed && suspicious){
-      result={...result,corrected:result.corrected,suggestions:[{text:result.corrected,note:'AI не смог уверенно подтвердить написание — проверьте слово',confidence:.45}],confidence:.45,uncertain:true};
-    }
-    CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
-    return result;
-    }
   }
 
   function clearCache(){CACHE.clear();}
   function getStatus(){return {
-    engine:remoteBrainState==='ready'?'openrouter-gemma4-free-brain':(localLlmState.startsWith('ready')?'local-llm-qwen3-0.6b':(nativeState==='available'?'native-local-ai':'master-ai-with-10m-memory')),
+    engine:remoteBrainState==='ready'?'openrouter-gemma4-free-brain':'ai-unavailable',
     native:nativeState,
     localLlm:localLlmState,
     model:OPENROUTER_MODEL,
-    dictionary:'master-dictionary-10m',
-    dictionaryEntries:10000000,
     offline:remoteBrainState!=='ready',
     remoteInference:remoteBrainState==='ready',
     remoteApi:true,
     remoteHost:true,
     remoteBrainState,
-    configured:hasOpenRouterKey()
+    configured:hasOpenRouterKey(),
+    lastError:remoteBrainError
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v425-proofreading-only'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v426-ai-only'};
 })();

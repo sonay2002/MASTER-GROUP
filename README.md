@@ -1,3 +1,10 @@
+# Master Group v426 — AI proofreader
+
+The estimate service-name assistant now corrects spelling and grammar while preserving the user's wording. It does not expand a noun into a service or rewrite the requested object. The 10M-word fuzzy dictionary has been removed from the deployed app and is no longer used as an AI fallback. If the AI provider cannot answer, the app preserves the original text and displays the provider/configuration error.
+
+The OpenRouter free Gemma endpoint is requested in JSON mode (not strict JSON Schema), and the network timeout is 15 seconds. The API key remains in the browser's local storage and is not bundled in source.
+
+The notes below describe historical versions and are retained as project history.
 # Master Group v417 — five new work-first estimate templates + v416 AI
 
 Service-name AI now uses the free Google Gemma 4 26B A4B endpoint through OpenRouter. The phrase is sent as a whole semantic request. Local Qwen inference is not started for normal service-name suggestions.
