@@ -1,11 +1,11 @@
-/* Master Group v438 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v438';
+/* Master Group v439 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v439';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=438",
+  "./css/styles.css?v=439",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
