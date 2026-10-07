@@ -30,15 +30,17 @@ function v58TemplateForEstimate(e){
   return allowed.includes(e?.template)?e.template:'template1';
 }
 function v58Document(e){
-  const currentTemplate=v58TemplateForEstimate(e);
+  // The Settings selection is authoritative for the rendered document.
+  // A saved estimate may carry an old template id, but output always follows the current Settings choice.
+  let currentTemplate='template1';
+  try{
+    currentTemplate=window.MGEstimateTemplates?.get?.() || localStorage.getItem('master_group_estimate_template_v2') || 'template1';
+  }catch(_){currentTemplate='template1'}
+  currentTemplate=['template1','template2','template3','template4','template5'].includes(currentTemplate)?currentTemplate:'template1';
   e={...v58Normalize({...e}),template:currentTemplate};
   const c=v58Company();
   const escText=v=>esc(v==null||v===''?'—':v);
   const companyName=escText(c.name||'MASTER GROUP');
-  const purchaser=e.purchaser||e.buyer||e.procurement||{};
-  const purchaserName=purchaser.name||e.purchaserName||e.buyerName||c.purchaserName||c.name||'—';
-  const purchaserPhone=purchaser.phone||e.purchaserPhone||e.buyerPhone||c.purchaserPhone||c.phone||'';
-  const purchaserAddress=purchaser.address||e.purchaserAddress||e.buyerAddress||c.purchaserAddress||[c.city,c.address].filter(Boolean).join(', ');
   const clientAddress=e.address||e.object||'';
   let rows='', rowNo=1;
   (Array.isArray(e.directions)?e.directions:[]).forEach(d=>{
@@ -48,18 +50,19 @@ function v58Document(e){
     });
   });
   const dataRows=rows||'<tr><td colspan="7" class="tpl-empty">Услуги не добавлены</td></tr>';
-  const total=money(e.total);
+  const totalValue=money(e.total);
+  const clientPhone=e.phone?`Телефон · ${escText(e.phone)}`:'';
+  const clientAddr=clientAddress?`Адрес · ${escText(clientAddress)}`:'';
   $('document').innerHTML=`<div class="mg-estimate-final tpl-${currentTemplate}" data-rendered-template="${currentTemplate}">
     <div class="tpl-head-final">
-      <div class="tpl-head-company">${companyName}</div>
       <div class="tpl-head-number">СМЕТА № ${escText(e.number)}</div>
+      <div class="tpl-head-company">${companyName}</div>
     </div>
-    <table class="tpl-parties-final"><tbody><tr>
-      <td><b>ЗАКАЗЧИК</b><strong>${escText(e.client)}</strong><span>${e.phone?`Телефон · ${escText(e.phone)}`:''}</span><span>${clientAddress?`Адрес · ${escText(clientAddress)}`:''}</span></td>
-      <td><b>ЗАКУПЩИК</b><strong>${escText(purchaserName)}</strong><span>${purchaserPhone?`Телефон · ${escText(purchaserPhone)}`:''}</span><span>${purchaserAddress?`Адрес · ${escText(purchaserAddress)}`:''}</span></td>
-    </tr></tbody></table>
+    <div class="tpl-client-final">
+      <b>КЛИЕНТ</b><strong>${escText(e.client)}</strong><span>${clientPhone}</span><span>${clientAddr}</span>
+    </div>
     <table class="tpl-work-table"><thead><tr><th>№</th><th>Направление</th><th>Услуга / работа</th><th>Ед. изм.</th><th>Цена за единицу</th><th>Количество</th><th>Сумма</th></tr></thead><tbody>${dataRows}</tbody></table>
-    <div class="tpl-final-total"><span>ИТОГО</span><strong>${total} <small>MDL</small></strong></div>
+    <div class="tpl-final-total"><span>ИТОГО:</span><strong>${totalValue} <small>MDL</small></strong></div>
   </div>`;
   try{if(state.estimate&&String(state.estimate.id)===String(e.id))state.estimate={...state.estimate,template:currentTemplate};}catch(_){}
   screen('documentScreen');
@@ -82,44 +85,7 @@ function v59SetAnalyticsTab(tab){localStorage.setItem(V59_ANALYTICS_TAB,tab);doc
 function v59SetSettingsTab(tab){const allowed=['catalog','company','trash','updates','estimates'];if(!allowed.includes(tab))tab='catalog';localStorage.setItem(V59_SETTINGS_TAB,tab);document.querySelectorAll('[data-settings-tab]').forEach(b=>{const active=b.dataset.settingsTab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false')});[['Catalog','catalog'],['Company','company'],['Trash','trash'],['Updates','updates'],['Estimates','estimates']].forEach(([name,key])=>{const panel=$('settingsPanel'+name);if(panel)panel.hidden=tab!==key});if(tab!=='estimates'){const es=$('settingsPanelEstimates');if(es)es.hidden=true}if(tab==='company')v58RenderCompany()}
 function v59ShowStats(){screen('statsScreen');v59RenderOverview();v59SetAnalyticsTab(localStorage.getItem(V59_ANALYTICS_TAB)||'overview');if((localStorage.getItem(V59_ANALYTICS_TAB)||'overview')==='finance')v59RenderFinance()}
 function v59ShowSettings(){renderSettings();if(typeof renderNewDirectionIconPicker==='function')renderNewDirectionIconPicker();screen('settingsScreen');v59SetSettingsTab(localStorage.getItem(V59_SETTINGS_TAB)||'catalog')}
-/* internal finance must never be rendered in the client document */
-v58Document=function(e){
- e=v59Normalize({...e}); const c=v58Company();
- const dirs=Array.isArray(e.directions)&&e.directions.length?e.directions:(e.category?[{name:e.category,items:e.items||[]}]:[]);
- const money2=v=>money(v);
- let rows='', idx=1;
- dirs.forEach(d=>{
-   const items=Array.isArray(d.items)?d.items:[];
-   if(!items.length)return;
-   rows+=`<div class="mg-doc-direction"><div class="mg-doc-direction-title"><span>${esc(d.name||'Услуги')}</span><span>${money2(items.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0))} MDL</span></div><table><thead><tr><th class="num">№</th><th>Наименование услуги</th><th class="qty">Кол.</th><th class="price">Цена</th><th class="sum">Сумма</th></tr></thead><tbody>`;
-   items.forEach(x=>{
-     const q=Number(x.qty)||0, pr=Number(x.price)||0;
-     rows+=`<tr><td class="num">${idx++}</td><td class="service">${esc(x.name||'Услуга')}</td><td class="qty">${esc(String(x.qty??''))} ${esc(x.unit||'шт')}</td><td class="price">${money2(pr)}</td><td class="sum">${money2(q*pr)}</td></tr>`;
-   });
-   rows+='</tbody></table></div>';
- });
- const logo=c.logo?`<img class="mg-doc-logo" src="${c.logo}" alt="Логотип">`:'';
- const companyName=esc(c.name||'Master Group');
- const companyLine=[c.phone,c.city,c.address].filter(Boolean).map(esc).join('  ·  ');
- const clientRows=[['Клиент',e.client],['Телефон',e.phone],['Адрес',e.address||e.object]].filter(x=>x[1]);
- const mgTemplate=v58TemplateForEstimate(e);
- $('document').innerHTML=`<div class="estimate-template-page etp-${esc(mgTemplate)} mg-doc-pro mg-doc-sheet" data-rendered-template="${esc(mgTemplate)}">
-   <header class="mg-doc-top etp-header"><div class="mg-doc-brand">${logo}<div><h1>${companyName}</h1><div class="mg-doc-subtitle">СМЕТА НА УСЛУГИ</div>${companyLine?`<div class="mg-doc-company-line">${companyLine}</div>`:''}</div></div><div class="mg-doc-number"><span>СМЕТА</span><strong>${esc(e.number||'MG-0001')}</strong><time>${esc(e.date||'')}</time></div></header>
-   <section class="mg-doc-parties etp-parties">
-     <div class="mg-doc-party"><div class="mg-doc-label">КЛИЕНТ</div>${clientRows.map(([k,v])=>`<div class="mg-doc-party-row"><span>${k}</span><b>${esc(v||'—')}</b></div>`).join('')}</div>
-     <div class="mg-doc-party mg-doc-party-executor"><div class="mg-doc-label">ИСПОЛНИТЕЛЬ</div>
-       <div class="mg-doc-party-row"><span>Компания</span><b>${companyName}</b></div>
-       ${c.phone?`<div class="mg-doc-party-row"><span>Телефон</span><b>${esc(c.phone)}</b></div>`:''}
-       ${c.address?`<div class="mg-doc-party-row"><span>Адрес</span><b>${esc(c.address)}</b></div>`:''}
-     </div>
-   </section>
-   <section class="mg-doc-services"><div class="etp-title">Смета на услуги</div>${rows||'<div class="mg-doc-empty">Услуги не добавлены</div>'}</section>
-   <div class="mg-doc-grand etp-total"><span>ИТОГО</span><strong>${money2(e.total)} <small>MDL</small></strong></div>
-   <footer class="mg-doc-footer etp-footer"><span>${companyName}</span><span>${esc(e.number||'')} · ${esc(e.date||'')}</span></footer>
- </div>`;
- screen('documentScreen');
-}
-
+/* Estimate document renderer is defined above and is intentionally the single renderer. */
 function v59Normalize(e){return MGFinance.normalize(e||{})}
 function v60PayLabel(e){const total=v58n(e.total),paid=v58n(e.paid);if(paid<=0)return 'Не оплачено';if(paid>=total&&total>0)return 'Оплачено';return 'Частично оплачено'}
 function v60PayClass(e){const total=v58n(e.total),paid=v58n(e.paid);return paid<=0?'pay-none':paid>=total&&total>0?'pay-full':'pay-partial'}
