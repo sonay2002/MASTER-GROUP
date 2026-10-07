@@ -56,9 +56,9 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v429-local-first-proofreader') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v430-manual-local-model') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().remoteApi !== true) throw new Error('OpenRouter API must be enabled');
-if (context.window.MG_AI_SERVICE.getStatus().localFirst !== true) throw new Error('The local proofreader must run before remote fallback');
+if (context.window.MG_AI_SERVICE.getStatus().localModelOptInRequired !== true) throw new Error('The 570 MB model must require a deliberate download action');
 context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
 const compatible=context.window.__MG_AI_TEST__.proofreadCandidateCompatible;
 if(typeof compatible!=='function')throw new Error('Proofreader compatibility guard is not testable');
@@ -68,6 +68,7 @@ if(compatible('крепление пластика','крепление плит
 const sourceForOrder=source.indexOf('localLlmRepair(input');
 const remoteForOrder=source.indexOf('remoteBrainSuggest(input');
 if(sourceForOrder<0||remoteForOrder<0||sourceForOrder>remoteForOrder)throw new Error('Local proofreading must precede remote fallback');
+if(!source.includes('if(!localLlmAutoEnabled&&!manual)return null'))throw new Error('Local model can start without opt-in');
 
 (async () => {
   const cases = [

@@ -195,6 +195,15 @@ function setAiStatus(text){
   if(status)status.textContent=text||'';
 }
 
+function syncAiLocalModelButton(){
+  const button=$('directionServiceAiSuggestion')?.querySelector('[data-ai-local-download]');
+  if(!button)return;
+  const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+  button.hidden=!current.localModelNeedsManualAction;
+  button.disabled=current.localLlm==='loading';
+  button.textContent=current.localLlm==='retry-required'?'Повторить загрузку локального ИИ (~570 МБ)':'Загрузить локальный ИИ (~570 МБ)';
+}
+
 async function serviceWordSuggestions(){
   const input=$('directionServiceQuickInput');
   if(!input)return;
@@ -215,12 +224,14 @@ async function serviceWordSuggestions(){
   if(card)card.hidden=false;
   if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
   if(alts){alts.innerHTML='';alts.hidden=true;}
+  syncAiLocalModelButton();
   setAiStatus('AI анализирует…');
   aiSuggestTimer=setTimeout(async()=>{
     let localStatusTimer=null;
     const showAiProgress=()=>{
       if(seq!==aiRequestSeq || value!==String(input.value||'').trim() || value!==aiActiveValue){clearTimeout(localStatusTimer);return;}
       const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      syncAiLocalModelButton();
       if(current.localLlm==='loading'){
         const p=current.localLlmProgress||{};
         const progress=Number(p.progress);
@@ -230,6 +241,7 @@ async function serviceWordSuggestions(){
       }else if(current.localLlm==='ready-webgpu')setAiStatus('Проверяю текст на этом устройстве…');
       else if(current.remoteBrainState==='loading')setAiStatus('Локальная проверка недоступна — проверяю через интернет…');
       else if(current.localLlm==='webgpu-unavailable')setAiStatus('На устройстве нет WebGPU — использую интернет-проверку…');
+      else if(current.localModelOptInRequired)setAiStatus('Загрузка модели (~570 МБ) отключена до вашего нажатия.');
       localStatusTimer=setTimeout(showAiProgress,350);
     };
     localStatusTimer=setTimeout(showAiProgress,350);
@@ -320,6 +332,41 @@ function applyAiSuggestion(word){
 }
 
 document.addEventListener('click',e=>{
+  const localDownload=e.target.closest('[data-ai-local-download]');
+  if(localDownload){
+    e.preventDefault();
+    const prepare=window.MG_AI_SERVICE?.prepareLocalModel;
+    if(typeof prepare!=='function'){setAiStatus('Локальная модель сейчас недоступна.');return;}
+    localDownload.disabled=true;
+    let progressTimer=null;
+    const showDownloadProgress=()=>{
+      const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      if(current.localLlm==='loading'){
+        const p=current.localLlmProgress||{},progress=Number(p.progress);
+        setAiStatus(Number.isFinite(progress)&&progress>0?`Загрузка локальной модели: ${Math.round(progress)}% (~570 МБ)`:'Загрузка локальной модели (~570 МБ). Страница не будет запускать её повторно автоматически.');
+      }
+      progressTimer=setTimeout(showDownloadProgress,350);
+    };
+    progressTimer=setTimeout(showDownloadProgress,100);
+    Promise.resolve(prepare()).then(model=>{
+      clearTimeout(progressTimer);
+      const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      syncAiLocalModelButton();
+      if(model){
+        window.MG_AI_SERVICE.clearCache?.();
+        setAiStatus('Модель загружена. Запускаю локальную проверку…');
+        if(String($('directionServiceQuickInput')?.value||'').trim().length>=2)serviceWordSuggestions();
+      }else if(current.localLlm==='webgpu-unavailable')setAiStatus('Этот браузер не поддерживает WebGPU. Загрузка не запускалась.');
+      else if(current.localLlm==='retry-required')setAiStatus('Загрузка остановлена. Автоповтора не будет; нажмите кнопку для новой попытки.');
+      else setAiStatus('Не удалось запустить локальную модель. Исходный текст не потерян.');
+    }).catch(err=>{
+      clearTimeout(progressTimer);
+      syncAiLocalModelButton();
+      setAiStatus('Загрузка остановлена. Автоповтора не будет; можно повторить вручную.');
+      console.warn('MG local model preparation failed',err);
+    });
+    return;
+  }
   const exportButton=e.target.closest('[data-ai-terms-export]');
   if(exportButton){
     try{

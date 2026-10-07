@@ -1,12 +1,12 @@
-# Master Group v429 — local-first AI proofreader
+# Master Group v430 — manual local model download
 
-The estimator checks spelling and grammar with Qwen3-0.6B on the device when the browser supports WebGPU. The first use downloads model files (about 570 MB for the selected weight) and the browser caches them. While the download runs, the estimate UI shows progress. If local inference is unavailable, gives no safe correction, or simply returns the original wording, the app tries the configured OpenRouter free-model route. The remote request is bounded by a 30-second timeout.
+The 570 MB Qwen3 model is never downloaded automatically. Text checks use the configured OpenRouter route until the user explicitly taps “Загрузить локальный ИИ”. The app then shows download progress and runs the model on-device if WebGPU is available. The app records an unfinished local-model attempt before loading or inference and clears that marker only after a successful inference. If the page reloads or the browser runs out of memory, a pending marker blocks automatic retries; another attempt requires a deliberate tap. The remote request is bounded by a 30-second timeout.
 
 Both paths use conservative checks to preserve content words and numbers; an unrelated suggestion is rejected and the original text stays intact. The old 10-million-word dictionary is not loaded or called. The API key, if configured, is stored in this browser's local storage and is not part of the application archive. Devices without WebGPU need a working internet connection and configured API key for the remote fallback.
 
 When the user accepts a correction, that exact correction can be remembered on the device. The AI card has controls to download those personal terms as JSON and restore them later, including after app data is cleared or the app is reinstalled.
 
-This build's checks cover JavaScript syntax, local/remote routing order, correction of «штробовка канала канализацыи», rejection of unrelated object/material substitutions, and personal-term backup/restore. Real-device WebGPU inference and first-run model download still need verification on a phone with the target browser.
+This build's checks cover JavaScript syntax, the opt-in and crash-loop guard, correction of «штробовка канала канализацыи», rejection of unrelated object/material substitutions, and personal-term backup/restore. Real-device WebGPU inference and first-run model download still need verification on a phone with the target browser.
 
 The notes below describe historical versions and are retained as project history.
 # Master Group v417 — five new work-first estimate templates + v416 AI
@@ -67,6 +67,7 @@ Run from the project root:
 node tests/ai-service-smoke.js
 node tests/ai-local-llm-smoke.js
 node tests/ai-open-vocabulary-guard-smoke.js
+node tests/ai-model-download-guard-smoke.js
 node tests/ai-ui-race-smoke.js
 node tests/ai-ui-persistent-smoke.js
 node tests/calculations-smoke.js

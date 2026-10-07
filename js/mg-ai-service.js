@@ -19,11 +19,25 @@
   // the old mobile WASM path. Unsupported browsers go to the online fallback.
   const LOCAL_LLM_MODEL='onnx-community/Qwen3-0.6B-ONNX';
   const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
+  const LOCAL_LLM_READY_STORAGE='mg_qwen3_local_ready_v1';
+  const LOCAL_LLM_PENDING_STORAGE='mg_qwen3_local_pending_v1';
   let localLlmPipeline=null;
   let localLlmState='not-loaded';
   let localLlmPromise=null;
   let localLlmRetryAfter=0;
+  let localLlmAutoEnabled=false;
+  let localLlmNeedsManualRetry=false;
+  let localLlmManualRequested=false;
   let localLlmProgress={status:'idle',progress:0,loaded:0,total:570000000,file:''};
+  try{
+    if(localStorage.getItem(LOCAL_LLM_PENDING_STORAGE)==='1'){
+      localLlmNeedsManualRetry=true;
+      localLlmState='retry-required';
+    }else if(localStorage.getItem(LOCAL_LLM_READY_STORAGE)==='1'){
+      localLlmAutoEnabled=true;
+      localLlmState='cached';
+    }
+  }catch(_){}
 
 
   const RU_VOWELS='аеёиоуыэюя';
@@ -1391,16 +1405,50 @@
     };
   }
 
-  async function ensureLocalLlm(){
+  function markLocalLlmAttemptPending(){
+    try{
+      localStorage.removeItem(LOCAL_LLM_READY_STORAGE);
+      localStorage.setItem(LOCAL_LLM_PENDING_STORAGE,'1');
+      return true;
+    }catch(_){return false;}
+  }
+  function markLocalLlmAttemptComplete(){
+    try{
+      localStorage.setItem(LOCAL_LLM_READY_STORAGE,'1');
+      localStorage.removeItem(LOCAL_LLM_PENDING_STORAGE);
+      localLlmAutoEnabled=true;
+      localLlmNeedsManualRetry=false;
+    }catch(_){
+      localLlmAutoEnabled=false;
+      localLlmNeedsManualRetry=true;
+    }
+    localLlmManualRequested=false;
+  }
+  function markLocalLlmAttemptFailed(){
+    try{localStorage.removeItem(LOCAL_LLM_PENDING_STORAGE);localStorage.removeItem(LOCAL_LLM_READY_STORAGE);}catch(_){}
+    localLlmPipeline=null;
+    localLlmAutoEnabled=false;
+    localLlmManualRequested=false;
+    localLlmNeedsManualRetry=true;
+    localLlmState='retry-required';
+    localLlmRetryAfter=Date.now()+30000;
+    localLlmProgress={...localLlmProgress,status:'error'};
+  }
+
+  async function ensureLocalLlm(manual=false){
     if(!isBrowserRuntime())return null;
     if(localLlmPipeline)return localLlmPipeline;
+    if(!localLlmAutoEnabled&&!manual)return null;
+    if(localLlmNeedsManualRetry&&!manual)return null;
+    if(manual){localLlmManualRequested=true;localLlmNeedsManualRetry=false;}
     if(localLlmState==='webgpu-unavailable')return null;
     if(localLlmState==='unavailable'&&Date.now()<localLlmRetryAfter)return null;
-    if(localLlmState==='unavailable')localLlmState='not-loaded';
+    if(['unavailable','retry-required','cached'].includes(localLlmState))localLlmState='not-loaded';
     if(localLlmPromise)return localLlmPromise;
     // This ONNX weight is about 570 MB; avoid the WASM-on-phone path that
     // previously caused memory pressure and page reloads.
     if(!isWebGPUAvailable()){localLlmState='webgpu-unavailable';return null;}
+    if(!markLocalLlmAttemptPending()){localLlmState='retry-required';localLlmNeedsManualRetry=true;return null;}
     localLlmState='loading';
     localLlmPromise=(async()=>{
       try{
@@ -1417,14 +1465,18 @@
         localLlmProgress={...localLlmProgress,status:'ready',progress:100};
         return localLlmPipeline;
       }catch(err){
-        localLlmState='unavailable';
-        localLlmRetryAfter=Date.now()+30000;
-        localLlmProgress={...localLlmProgress,status:'error'};
+        markLocalLlmAttemptFailed();
         console.warn('Master Group local LLM unavailable',err);
         return null;
       }finally{localLlmPromise=null;}
     })();
     return localLlmPromise;
+  }
+
+  async function prepareLocalModel(){
+    if(!isBrowserRuntime())return null;
+    if(!isWebGPUAvailable()){localLlmState='webgpu-unavailable';return null;}
+    return ensureLocalLlm(true);
   }
 
   function extractGeneratedText(output){
@@ -1493,6 +1545,7 @@
   async function localLlmRepair(text,direction,selectedServices){
     const generator=await ensureLocalLlm();
     if(!generator)return null;
+    if(!markLocalLlmAttemptPending()){markLocalLlmAttemptFailed();return null;}
     const system=`Ты — корректор любого русского текста, а не генератор и не редактор смысла.
 Исправляй только орфографию и грамматику по всей фразе. Пользователь может пропускать и переставлять буквы, писать на слух, ошибаться в окончаниях или вводить редкое слово.
 Сохраняй исходные слова, предметы, действия и смысл. Не добавляй и не удаляй содержательные слова. Не превращай текст в название услуги и не добавляй «монтаж», «ремонт», «установка» или другие действия.
@@ -1513,7 +1566,8 @@
       if(!proofreadCandidateCompatible(text,corrected))return null;
       const changed=norm(corrected)!==norm(text),confidence=changed?.91:.99;
       return {corrected,suggestions:[{text:corrected,note:'Локальная проверка на устройстве',confidence}],changed,engine:'local-proofreader-qwen3-0.6b',offline:true,modelCached:true,remoteInference:false,confidence};
-    }catch(err){console.warn('Master Group Qwen3 repair failed',err);return null;}
+    }catch(err){console.warn('Master Group Qwen3 repair failed',err);markLocalLlmAttemptFailed();return null;}
+    finally{if(localLlmState!=='retry-required')markLocalLlmAttemptComplete();}
   }
 
   function hasSuspiciousToken(text){
@@ -1589,7 +1643,7 @@
         return lateLocal;
       }
     }
-    const localMessage=localLlmState==='loading'?'Локальная модель ещё загружается (~570 МБ при первом запуске). Повторите проверку через минуту.':localLlmState==='webgpu-unavailable'?'На этом устройстве локальная модель не поддерживается.':'Локальная модель не смогла безопасно исправить эту фразу.';
+    const localMessage=localLlmState==='loading'?'Локальная модель ещё загружается (~570 МБ). Повторите проверку после завершения загрузки.':localLlmState==='webgpu-unavailable'?'На этом устройстве локальная модель не поддерживается.':localLlmState==='retry-required'?'Загрузка локальной модели остановлена. Повторите её вручную кнопкой в карточке AI.':localLlmState==='not-loaded'?'Большая локальная модель не загружается автоматически; её можно включить вручную кнопкой в карточке AI.':'Локальная модель не смогла безопасно исправить эту фразу.';
     const result={corrected:input,suggestions:[{text:input,note:'AI не подтвердил исправление; исходный текст сохранён',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:[localMessage,remoteBrainError||'Проверьте подключение и настройки API-ключа.'].join(' '),confidence:0};
     return result;
 
@@ -1604,7 +1658,9 @@
     localLlmProgress:{...localLlmProgress},
     localModel:LOCAL_LLM_MODEL,
     localModelDownloadBytes:570000000,
-    localFirst:true,
+    localModelOptInRequired:!localLlmAutoEnabled&&!localLlmManualRequested&&localLlmState!=='ready-webgpu',
+    localModelNeedsManualAction:isWebGPUAvailable()&&!localLlmAutoEnabled&&!['loading','ready-webgpu'].includes(localLlmState),
+    localFirst:localLlmAutoEnabled||localLlmManualRequested||localLlmState==='ready-webgpu',
     model:OPENROUTER_MODEL,
     offline:localLlmState==='ready-webgpu'||remoteBrainState!=='ready',
     remoteInference:remoteBrainState==='ready',
@@ -1617,5 +1673,5 @@
   };}
 
   if(window.__MG_AI_TEST__&&typeof window.__MG_AI_TEST__==='object')window.__MG_AI_TEST__.proofreadCandidateCompatible=proofreadCandidateCompatible;
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,region:null,version:'v429-local-first-proofreader'};
+  window.MG_AI_SERVICE={suggestServiceName,prepareLocalModel,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,region:null,version:'v430-manual-local-model'};
 })();

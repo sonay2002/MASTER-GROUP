@@ -1,11 +1,11 @@
-/* Master Group v429 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v429';
+/* Master Group v431 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v431';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=429",
+  "./css/styles.css?v=431",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -18,7 +18,7 @@ const CORE = [
   "./js/mg-ai-service.js",
   "./js/estimate-core.js",
   "./js/finance-ui.js",
-  "./js/document-actions-v419.js?v=429",
+  "./js/document-actions-v419.js?v=431",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",
@@ -36,7 +36,7 @@ const CORE = [
   "./js/status-direct-fix.js",
   "./js/filter-direct-fix.js",
   "./js/finance-final-fix.js",
-  "./js/analytics-tabs-v310.js?v=310",
+  "./js/analytics-tabs-v310.js?v=311",
   "./js/mg-icons-v208.js",
   "./js/settings-icon-runtime-v208.js",
   "./js/new-direction-icon-picker-v211.js?v=213",

@@ -13,6 +13,8 @@
   const toast = message => { try { window.__mgToast?.(message); } catch (_) {} };
   const num = value => Math.max(0, Number(value) || 0);
   const money = value => num(value).toFixed(2);
+  const overviewState = { period: 'all' };
+  const financeFilters = { period: 'all', payment: 'all', query: '' };
 
   function estimates() {
     try {
@@ -58,7 +60,7 @@
     try { window.scrollTo(0, 0); } catch (_) {}
   }
 
-  function renderOverview() {
+  function renderOverviewLegacy() {
     const list = estimates().map(normalize);
     const revenue = list.reduce((s, e) => s + num(e.total), 0);
     const expenses = list.reduce((s, e) => s + num(e.expenseTotal), 0);
@@ -92,7 +94,7 @@
       : '<div class="empty">Пока нет сохранённых смет.</div>';
   }
 
-  function renderFinance() {
+  function renderFinanceLegacy() {
     const list = estimates().map(normalize);
     const paid = list.reduce((s, e) => s + num(e.paid), 0);
     const balance = list.reduce((s, e) => s + num(e.balance), 0);
@@ -134,6 +136,314 @@
         </div>
       </article>`;
     }).join('');
+  }
+
+  function formatAmount(value) {
+    const amount = Number(value);
+    return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(Number.isFinite(amount) ? amount : 0);
+  }
+
+  function parseEstimateDate(value) {
+    const raw = String(value || '').trim();
+    let match = raw.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2,4})$/);
+    if (match) {
+      let year = Number(match[3]);
+      if (year < 100) year += 2000;
+      const date = new Date(year, Number(match[2]) - 1, Number(match[1]));
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function estimateInPeriod(estimate, period, now) {
+    if (period === 'all') return true;
+    const date = parseEstimateDate(estimate.date);
+    if (!date) return false;
+    if (period === 'month') return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+    if (period === 'year') return date.getFullYear() === now.getFullYear();
+    return true;
+  }
+
+  function periodLabel(period) {
+    if (period === 'month') return 'Этот месяц';
+    if (period === 'year') return 'Этот год';
+    return 'Все время';
+  }
+
+  function countWithRussianNoun(count, one, few, many) {
+    const value = Math.abs(Number(count) || 0);
+    const lastTwo = value % 100;
+    const last = value % 10;
+    const noun = lastTwo >= 11 && lastTwo <= 14 ? many : last === 1 ? one : last >= 2 && last <= 4 ? few : many;
+    return value + ' ' + noun;
+  }
+
+  function periodOptions(period) {
+    return '<option value="all"' + (period === 'all' ? ' selected' : '') + '>Все время</option>' +
+      '<option value="month"' + (period === 'month' ? ' selected' : '') + '>Этот месяц</option>' +
+      '<option value="year"' + (period === 'year' ? ' selected' : '') + '>Этот год</option>';
+  }
+
+  function estimatePaymentState(estimate) {
+    const total = Math.max(0, Number(estimate.total) || 0);
+    const paid = Math.max(0, Number(estimate.paid) || 0);
+    const rawBalance = Number(estimate.balance);
+    const balance = Number.isFinite(rawBalance) ? Math.max(0, rawBalance) : Math.max(0, total - paid);
+    if (total <= 0) return paid > 0 ? 'Оплачена' : 'Не оплачена';
+    if (paid <= 0) return 'Не оплачена';
+    return balance > 0.005 ? 'Частично' : 'Оплачена';
+  }
+
+  function estimatePaymentClass(state) {
+    if (state === 'Оплачена') return 'finance-payment-state-paid';
+    if (state === 'Частично') return 'finance-payment-state-partial';
+    return 'finance-payment-state-unpaid';
+  }
+
+  function overviewMetric(label, value) {
+    return '<div class="finance-overview-kpi"><span>' + escapeHtml(label) + '</span><b>' + formatAmount(value) + ' MDL</b></div>';
+  }
+
+  function lastSixMonthData(estimatesList, now) {
+    const months = [];
+    for (let offset = 5; offset >= 0; offset -= 1) {
+      const date = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+      const key = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+      months.push({
+        key,
+        label: new Intl.DateTimeFormat('ru-RU', { month: 'short' }).format(date).replace(/\.$/, ''),
+        title: new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(date),
+        amount: 0
+      });
+    }
+    const byKey = new Map(months.map(month => [month.key, month]));
+    estimatesList.forEach(estimate => {
+      const date = parseEstimateDate(estimate.date);
+      if (!date) return;
+      const key = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+      const month = byKey.get(key);
+      if (month) month.amount += Math.max(0, Number(estimate.total) || 0);
+    });
+    return months;
+  }
+
+  function renderOverview() {
+    const panel = $('analyticsPanelOverview');
+    if (!panel) return;
+    const now = new Date();
+    const all = estimates().map(normalize);
+    const scoped = all.filter(estimate => estimateInPeriod(estimate, overviewState.period, now));
+    const totals = scoped.reduce((sum, estimate) => ({
+      estimate: sum.estimate + Math.max(0, Number(estimate.total) || 0),
+      paid: sum.paid + Math.max(0, Number(estimate.paid) || 0),
+      balance: sum.balance + Math.max(0, Number(estimate.balance) || 0),
+      expenses: sum.expenses + Math.max(0, Number(estimate.expenseTotal) || 0)
+    }), { estimate: 0, paid: 0, balance: 0, expenses: 0 });
+
+    const months = lastSixMonthData(all, now);
+    const maxMonthAmount = Math.max(0, ...months.map(month => month.amount));
+    const chartHasData = months.some(month => month.amount > 0);
+    const chartBars = months.map(month => {
+      const height = maxMonthAmount > 0 ? Math.max(0, Math.round(month.amount / maxMonthAmount * 100)) : 0;
+      const accessibleLabel = month.title + ': ' + formatAmount(month.amount) + ' MDL';
+      return '<div class="finance-chart-column" title="' + escapeHtml(accessibleLabel) + '" aria-label="' + escapeHtml(accessibleLabel) + '">' +
+        '<div class="finance-chart-bar-area"><span class="finance-chart-bar" style="height:' + height + '%"></span></div>' +
+        '<span class="finance-chart-month">' + escapeHtml(month.label) + '</span></div>';
+    }).join('');
+
+    const statuses = {};
+    scoped.forEach(estimate => {
+      const status = String(estimate.status || 'Черновик').trim() || 'Черновик';
+      statuses[status] = (statuses[status] || 0) + 1;
+    });
+    const statusOrder = ['В работе', 'Выполнена', 'Черновик', 'Отправлена', 'Отменена'];
+    const orderedStatuses = Object.keys(statuses).sort((a, b) => {
+      const ai = statusOrder.indexOf(a), bi = statusOrder.indexOf(b);
+      if (ai >= 0 || bi >= 0) return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+      return a.localeCompare(b, 'ru');
+    });
+    const maxStatusCount = Math.max(1, ...orderedStatuses.map(status => statuses[status]));
+    const statusMarkup = orderedStatuses.length ? orderedStatuses.map(status => {
+      const count = statuses[status];
+      const width = Math.round(count / maxStatusCount * 100);
+      return '<div class="finance-status-row"><span>' + escapeHtml(status) + '</span>' +
+        '<span class="finance-status-track"><i style="width:' + width + '%"></i></span>' +
+        '<b>' + count + '</b></div>';
+    }).join('') : '<div class="finance-empty-inline">Пока нет смет.</div>';
+
+    panel.innerHTML = '<section class="card finance-overview-summary">' +
+      '<div class="finance-overview-head"><div><h2>Общий обзор</h2><p>Все сметы и результаты</p></div>' +
+      '<label class="finance-overview-period"><span class="finance-sr-only">Период по дате сметы</span>' +
+      '<select data-overview-period aria-label="Период по дате сметы">' + periodOptions(overviewState.period) + '</select></label></div>' +
+      '<p class="finance-overview-caption">Поступления и расходы показаны по сметам, созданным: ' + escapeHtml(periodLabel(overviewState.period)) + '.</p>' +
+      '<div class="finance-overview-grid">' +
+      overviewMetric('Сумма смет', totals.estimate) +
+      overviewMetric('Получено', totals.paid) +
+      overviewMetric('Осталось получить', totals.balance) +
+      overviewMetric('Расходы', totals.expenses) +
+      '</div></section>' +
+      '<section class="card finance-overview-chart-card"><div class="finance-card-heading"><div><h2>Новые сметы по месяцам</h2>' +
+      '<p>Стоимость смет · MDL · последние 6 месяцев</p></div></div>' +
+      (chartHasData ? '<div class="finance-chart-plot" role="img" aria-label="Сумма новых смет по месяцам за последние шесть месяцев">' + chartBars + '</div>' :
+        '<div class="finance-chart-empty">За последние 6 месяцев смет не было.</div>') +
+      '</section>' +
+      '<section class="card finance-overview-status-card"><div class="finance-card-heading"><div><h2>Статусы работ</h2>' +
+      '<p>' + countWithRussianNoun(scoped.length, 'смета', 'сметы', 'смет') + ' в выбранном периоде</p></div></div>' +
+      '<div class="finance-status-list">' + statusMarkup + '</div></section>' +
+      '<div class="finance-legacy-compat" hidden><div class="stats-grid">' +
+      '<div class="stats-big"><b id="statCount">0</b><span>Всего смет</span></div>' +
+      '<div class="stats-big"><b id="statMonth">0 MDL</b><span>Выручка за месяц</span></div>' +
+      '<div class="stats-big"><b id="statProfit">0 MDL</b><span>Чистая прибыль</span></div>' +
+      '<div class="stats-big"><b id="statExpenses">0 MDL</b><span>Расходы</span></div></div>' +
+      '<div id="monthStats"></div></div>';
+  }
+
+  function ensureFinanceControls(target) {
+    const section = target.closest('.card');
+    const header = section?.querySelector('.settings-section-head');
+    if (header) {
+      const title = header.querySelector('h2');
+      const note = header.querySelector('.muted');
+      if (title) title.textContent = 'Сметы и оплаты';
+      if (note) note.textContent = 'Раскройте смету, чтобы посмотреть оплаты и расходы.';
+    }
+
+    let controls = $('financeControls');
+    if (!controls) {
+      controls = document.createElement('div');
+      controls.id = 'financeControls';
+      controls.className = 'finance-controls';
+      controls.innerHTML = '<div class="finance-filter-row">' +
+        '<label class="finance-filter-select"><span class="finance-sr-only">Период смет</span>' +
+        '<select data-finance-period aria-label="Период по дате сметы">' + periodOptions(financeFilters.period) + '</select></label>' +
+        '<label class="finance-filter-select"><span class="finance-sr-only">Статус оплаты</span>' +
+        '<select data-finance-payment-filter aria-label="Фильтр по оплате">' +
+        '<option value="all">Оплата: все</option><option value="unpaid">Не оплачено</option>' +
+        '<option value="partial">Частично</option><option value="paid">Оплачено</option></select></label></div>' +
+        '<label class="finance-search"><span class="finance-search-icon" aria-hidden="true">⌕</span>' +
+        '<span class="finance-sr-only">Поиск по клиенту или номеру сметы</span>' +
+        '<input type="search" data-finance-search placeholder="Клиент или № сметы" autocomplete="off"></label>' +
+        '<p class="finance-filter-note">Период выбирает сметы по дате их создания.</p>';
+      if (header) header.insertAdjacentElement('afterend', controls);
+      else target.insertAdjacentElement('beforebegin', controls);
+    }
+    const period = controls.querySelector('[data-finance-period]');
+    const payment = controls.querySelector('[data-finance-payment-filter]');
+    const search = controls.querySelector('[data-finance-search]');
+    if (period) period.value = financeFilters.period;
+    if (payment) payment.value = financeFilters.payment;
+    if (search && search.value !== financeFilters.query) search.value = financeFilters.query;
+  }
+
+  function financeCard(estimate, isOpen) {
+    const id = String(estimate.id || '');
+    const number = String(estimate.number || 'Смета');
+    const client = String(estimate.client || 'Без клиента');
+    const estimateDate = String(estimate.date || '');
+    const workStatus = String(estimate.status || 'Черновик');
+    const total = Math.max(0, Number(estimate.total) || 0);
+    const paid = Math.max(0, Number(estimate.paid) || 0);
+    const rawBalance = Number(estimate.balance);
+    const balance = Number.isFinite(rawBalance) ? Math.max(0, rawBalance) : Math.max(0, total - paid);
+    const expenseTotal = Math.max(0, Number(estimate.expenseTotal) || 0);
+    const profit = total - expenseTotal;
+    const paidPercent = total > 0 ? Math.max(0, Math.min(100, Math.round(paid / total * 100))) : (paid > 0 ? 100 : 0);
+    const paymentStatus = estimatePaymentState(estimate);
+    const paymentClass = estimatePaymentClass(paymentStatus);
+    const expenses = [
+      ['Материалы', estimate.expenseMaterial],
+      ['Транспорт', estimate.expenseTransport],
+      ['Зарплата', estimate.expenseSalary],
+      ['Прочее', estimate.expenseOther]
+    ].filter(row => Number(row[1]) > 0);
+    const expenseMarkup = expenses.length ? expenses.map(row =>
+      '<span class="finance-expense-chip">' + escapeHtml(row[0]) + ' <b>' + formatAmount(row[1]) + ' MDL</b></span>'
+    ).join('') : '<span class="finance-empty-inline">Расходы не указаны.</span>';
+    const payments = Array.isArray(estimate.payments) ? estimate.payments.slice().reverse() : [];
+    const paymentMarkup = payments.length ? payments.map(payment => {
+      const paymentId = String(payment.id || '');
+      const info = [payment.date, payment.method, payment.note].filter(Boolean).join(' · ');
+      return '<div class="finance-payment-row"><span>' + escapeHtml(info || 'Оплата') + '</span>' +
+        '<b>' + formatAmount(payment.amount) + ' MDL</b>' +
+        '<button type="button" class="finance-payment-delete" data-delete-payment="' +
+        escapeHtml(id) + ':' + escapeHtml(paymentId) + '" aria-label="Удалить оплату">×</button></div>';
+    }).join('') : '<div class="finance-empty-inline">Платежей пока нет.</div>';
+
+    return '<details class="finance-estimate" data-finance-estimate="' + escapeHtml(id) + '"' + (isOpen ? ' open' : '') + '>' +
+      '<summary class="finance-estimate-summary"><div class="finance-estimate-title-row"><div class="finance-estimate-title-copy">' +
+      '<b>' + escapeHtml(number) + '</b><small>' + escapeHtml(client) + (estimateDate ? ' · ' + escapeHtml(estimateDate) : '') + '</small></div>' +
+      '<div class="finance-estimate-badges"><span class="finance-work-status">' + escapeHtml(workStatus) + '</span>' +
+      '<span class="finance-payment-state ' + paymentClass + '">' + escapeHtml(paymentStatus) + '</span></div></div>' +
+      '<div class="finance-estimate-brief"><span>Сумма <b>' + formatAmount(total) + ' MDL</b></span>' +
+      '<span>Остаток <b>' + formatAmount(balance) + ' MDL</b></span><span class="finance-toggle-indicator" aria-hidden="true">⌄</span></div>' +
+      '<div class="finance-progress-row"><div class="finance-progress-track" role="progressbar" aria-label="Оплачено по смете" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + paidPercent + '">' +
+      '<i style="width:' + paidPercent + '%"></i></div><span>' + paidPercent + '%</span></div></summary>' +
+      '<div class="finance-estimate-expanded"><div class="finance-estimate-metrics">' +
+      '<div><span>Сумма</span><b>' + formatAmount(total) + ' MDL</b></div>' +
+      '<div><span>Получено</span><b>' + formatAmount(paid) + ' MDL</b></div>' +
+      '<div><span>Остаток</span><b>' + formatAmount(balance) + ' MDL</b></div>' +
+      '<div><span>Расходы</span><b>' + formatAmount(expenseTotal) + ' MDL</b></div>' +
+      '<div class="finance-estimate-profit"><span>Прибыль по смете</span><b>' + formatAmount(profit) + ' MDL</b></div></div>' +
+      '<div class="finance-detail-block"><h3>Расходы по категориям</h3><div class="finance-expense-chips">' + expenseMarkup + '</div></div>' +
+      '<div class="finance-detail-block"><h3>Оплаты</h3><div class="finance-payment-list">' + paymentMarkup + '</div></div>' +
+      '<div class="estimate-finance-actions"><button type="button" class="btn primary" data-add-payment="' + escapeHtml(id) + '">＋ Оплата</button>' +
+      '<button type="button" class="btn secondary" data-edit-expenses="' + escapeHtml(id) + '">＋ Расходы</button></div></div></details>';
+  }
+
+  function renderFinance() {
+    const target = $('financeEstimates');
+    if (!target) return;
+    ensureFinanceControls(target);
+    const all = estimates().map(normalize);
+    const now = new Date();
+    const query = financeFilters.query.trim().toLocaleLowerCase('ru-RU');
+    const filtered = all.filter(estimate => {
+      if (!estimateInPeriod(estimate, financeFilters.period, now)) return false;
+      const paymentState = estimatePaymentState(estimate);
+      if (financeFilters.payment === 'unpaid' && paymentState !== 'Не оплачена') return false;
+      if (financeFilters.payment === 'partial' && paymentState !== 'Частично') return false;
+      if (financeFilters.payment === 'paid' && paymentState !== 'Оплачена') return false;
+      if (!query) return true;
+      const directions = Array.isArray(estimate.directions) ? estimate.directions.map(direction => direction.name || '').join(' ') : '';
+      const text = [estimate.number, estimate.client, estimate.object, estimate.address, estimate.phone, estimate.status, directions]
+        .filter(Boolean).join(' ').toLocaleLowerCase('ru-RU');
+      return text.includes(query);
+    });
+
+    const totals = filtered.reduce((sum, estimate) => ({
+      paid: sum.paid + Math.max(0, Number(estimate.paid) || 0),
+      balance: sum.balance + Math.max(0, Number(estimate.balance) || 0),
+      expenses: sum.expenses + Math.max(0, Number(estimate.expenseTotal) || 0),
+      profit: sum.profit + (Math.max(0, Number(estimate.total) || 0) - Math.max(0, Number(estimate.expenseTotal) || 0))
+    }), { paid: 0, balance: 0, expenses: 0, profit: 0 });
+    const overview = $('financeOverview');
+    if (overview) {
+      overview.innerHTML = '<section class="card"><div class="finance-kpis">' +
+        '<div class="finance-kpi"><span>Получено</span><b>' + formatAmount(totals.paid) + ' MDL</b></div>' +
+        '<div class="finance-kpi"><span>К оплате</span><b>' + formatAmount(totals.balance) + ' MDL</b></div>' +
+        '<div class="finance-kpi"><span>Расходы</span><b>' + formatAmount(totals.expenses) + ' MDL</b></div>' +
+        '<div class="finance-kpi profit"><span>Прибыль по сметам</span><b>' + formatAmount(totals.profit) + ' MDL</b></div>' +
+        '</div><p class="finance-summary-caption">Показатели по выбранным сметам: ' + filtered.length +
+        '. Прибыль рассчитана как сумма смет минус записанные расходы.</p></section>';
+    }
+
+    const openIds = new Set(Array.from(target.querySelectorAll('details[data-finance-estimate][open]'))
+      .map(card => card.dataset.financeEstimate));
+    const hadCards = !!target.querySelector('details[data-finance-estimate]');
+    if (!filtered.length) {
+      target.innerHTML = '<div class="finance-empty-state"><b>' + (all.length ? 'Нет совпадающих смет' : 'Смет пока нет') +
+        '</b><span>' + (all.length ? 'Измените период, оплату или поисковый запрос.' : 'Сохранённые сметы появятся здесь.') + '</span></div>';
+      return;
+    }
+    target.innerHTML = filtered.map((estimate, index) =>
+      financeCard(estimate, openIds.has(String(estimate.id || '')) || (!hadCards && index === 0))
+    ).join('');
   }
 
   function escapeHtml(value) {
@@ -263,6 +573,37 @@
   window.__mgOpenAnalyticsDirect = openAnalytics;
   window.__mgOpenEstimatesDirect = openEstimates;
   window.__mgSetAnalyticsTabDirect = setTab;
+  const financeApi = window.MGAppFinance || {};
+  financeApi.v59RenderOverview = renderOverview;
+  financeApi.v59RenderFinance = renderFinance;
+  financeApi.v59ShowStats = openAnalytics;
+  financeApi.v59SetAnalyticsTab = setTab;
+  window.MGAppFinance = financeApi;
+
+  document.addEventListener('change', event => {
+    const target = event.target;
+    if (target?.matches?.('[data-overview-period]')) {
+      overviewState.period = ['all', 'month', 'year'].includes(target.value) ? target.value : 'all';
+      renderOverview();
+      return;
+    }
+    if (target?.matches?.('[data-finance-period]')) {
+      financeFilters.period = ['all', 'month', 'year'].includes(target.value) ? target.value : 'all';
+      renderFinance();
+      return;
+    }
+    if (target?.matches?.('[data-finance-payment-filter]')) {
+      financeFilters.payment = ['all', 'unpaid', 'partial', 'paid'].includes(target.value) ? target.value : 'all';
+      renderFinance();
+    }
+  });
+
+  document.addEventListener('input', event => {
+    const target = event.target;
+    if (!target?.matches?.('[data-finance-search]')) return;
+    financeFilters.query = target.value;
+    renderFinance();
+  });
 
   window.addEventListener('mg:finance-updated', () => {
     try { renderFinance(); renderOverview(); } catch (_) {}
