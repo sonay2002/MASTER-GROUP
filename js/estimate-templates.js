@@ -1,8 +1,12 @@
 (() => {
   const KEY = 'master_group_estimate_template_v2';
-  const allowed = ['template1','template2','template3','template4','template5'];
+  const allowed = Array.from({length:10},(_,i)=>`template${i+1}`);
+  const designs = [
+    ['Чистый лист','Сдержанная классика с тонкими линиями'],['Графитовая линия','Контрастная шапка и ясная сетка'],['Компактный блок','Плотная таблица с лёгкими акцентами'],['Реестровая','Строгая ведомость с ровными колонками'],['Спокойный контур','Минималистичный контур и свободные поля'],
+    ['По разделам','Работы сгруппированы с итогами по разделам'],['Направления работ','Направление выделено перед каждой группой'],['Расчётная ведомость','Акцент на количестве, цене и сумме'],['Детальная таблица','Полная таблица с тонкой сеткой'],['Смета с подытогами','Разделы и промежуточные итоги']
+  ];
   const legacy = {
-    '1':'template1','2':'template2','3':'template3','4':'template4','5':'template5',
+    ...Object.fromEntries(allowed.map((id,i)=>[String(i+1),id])),
     'neo':'template1','corporate':'template2','minimal':'template3','premium':'template4','accent':'template5',
     'classic':'template1','strict':'template3','compact':'template4','business':'template3','modern':'template2','elegant':'template4','bordered':'template3','detailed':'template5'
   };
@@ -50,6 +54,13 @@
     return v;
   };
   const render = (value = get()) => {
+    const list=document.getElementById('estimateTemplateList');
+    if(list&&!list.dataset.generated){
+      const sample=[['1','Металлоконструкции','Изготовление рамы','шт','5 000','1','5 000'],['2','Монтажные работы','Монтаж конструкции','шт','1 000','1','1 000'],['3','Сварочные работы','Сварка элементов','час','250','12','3 000'],['4','Покраска','Антикоррозийная обработка','м²','120','15','1 800']];
+      list.innerHTML=designs.map(([name,desc],i)=>{const id=allowed[i], grouped=[5,6,9].includes(i), rows=sample.map(r=>`<tr>${grouped&&i!==6?`<td>${r[0]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[5]}</td><td>${r[4]}</td><td>${r[6]}</td>`:`<td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td>`}</tr>`).join('');return `<article class="estimate-template-card" data-estimate-template="${id}"><div class="estimate-template-card-head"><div><span class="estimate-template-number">${String(i+1).padStart(2,'0')}</span><div><b>${name}</b><small>${desc}</small></div></div><button type="button" class="estimate-template-select" data-select-estimate-template="${id}">Выбрать</button></div><div class="estimate-template-preview"><div class="new-tpl-page ${id}"><div class="tpl-head"><span>СМЕТА № MG-0035</span><b>MASTER GROUP</b></div><div class="tpl-client"><b>КЛИЕНТ</b><span>Иван Иванов</span><small>+373 XX XXX XXX · Кишинёв, ул. Лесная 10</small></div><table><thead><tr>${(grouped&&i!==6?['№','Услуга / работа','Ед.','Кол-во','Цена','Сумма']:['№','Направление','Услуга / работа','Ед.','Цена','Кол-во','Сумма']).map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table><div class="tpl-total"><span>ИТОГО:</span><b>10 800</b></div></div></div></article>`}).join('');
+      list.dataset.generated='true';
+      const dots=document.getElementById('estimateTemplateDots');if(dots)dots.innerHTML=allowed.map((_,i)=>`<button type="button" data-template-dot="${i}" aria-label="Шаблон ${i+1}"></button>`).join('');
+    }
     document.querySelectorAll('[data-estimate-template]').forEach(card => {
       const active = card.dataset.estimateTemplate === value;
       card.classList.toggle('is-selected', active);
