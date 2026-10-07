@@ -1,20 +1,7 @@
-/* Master Group — Autonomous Service Intelligence v4 · OpenRouter whole-text semantic brain
- *
- * No remote AI/API is required for the service-name assistant.
- * The public API is intentionally unchanged so the current UI continues to
- * show the generated correction ABOVE the service field.
- *
- * Architecture:
- *  1) whole-text semantic request: the entire input is interpreted as one unit;
- *  2) reverse phrase-memory retrieval: find professional action/object combinations
- *     in the Master Group catalog + concept memory;
- *  3) 10M external word memory: supporting recognition evidence only, never a
- *     visible per-token correction path for multi-word service requests;
- *  4) local generation (Qwen3) only for genuinely unresolved phrases;
- *  5) confidence/relevance guardrails: reject unrelated or malformed candidates.
- *
- * Where a browser exposes a native on-device LanguageModel, it may be used as
- * an optional local generative layer. It is never a network fallback.
+/* Master Group — local-first Russian proofreader.
+ * Qwen3 runs on-device when WebGPU is supported. A remote model is tried only
+ * when local correction is unavailable or fails conservative meaning checks.
+ * The public API is kept stable for the existing estimate UI.
  */
 (function(){
   'use strict';
@@ -28,14 +15,15 @@
   let nativeState='unknown';
   let nativePromise=null;
 
-  // Real local generative layer. No OpenAI/Firebase/remote inference is used.
-  // The model is downloaded once, cached by Transformers.js, and then runs on
-  // the user's device (WebGPU when available, otherwise the local fallback).
+  // On-device generation uses WebGPU only: the 570 MB model is too heavy for
+  // the old mobile WASM path. Unsupported browsers go to the online fallback.
   const LOCAL_LLM_MODEL='onnx-community/Qwen3-0.6B-ONNX';
   const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
   let localLlmPipeline=null;
   let localLlmState='not-loaded';
   let localLlmPromise=null;
+  let localLlmRetryAfter=0;
+  let localLlmProgress={status:'idle',progress:0,loaded:0,total:570000000,file:''};
 
 
   const RU_VOWELS='аеёиоуыэюя';
@@ -1125,11 +1113,12 @@
   // the iPhone. The provider is forced to the free router so paid models are not
   // selected accidentally.
   const OPENROUTER_ENDPOINT='https://openrouter.ai/api/v1/chat/completions';
-  const OPENROUTER_MODEL='google/gemma-4-26b-a4b-it:free';
-  const OPENROUTER_FALLBACK_MODEL='google/gemma-4-31b-it:free';
+  const OPENROUTER_MODEL='openrouter/free';
+  const OPENROUTER_FALLBACK_MODELS=['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free'];
   const OPENROUTER_KEY_STORAGE='mg_openrouter_api_key_v1';
+  const PERSONAL_TERMS_STORAGE='mg_ai_personal_terms_v1';
+  const PERSONAL_TERMS_FORMAT='master-group-ai-terms-v1';
   let remoteBrainState='not-configured';
-  let remoteBrainPromise=null;
   let remoteBrainError='';
 
   function getOpenRouterKey(){
@@ -1137,12 +1126,48 @@
   }
   function setOpenRouterKey(key){
     const k=String(key||'').trim();
-    if(k){localStorage.setItem(OPENROUTER_KEY_STORAGE,k);remoteBrainState='ready';remoteBrainError='';}
+    if(k){localStorage.setItem(OPENROUTER_KEY_STORAGE,k);remoteBrainState='idle';remoteBrainError='';}
     else{localStorage.removeItem(OPENROUTER_KEY_STORAGE);remoteBrainState='not-configured';remoteBrainError='API-ключ OpenRouter не настроен на этом устройстве.';}
     clearCache();
     return !!k;
   }
   function hasOpenRouterKey(){return /^sk-or-v1-[A-Za-z0-9_-]+$/.test(getOpenRouterKey());}
+
+  function readPersonalTerms(){
+    try{
+      const data=JSON.parse(localStorage.getItem(PERSONAL_TERMS_STORAGE)||'[]');
+      if(!Array.isArray(data))return [];
+      return data.map(x=>({input:clean(x?.input),corrected:clean(x?.corrected,180)})).filter(x=>x.input&&x.corrected).slice(0,500);
+    }catch(_){return [];}
+  }
+  function writePersonalTerms(terms){
+    try{localStorage.setItem(PERSONAL_TERMS_STORAGE,JSON.stringify(terms.slice(0,500)));clearCache();return true;}catch(_){return false;}
+  }
+  function rememberCorrection(input,corrected){
+    const source=clean(input),answer=clean(corrected,180);
+    if(!source||!answer||norm(source)===norm(answer)||!proofreadCandidateCompatible(source,answer))return false;
+    const terms=readPersonalTerms(),key=norm(source),i=terms.findIndex(x=>norm(x.input)===key);
+    const row={input:source,corrected:answer};if(i>=0)terms.splice(i,1);terms.unshift(row);
+    return writePersonalTerms(terms);
+  }
+  function exportPersonalTerms(){
+    return JSON.stringify({format:PERSONAL_TERMS_FORMAT,exportedAt:new Date().toISOString(),terms:readPersonalTerms()},null,2);
+  }
+  function importPersonalTerms(payload){
+    try{
+      const data=typeof payload==='string'?JSON.parse(payload):payload;
+      if(data?.format!==PERSONAL_TERMS_FORMAT||!Array.isArray(data.terms))return {ok:false,count:0,error:'Файл словаря Master Group не распознан.'};
+      const terms=readPersonalTerms();
+      for(const item of data.terms.slice(0,500)){
+        const input=clean(item?.input),corrected=clean(item?.corrected,180);
+        if(!input||!corrected||norm(input)===norm(corrected)||!proofreadCandidateCompatible(input,corrected))continue;
+        const i=terms.findIndex(x=>norm(x.input)===norm(input));if(i>=0)terms.splice(i,1);
+        terms.unshift({input,corrected});
+      }
+      const ok=writePersonalTerms(terms);
+      return {ok,count:ok?terms.length:0,error:ok?'':'Не удалось сохранить резервную копию на устройстве.'};
+    }catch(_){return {ok:false,count:0,error:'Не удалось прочитать файл словаря.'};}
+  }
 
   const PRESERVE_STOPWORDS=new Set(['и','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без','не','это','как','или','а','мне','надо','нужно']);
   function tokenSimilarity(a,b){
@@ -1213,6 +1238,35 @@
     return true;
   }
 
+  const PROOFREAD_FUNCTION_WORDS=new Set(['и','а','но','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без']);
+  function proofreadCandidateCompatible(input,candidate){
+    const source=clean(input),out=clean(candidate,180);if(!source||!out)return false;
+    const sourceNumbers=(source.match(/\d+(?:[.,]\d+)?/g)||[]),candidateNumbers=(out.match(/\d+(?:[.,]\d+)?/g)||[]);
+    if(sourceNumbers.join('|')!==candidateNumbers.join('|'))return false;
+    if(norm(source)===norm(out))return true;
+    const src=tokenise(source),dst=tokenise(out);
+    if(!src.length||!dst.length||dst.length>src.length+2)return false;
+    const meaningfulSrc=src.filter(w=>w.length>=3&&!PROOFREAD_FUNCTION_WORDS.has(w));
+    const meaningfulDst=dst.filter(w=>w.length>=3&&!PROOFREAD_FUNCTION_WORDS.has(w));
+    // Match content words one-to-one. This permits spelling and ending repairs
+    // while rejecting duplicated or invented nouns and preserving repeated words.
+    const allHavePartner=(left,right)=>{
+      const used=new Set();
+      for(const word of left){
+        let best=-1,score=.55;
+        for(let i=0;i<right.length;i++)if(!used.has(i)){
+          const similarity=tokenSimilarity(word,right[i]);
+          if(similarity>score){best=i;score=similarity;}
+        }
+        if(best<0)return false;
+        used.add(best);
+      }
+      return true;
+    };
+    if(!allHavePartner(meaningfulDst,meaningfulSrc)||!allHavePartner(meaningfulSrc,meaningfulDst))return false;
+    return true;
+  }
+
   function parseRemoteSuggestions(content,input){
     let raw=String(content||'').trim();
     raw=raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
@@ -1233,7 +1287,7 @@
       const same=norm(text)===norm(input);
       // A correct word or phrase may legitimately be returned unchanged; this
       // assistant corrects the user's wording and must not invent a service.
-      if(!remoteSuggestionCompatible(text,input))continue;
+      if(!proofreadCandidateCompatible(input,text))continue;
       seen.add(norm(text));
       out.push({text,note:String(row?.note|| (same?'AI подтвердил введённую формулировку':'Понято AI по смыслу всей фразы')),confidence:Math.max(.45,Math.min(.99,Number(row?.confidence)||.88))});
       if(out.length>=5)break;
@@ -1248,8 +1302,6 @@
       if(entered){setOpenRouterKey(entered);key=getOpenRouterKey();}
     }
     if(!key){remoteBrainState='not-configured';remoteBrainError='API-ключ OpenRouter не настроен на этом устройстве.';return null;}
-    if(remoteBrainPromise)return remoteBrainPromise;
-
     const inputAction=inferAction(text,[]), inputObject=inferObject(text,[]);
     // Only send memory hints that agree with the concepts in the user's phrase.
     // Direction/catalog context is deliberately weaker than the actual text.
@@ -1271,15 +1323,15 @@
     ].join('\n');
     const user=`Исправь только написание и грамматику. Исходный текст: ${clean(text)}\nВерни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.`;
 
-    remoteBrainPromise=(async()=>{
+    const requestPromise=(async()=>{
       remoteBrainState='loading';
       const controller=typeof AbortController!=='undefined'?new AbortController():null;
-      const timer=controller?setTimeout(()=>controller.abort(),15000):null;
+      const timer=controller?setTimeout(()=>controller.abort(),30000):null;
       try{
         const res=await fetch(OPENROUTER_ENDPOINT,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Master Group'},signal:controller?.signal,body:JSON.stringify({
-          // OpenRouter tries these free models in order if every provider for
-          // the first one errors or is rate-limited.
-          models:[OPENROUTER_MODEL,OPENROUTER_FALLBACK_MODEL],
+          // Pick a currently healthy free model dynamically, then try two
+          // explicit free Gemma endpoints if the router/provider errors.
+          models:[OPENROUTER_MODEL,...OPENROUTER_FALLBACK_MODELS],
           messages:[{role:'system',content:system},{role:'user',content:user}],
           temperature:0,
           max_tokens:160,
@@ -1289,7 +1341,9 @@
           response_format:{type:'json_object'},
         })});
         if(!res.ok){
-          let detail='';try{detail=(await res.json())?.error?.message||'';}catch(_){detail=await res.text().catch(()=> '');}
+          let payload=null,detail='';try{payload=await res.json();}catch(_){detail=await res.text().catch(()=> '');}
+          const providerError=payload?.error||{},metadata=providerError.metadata||{};
+          detail=[providerError.message,metadata.provider_name||metadata.provider,metadata.raw,detail].filter(Boolean).join(' — ');
           const e=new Error(detail||('OpenRouter HTTP '+res.status));e.code='OPENROUTER_HTTP_'+res.status;throw e;
         }
         const data=await res.json();
@@ -1301,15 +1355,14 @@
         return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-gemma4-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:data?.model||OPENROUTER_MODEL,confidence:suggestions[0].confidence};
       }catch(err){
         remoteBrainState=hasOpenRouterKey()?'error':'not-configured';
-        remoteBrainError=String(err?.message||err||'Ошибка запроса к AI').slice(0,240);
+        remoteBrainError=`${err?.code?err.code+': ':''}${String(err?.message||err||'Ошибка запроса к AI')}`.slice(0,420);
         console.warn('Master Group OpenRouter:',err);
         return null;
       }finally{
         if(timer)clearTimeout(timer);
-        remoteBrainPromise=null;
       }
     })();
-    return remoteBrainPromise;
+    return requestPromise;
   }
 
   async function testOpenRouter(){
@@ -1325,11 +1378,29 @@
     try{return typeof navigator!=='undefined' && !!navigator.gpu;}catch(_){return false;}
   }
 
+  function recordLocalLlmProgress(info){
+    if(!info||typeof info!=='object')return;
+    const progress=Number(info.progress);
+    const loaded=Number(info.loaded),total=Number(info.total);
+    localLlmProgress={
+      status:String(info.status||'loading'),
+      progress:Number.isFinite(progress)?Math.max(0,Math.min(100,progress)):localLlmProgress.progress,
+      loaded:Number.isFinite(loaded)&&loaded>=0?loaded:localLlmProgress.loaded,
+      total:Number.isFinite(total)&&total>0?total:localLlmProgress.total,
+      file:String(info.file||localLlmProgress.file||'')
+    };
+  }
+
   async function ensureLocalLlm(){
     if(!isBrowserRuntime())return null;
     if(localLlmPipeline)return localLlmPipeline;
-    if(localLlmState==='unavailable')return null;
+    if(localLlmState==='webgpu-unavailable')return null;
+    if(localLlmState==='unavailable'&&Date.now()<localLlmRetryAfter)return null;
+    if(localLlmState==='unavailable')localLlmState='not-loaded';
     if(localLlmPromise)return localLlmPromise;
+    // This ONNX weight is about 570 MB; avoid the WASM-on-phone path that
+    // previously caused memory pressure and page reloads.
+    if(!isWebGPUAvailable()){localLlmState='webgpu-unavailable';return null;}
     localLlmState='loading';
     localLlmPromise=(async()=>{
       try{
@@ -1340,15 +1411,15 @@
         // only for that initial model acquisition.
         if(env?.useBrowserCache!==undefined)env.useBrowserCache=true;
         if(env?.allowRemoteModels!==undefined)env.allowRemoteModels=true;
-        const webgpu=isWebGPUAvailable();
-        const options=webgpu
-          ? {device:'webgpu',dtype:'q4f16'}
-          : {device:'wasm',dtype:'q4'};
-        localLlmPipeline=await pipeline('text-generation',LOCAL_LLM_MODEL,options);
-        localLlmState=webgpu?'ready-webgpu':'ready-wasm';
+        localLlmProgress={status:'loading',progress:0,loaded:0,total:570000000,file:''};
+        localLlmPipeline=await pipeline('text-generation',LOCAL_LLM_MODEL,{device:'webgpu',dtype:'q4f16',progress_callback:recordLocalLlmProgress});
+        localLlmState='ready-webgpu';
+        localLlmProgress={...localLlmProgress,status:'ready',progress:100};
         return localLlmPipeline;
       }catch(err){
         localLlmState='unavailable';
+        localLlmRetryAfter=Date.now()+30000;
+        localLlmProgress={...localLlmProgress,status:'error'};
         console.warn('Master Group local LLM unavailable',err);
         return null;
       }finally{localLlmPromise=null;}
@@ -1422,19 +1493,26 @@
   async function localLlmRepair(text,direction,selectedServices){
     const generator=await ensureLocalLlm();
     if(!generator)return null;
-    const system=`Ты выполняешь второй, строгий этап проверки русского текста услуги. Текст может содержать неизвестные слова и сильные опечатки. Не используй принцип "слова нет в словаре = ошибка" и не придумывай факты. Сравни звучание, соседние буквы, типичные русские окончания и смысл всей фразы. Восстанови наиболее вероятное правильное название услуги. Если фраза уже правильная, верни её без изменений. Верни только одну фразу на русском, без объяснений.`;
-    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nИсходный текст: ${clean(text)}\nПроверь особенно слова с пропущенными, лишними, переставленными или заменёнными буквами. Верни исправленный вариант либо исходный текст, если он действительно без ошибок.`;
+    const system=`Ты — корректор любого русского текста, а не генератор и не редактор смысла.
+Исправляй только орфографию и грамматику по всей фразе. Пользователь может пропускать и переставлять буквы, писать на слух, ошибаться в окончаниях или вводить редкое слово.
+Сохраняй исходные слова, предметы, действия и смысл. Не добавляй и не удаляй содержательные слова. Не превращай текст в название услуги и не добавляй «монтаж», «ремонт», «установка» или другие действия.
+Если введено одно слово — верни одно слово. Если написание уже правильное или слово незнакомое и уверенного исправления нет, верни исходный текст без изменения.
+Используй контекст только для выбора букв и окончаний. Не заменяй неизвестное слово другим распространённым словом.
+Верни только исправленный текст, без кавычек и пояснений.`;
+    const user=`Исправь написание этого текста, сохранив его смысл и слова:\n${clean(text)}`;
     try{
       const messages=[{role:'system',content:system},{role:'user',content:user}];
       let output;
       const tokenizer=generator.tokenizer;
       if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
         const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
-        output=await generator(prompt,{max_new_tokens:48,do_sample:false,return_full_text:false});
-      }else output=await generator(messages,{max_new_tokens:48,do_sample:false});
+        output=await generator(prompt,{max_new_tokens:64,do_sample:false,temperature:0,return_full_text:false});
+      }else output=await generator(messages,{max_new_tokens:64,do_sample:false,temperature:0});
       const corrected=extractGeneratedText(output);
       if(!corrected||corrected.length<2||corrected.length>180)return null;
-      return {corrected,suggestions:[{text:corrected,note:'Строгая проверка орфографии и смысла Qwen3',confidence:.94}],changed:norm(corrected)!==norm(text),engine:'local-llm-qwen3-0.6b',offline:true,modelCached:true,remoteInference:false,confidence:.94};
+      if(!proofreadCandidateCompatible(text,corrected))return null;
+      const changed=norm(corrected)!==norm(text),confidence=changed?.91:.99;
+      return {corrected,suggestions:[{text:corrected,note:'Локальная проверка на устройстве',confidence}],changed,engine:'local-proofreader-qwen3-0.6b',offline:true,modelCached:true,remoteInference:false,confidence};
     }catch(err){console.warn('Master Group Qwen3 repair failed',err);return null;}
   }
 
@@ -1480,35 +1558,64 @@
     const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai',offline:true,confidence:1};
     const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
     if(CACHE.has(key))return CACHE.get(key);
+    const personal=readPersonalTerms().find(x=>norm(x.input)===norm(input));
+    if(personal){
+      const result={corrected:personal.corrected,suggestions:[{text:personal.corrected,note:'Ваше сохранённое исправление',confidence:1}],changed:true,engine:'personal-proofreader-memory',offline:true,dictionaryUsed:false,personalTerm:true,confidence:1};
+      CACHE.set(key,result);return result;
+    }
 
-    // User-facing AI behavior is proofreading, not semantic service generation.
+    // Try on-device proofreading first. On the first visit the model may still
+    // be downloading; do not hold the input UI hostage while that happens.
+    const localTask=localLlmRepair(input,'',[]).catch(err=>{console.warn('Local proofreader:',err);return null;});
+    const localFirst=await Promise.race([localTask,new Promise(resolve=>setTimeout(()=>resolve(null),6500))]);
+    if(localFirst?.changed){
+      CACHE.set(key,localFirst);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
+      return localFirst;
+    }
+
+    // Use internet only when local inference is unsupported, still warming up,
+    // or cannot produce a conservative correction.
     const remote=await remoteBrainSuggest(input,'',[],[]);
     if(remote?.suggestions?.length){
       CACHE.set(key,remote);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
       return remote;
     }
-    // Never surface fuzzy dictionary guesses as corrections: a plausible but
-    // unrelated word is more harmful than clearly reporting that AI is offline.
-    const result={corrected:input,suggestions:[{text:input,note:'AI сейчас недоступен; исходный текст сохранён без исправлений',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:remoteBrainError||'Проверьте подключение и настройки API-ключа.',confidence:0};
-    CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
+    // A model that finishes while the online fallback is running can still
+    // answer this request. Bound this extra wait to keep the UI responsive.
+    if(localLlmState==='loading'){
+      const lateLocal=await Promise.race([localTask,new Promise(resolve=>setTimeout(()=>resolve(null),5000))]);
+      if(lateLocal?.changed){
+        CACHE.set(key,lateLocal);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
+        return lateLocal;
+      }
+    }
+    const localMessage=localLlmState==='loading'?'Локальная модель ещё загружается (~570 МБ при первом запуске). Повторите проверку через минуту.':localLlmState==='webgpu-unavailable'?'На этом устройстве локальная модель не поддерживается.':'Локальная модель не смогла безопасно исправить эту фразу.';
+    const result={corrected:input,suggestions:[{text:input,note:'AI не подтвердил исправление; исходный текст сохранён',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:[localMessage,remoteBrainError||'Проверьте подключение и настройки API-ключа.'].join(' '),confidence:0};
     return result;
 
   }
 
   function clearCache(){CACHE.clear();}
   function getStatus(){return {
-    engine:remoteBrainState==='ready'?'openrouter-gemma4-free-brain':'ai-unavailable',
+    engine:localLlmState==='ready-webgpu'?'local-proofreader-qwen3-0.6b':remoteBrainState==='ready'?'openrouter-gemma4-free-brain':'ai-unavailable',
     native:nativeState,
     localLlm:localLlmState,
+    localLlmRetryAfter,
+    localLlmProgress:{...localLlmProgress},
+    localModel:LOCAL_LLM_MODEL,
+    localModelDownloadBytes:570000000,
+    localFirst:true,
     model:OPENROUTER_MODEL,
-    offline:remoteBrainState!=='ready',
+    offline:localLlmState==='ready-webgpu'||remoteBrainState!=='ready',
     remoteInference:remoteBrainState==='ready',
     remoteApi:true,
     remoteHost:true,
     remoteBrainState,
     configured:hasOpenRouterKey(),
+    personalTerms:readPersonalTerms().length,
     lastError:remoteBrainError
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v427-provider-fallback'};
+  if(window.__MG_AI_TEST__&&typeof window.__MG_AI_TEST__==='object')window.__MG_AI_TEST__.proofreadCandidateCompatible=proofreadCandidateCompatible;
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,region:null,version:'v429-local-first-proofreader'};
 })();

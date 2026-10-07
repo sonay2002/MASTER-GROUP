@@ -217,6 +217,22 @@ async function serviceWordSuggestions(){
   if(alts){alts.innerHTML='';alts.hidden=true;}
   setAiStatus('AI анализирует…');
   aiSuggestTimer=setTimeout(async()=>{
+    let localStatusTimer=null;
+    const showAiProgress=()=>{
+      if(seq!==aiRequestSeq || value!==String(input.value||'').trim() || value!==aiActiveValue){clearTimeout(localStatusTimer);return;}
+      const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      if(current.localLlm==='loading'){
+        const p=current.localLlmProgress||{};
+        const progress=Number(p.progress);
+        setAiStatus(Number.isFinite(progress)&&progress>0
+          ?`Загружаю локальную модель: ${Math.round(progress)}% (около 570 МБ один раз)`
+          :'Загружаю локальную модель (около 570 МБ при первом запуске)');
+      }else if(current.localLlm==='ready-webgpu')setAiStatus('Проверяю текст на этом устройстве…');
+      else if(current.remoteBrainState==='loading')setAiStatus('Локальная проверка недоступна — проверяю через интернет…');
+      else if(current.localLlm==='webgpu-unavailable')setAiStatus('На устройстве нет WebGPU — использую интернет-проверку…');
+      localStatusTimer=setTimeout(showAiProgress,350);
+    };
+    localStatusTimer=setTimeout(showAiProgress,350);
     try{
       const ctx=aiDirectionContext();
       const result=await window.MG_AI_SERVICE.suggestServiceName({text:value,direction:ctx.direction,selectedServices:ctx.selectedServices});
@@ -239,6 +255,8 @@ async function serviceWordSuggestions(){
       else if(code.includes('network')||code.includes('unavailable')) message='Нет связи с AI-сервисом. Проверьте интернет.';
       setAiStatus(message);
       console.warn('MG AI suggestions failed',err);
+    }finally{
+      clearTimeout(localStatusTimer);
     }
   },600);
 }
@@ -294,8 +312,41 @@ function applyAiSuggestion(word){
   input.focus();
   try{input.setSelectionRange(input.value.length,input.value.length)}catch(_){}
   const card=$('directionServiceAiSuggestion');
-  if(card){const status=$('directionServiceAiStatus');if(status)status.textContent='Готово — можно добавить';}
+  if(card){
+    const status=$('directionServiceAiStatus');
+    const remembered=window.MG_AI_SERVICE?.rememberCorrection?.(aiActiveValue,word);
+    if(status)status.textContent=remembered?'Исправление сохранено. Для переноса скачайте копию слов.':'Готово — можно добавить';
+  }
 }
+
+document.addEventListener('click',e=>{
+  const exportButton=e.target.closest('[data-ai-terms-export]');
+  if(exportButton){
+    try{
+      const data=window.MG_AI_SERVICE?.exportPersonalTerms?.();
+      if(!data)throw new Error('Экспорт слов недоступен');
+      const link=document.createElement('a'),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+      link.href=url;link.download='master-group-ai-words.json';link.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setAiStatus('Резервная копия ваших исправлений скачана.');
+    }catch(err){setAiStatus('Не удалось скачать копию слов.');console.warn('MG AI terms export failed',err)}
+    return;
+  }
+  const importButton=e.target.closest('[data-ai-terms-import]');
+  if(importButton){e.preventDefault();$('directionServiceAiTermsFile')?.click();}
+});
+document.addEventListener('change',e=>{
+  if(e.target?.id!=='directionServiceAiTermsFile')return;
+  const file=e.target.files?.[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const result=window.MG_AI_SERVICE?.importPersonalTerms?.(String(reader.result||''));
+    setAiStatus(result?.ok?`Слова восстановлены (${result.count}).`:result?.error||'Не удалось восстановить слова.');
+    e.target.value='';
+  };
+  reader.onerror=()=>setAiStatus('Не удалось прочитать резервную копию слов.');
+  reader.readAsText(file);
+});
 
 function toggleService(n,u){
  let d=activeDir();

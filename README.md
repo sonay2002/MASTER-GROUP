@@ -1,8 +1,12 @@
-# Master Group v427 — AI proofreader
+# Master Group v429 — local-first AI proofreader
 
-The estimate service-name assistant now corrects spelling and grammar while preserving the user's wording. It does not expand a noun into a service or rewrite the requested object. The 10M-word fuzzy dictionary has been removed from the deployed app and is no longer used as an AI fallback. If the AI provider cannot answer, the app preserves the original text and displays the provider/configuration error.
+The estimator checks spelling and grammar with Qwen3-0.6B on the device when the browser supports WebGPU. The first use downloads model files (about 570 MB for the selected weight) and the browser caches them. While the download runs, the estimate UI shows progress. If local inference is unavailable, gives no safe correction, or simply returns the original wording, the app tries the configured OpenRouter free-model route. The remote request is bounded by a 30-second timeout.
 
-The OpenRouter free Gemma endpoint is requested in JSON mode (not strict JSON Schema), and the network timeout is 15 seconds, with a second free-model fallback and automatic provider selection. The API key remains in the browser's local storage and is not bundled in source.
+Both paths use conservative checks to preserve content words and numbers; an unrelated suggestion is rejected and the original text stays intact. The old 10-million-word dictionary is not loaded or called. The API key, if configured, is stored in this browser's local storage and is not part of the application archive. Devices without WebGPU need a working internet connection and configured API key for the remote fallback.
+
+When the user accepts a correction, that exact correction can be remembered on the device. The AI card has controls to download those personal terms as JSON and restore them later, including after app data is cleared or the app is reinstalled.
+
+This build's checks cover JavaScript syntax, local/remote routing order, correction of «штробовка канала канализацыи», rejection of unrelated object/material substitutions, and personal-term backup/restore. Real-device WebGPU inference and first-run model download still need verification on a phone with the target browser.
 
 The notes below describe historical versions and are retained as project history.
 # Master Group v417 — five new work-first estimate templates + v416 AI
@@ -50,10 +54,10 @@ The local model is approximately **570 MB** for the `q4f16` WebGPU weight curren
 
 This means:
 
-- no remote AI inference;
-- first activation needs internet to obtain the model and JavaScript runtime;
-- subsequent inference can be local after the model has been cached;
-- if the model cannot run on a particular browser/device, the existing offline engine remains the fallback.
+- the first local-model setup needs internet to download the model and JavaScript runtime;
+- after caching, Qwen3 can check text on-device;
+- if WebGPU is unsupported or a safe correction is unavailable, the configured online route is tried;
+- if both AI paths fail, the original text remains available unchanged.
 
 ### Tests
 
@@ -61,9 +65,10 @@ Run from the project root:
 
 ```bash
 node tests/ai-service-smoke.js
-node tests/ai-stress-smoke.js
-node tests/ai-open-vocabulary-smoke.js
 node tests/ai-local-llm-smoke.js
+node tests/ai-open-vocabulary-guard-smoke.js
+node tests/ai-ui-race-smoke.js
+node tests/ai-ui-persistent-smoke.js
 node tests/calculations-smoke.js
 node tests/data-model-smoke.js
 node tests/finance-sync-smoke.js
