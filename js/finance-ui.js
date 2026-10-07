@@ -13,57 +13,55 @@ function v58SaveCompany(){const c={name:$('companyName')?.value.trim()||'',phone
 function v58Normalize(e){if(!e)return e;e.status=v58st(e);Object.assign(e,window.MGCalculations.normalizeFinance(e));return e}
 function v58FinanceSummary(){if(!$('financeSummary'))return;const f=v58Fin(),t=total(),ex=f.material+f.transport+f.salary+f.other,bal=Math.max(0,t-f.prepayment);$('financeSummary').innerHTML=`<div><span>Сумма</span><b>${money(t)} MDL</b></div><div><span>Предоплата</span><b>${money(f.prepayment)} MDL</b></div><div><span>Остаток</span><b>${money(bal)} MDL</b></div><div><span>Расходы</span><b>${money(ex)} MDL</b></div><div class="profit"><span>Прибыль</span><b>${money(t-ex)} MDL</b></div>`}
 function v58SetFinance(e){const f={prepayment:v58n(e?.prepayment),material:v58n(e?.expenseMaterial),transport:v58n(e?.expenseTransport),salary:v58n(e?.expenseSalary),other:v58n(e?.expenseOther)};[['prepayment',f.prepayment],['expenseMaterial',f.material],['expenseTransport',f.transport],['expenseSalary',f.salary],['expenseOther',f.other]].forEach(([id,v])=>{if($(id))$(id).value=v||''});v58FinanceSummary()}
-function v58Build(){const old=state.estimate||{},f=v58Fin(),selectedTemplate=(window.MGEstimateTemplates?.get?.()||localStorage.getItem('master_group_estimate_template_v2')||'basic'),e={id:state.id||uid(),number:old.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:old.date||new Date().toLocaleDateString('ru-RU'),status:v58st(old),template:selectedTemplate,prepayment:f.prepayment,expenseMaterial:f.material,expenseTransport:f.transport,expenseSalary:f.salary,expenseOther:f.other,payments:v59Payments(old),paid:v58n(old.paid)};return v59Normalize(e)}
+function v58Build(){const old=state.estimate||{},f=v58Fin(),selectedTemplate=(window.MGEstimateTemplates?.get?.()||localStorage.getItem('master_group_estimate_template_v1')||'classic'),e={id:state.id||uid(),number:old.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:old.date||new Date().toLocaleDateString('ru-RU'),status:v58st(old),template:selectedTemplate,prepayment:f.prepayment,expenseMaterial:f.material,expenseTransport:f.transport,expenseSalary:f.salary,expenseOther:f.other,payments:v59Payments(old),paid:v58n(old.paid)};return v59Normalize(e)}
 async function v58Create(){let e=v58Build();if(!state.id&&window.__mgAllocateEstimateNumber){try{const n=await window.__mgAllocateEstimateNumber();if(n)e.number=n}catch(err){console.warn('MG number allocation:',err)}}const a=saved(),i=a.findIndex(x=>String(x.id)===String(e.id)),before=i>=0?JSON.parse(JSON.stringify(a[i])):null;if(!state.id)localStorage.setItem('mg_counter',String(Number(localStorage.getItem('mg_counter')||0)+1));if(i>=0)a[i]=e;else a.unshift(e);persist(a);try{const ds=drafts(),clean=ds.filter(x=>String(x?.id)!==String(e.id));if(clean.length!==ds.length)persistDrafts(clean)}catch(err){console.warn('MG archive draft cleanup:',err)}try{recordEstimateNotifications(before,e)}catch(err){}state.id=e.id;state.estimate=e;v58Document(e);let cloudSaved=false;try{if(window.__mgCloudSaveEstimate)cloudSaved=await window.__mgCloudSaveEstimate(e)}catch(err){cloudSaved=false}if(cloudSaved)toast('Смета сохранена в облаке');else if(typeof window.__mgCloudIsConnected==='function'&&window.__mgCloudIsConnected())toast('Смета сохранена на устройстве — повторяем отправку в облако');else toast('Смета сохранена на устройстве')}
 function v58TemplateForEstimate(e){
-  const allowed=window.MGEstimateTemplates?.allowed||['basic','modern','strict','compact','table'];
+  const allowed=window.MGEstimateTemplates?.allowed||['template1','template2','template3','template4','template5'];
   if(typeof window.MGEstimateTemplates?.resolveForEstimate==='function'){
     const resolved=window.MGEstimateTemplates.resolveForEstimate(e);
     if(allowed.includes(resolved)) return resolved;
   }
   try{
-    const selected=localStorage.getItem('master_group_estimate_template_v2');
+    const selected=localStorage.getItem('master_group_estimate_template_v2') || localStorage.getItem('master_group_estimate_template_v1');
+    const normalized=window.MGEstimateTemplates?.normalize?.(selected);
     if(allowed.includes(selected)) return selected;
-  }catch(_){}
-  return allowed.includes(e?.template)?e.template:allowed[0];
+    if(allowed.includes(normalized)) return normalized;
+  }catch(_){ }
+  return allowed.includes(e?.template)?e.template:'template1';
 }
 function v58Document(e){
   const currentTemplate=v58TemplateForEstimate(e);
   e={...v58Normalize({...e}),template:currentTemplate};
   const c=v58Company();
-  const dirs=Array.isArray(e.directions)&&e.directions.length?e.directions:(e.category?[{name:e.category,items:e.items||[]}]:[]);
-  const escText=v=>esc(v||'—');
-  const companyName=esc(c.name||'Master Group');
-  const logo=c.logo?`<img class="mg-pdf-logo etp-logo" src="${c.logo}" alt="Логотип">`:'';
-  const companyPhone=escText(c.phone), companyAddress=escText([c.city,c.address].filter(Boolean).join(', '));
+  const escText=v=>esc(v==null||v===''?'—':v);
+  const companyName=escText(c.name||'MASTER GROUP');
+  const purchaser=e.purchaser||e.buyer||e.procurement||{};
+  const purchaserName=purchaser.name||e.purchaserName||e.buyerName||c.purchaserName||c.name||'—';
+  const purchaserPhone=purchaser.phone||e.purchaserPhone||e.buyerPhone||c.purchaserPhone||c.phone||'';
+  const purchaserAddress=purchaser.address||e.purchaserAddress||e.buyerAddress||c.purchaserAddress||[c.city,c.address].filter(Boolean).join(', ');
+  const clientAddress=e.address||e.object||'';
   let rows='', rowNo=1;
-  dirs.forEach(d=>{
-    const items=Array.isArray(d.items)?d.items:[];
-    items.forEach(x=>{
+  (Array.isArray(e.directions)?e.directions:[]).forEach(d=>{
+    (Array.isArray(d.items)?d.items:[]).forEach(x=>{
       const q=Number(x.qty)||0, pr=Number(x.price)||0;
-      rows+=`<tr><td>${rowNo++}</td><td>${escText(x.name)}</td><td>${escText(String(x.qty??''))} ${escText(x.unit||'шт')}</td><td>${money(pr)}</td><td>${money(q*pr)}</td></tr>`;
+      rows+=`<tr><td class="cell-num">${rowNo++}</td><td class="cell-direction">${escText(d.name)}</td><td class="cell-service">${escText(x.name)}</td><td class="cell-unit">${escText(x.unit||'шт')}</td><td class="cell-price">${money(pr)}</td><td class="cell-qty">${escText(x.qty??0)}</td><td class="cell-sum">${money(q*pr)}</td></tr>`;
     });
   });
-  const notes=escText(e.note||e.notes||'');
-  const client=escText(e.client), phone=escText(e.phone), address=escText(e.address||e.object);
-  $('document').innerHTML=`<div class="estimate-template-page etp-${currentTemplate} mg-pdf-sheet" data-rendered-template="${currentTemplate}">
-    <div class="etp-header mg-pdf-header">
-      <div class="etp-company-block"><div class="mg-pdf-company etp-company-block">${logo}<div><strong>${companyName}</strong><span>СМЕТА НА УСЛУГИ</span>${companyPhone!=='—'||companyAddress!=='—'?`<div class="mg-pdf-company-meta">${companyPhone!=='—'?`Телефон · ${companyPhone}`:''}${companyPhone!=='—'&&companyAddress!=='—'?' · ':''}${companyAddress!=='—'?`Адрес · ${companyAddress}`:''}</div>`:''}</div></div></div>
-      <div class="mg-pdf-docmeta"><b>СМЕТА №</b><strong>${escText(e.number)}</strong><small>${escText(e.date)}</small></div>
+  const dataRows=rows||'<tr><td colspan="7" class="tpl-empty">Услуги не добавлены</td></tr>';
+  const total=money(e.total);
+  $('document').innerHTML=`<div class="mg-estimate-final tpl-${currentTemplate}" data-rendered-template="${currentTemplate}">
+    <div class="tpl-head-final">
+      <div class="tpl-head-company">${companyName}</div>
+      <div class="tpl-head-number">СМЕТА № ${escText(e.number)}</div>
     </div>
-    <div class="etp-parties mg-pdf-client">
-      <div><label>КЛИЕНТ</label><b>${client}</b><span>Телефон · ${phone}</span><span>Адрес · ${address}</span></div>
-      <div><label>ИСПОЛНИТЕЛЬ</label><b>${companyName}</b><span>Телефон · ${companyPhone}</span><span>Адрес · ${companyAddress}</span></div>
-    </div>
-    <div class="etp-title">Смета на услуги</div>
-    <div class="mg-pdf-items">
-      ${rows?`<table><thead><tr><th>№</th><th>Наименование услуги</th><th>Кол.</th><th>Цена</th><th>Сумма</th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="mg-pdf-empty">Услуги не добавлены</div>'}
-    </div>
-    <div class="etp-total mg-pdf-total"><b>ИТОГО</b><strong>${money(e.total)} <small>MDL</small></strong></div>
-    ${notes?`<div class="mg-pdf-note"><span>Примечание</span><b>${notes}</b></div>`:''}
-    <div class="etp-footer mg-pdf-footer"><span>${companyName}</span><span>${escText(e.number)} · ${escText(e.date)}</span></div>
+    <table class="tpl-parties-final"><tbody><tr>
+      <td><b>ЗАКАЗЧИК</b><strong>${escText(e.client)}</strong><span>${e.phone?`Телефон · ${escText(e.phone)}`:''}</span><span>${clientAddress?`Адрес · ${escText(clientAddress)}`:''}</span></td>
+      <td><b>ЗАКУПЩИК</b><strong>${escText(purchaserName)}</strong><span>${purchaserPhone?`Телефон · ${escText(purchaserPhone)}`:''}</span><span>${purchaserAddress?`Адрес · ${escText(purchaserAddress)}`:''}</span></td>
+    </tr></tbody></table>
+    <table class="tpl-work-table"><thead><tr><th>№</th><th>Направление</th><th>Услуга / работа</th><th>Ед. изм.</th><th>Цена за единицу</th><th>Количество</th><th>Сумма</th></tr></thead><tbody>${dataRows}</tbody></table>
+    <div class="tpl-final-total"><span>ИТОГО</span><strong>${total} <small>MDL</small></strong></div>
   </div>`;
-  try{if(state.estimate&&String(state.estimate.id)===String(e.id))state.estimate={...state.estimate,template:currentTemplate};}catch(_){ }
+  try{if(state.estimate&&String(state.estimate.id)===String(e.id))state.estimate={...state.estimate,template:currentTemplate};}catch(_){}
   screen('documentScreen');
 }
 function v58Review(){const c=contactData();let h=`<div class="review-row"><span>Клиент</span><b>${esc(c.client||'—')}</b></div><div class="review-row"><span>Телефон</span><b>${esc(c.phone||'—')}</b></div><div class="review-row"><span>Адрес</span><b>${esc(c.address||'—')}</b></div>`;state.directions.forEach(d=>{h+=`<div class="review-row"><span><b>${esc(d.name)}</b></span><b>${money(d.items.reduce((s,x)=>s+(Number(x.qty)||0)*(Number(x.price)||0),0))} MDL</b></div>`;d.items.forEach((x,i)=>h+=`<div class="review-row"><span>${i+1}. ${esc(x.name)}<br><small style="color:#718096">${x.qty} ${esc(x.unit)} × ${money(x.price)} MDL</small></span><b>${money(x.qty*x.price)} MDL</b></div>`)});h+=`<div class="review-row"><span><b>ИТОГО</b></span><b>${money(total())} MDL</b></div>`;if(state.id){h+=`<div class="finance-actions" style="margin-top:14px"><button type="button" class="btn primary" data-add-payment="${esc(String(state.id))}" onclick="window.__mgDirectAddPayment&&window.__mgDirectAddPayment(this.dataset.addPayment); return false;">＋ Добавить оплату</button><button type="button" class="btn secondary" data-edit-expenses="${esc(String(state.id))}" onclick="window.__mgDirectEditExpenses&&window.__mgDirectEditExpenses(this.dataset.editExpenses); return false;">Расходы</button></div>`}$('review').innerHTML=h;v58FinanceSummary()}
@@ -86,7 +84,6 @@ function v59ShowStats(){screen('statsScreen');v59RenderOverview();v59SetAnalytic
 function v59ShowSettings(){renderSettings();if(typeof renderNewDirectionIconPicker==='function')renderNewDirectionIconPicker();screen('settingsScreen');v59SetSettingsTab(localStorage.getItem(V59_SETTINGS_TAB)||'catalog')}
 /* internal finance must never be rendered in the client document */
 v58Document=function(e){
- if(window.__mgRenderEstimateDocument){ return window.__mgRenderEstimateDocument(e); }
  e=v59Normalize({...e}); const c=v58Company();
  const dirs=Array.isArray(e.directions)&&e.directions.length?e.directions:(e.category?[{name:e.category,items:e.items||[]}]:[]);
  const money2=v=>money(v);
