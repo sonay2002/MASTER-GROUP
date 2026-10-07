@@ -106,14 +106,15 @@ function v58Dashboard(){
  const formatHomeAmount=value=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(v58n(value));
  const recent=a.slice(0,3);
  const savedNode=$('saved');
- if(!savedNode)return;
- savedNode.innerHTML=recent.length?recent.map(e=>{
+ if(savedNode)savedNode.innerHTML=recent.length?recent.map(e=>{
   const directions=Array.isArray(e.directions)?e.directions.map(d=>String(d?.name||'').trim()).filter(Boolean).join(', '):'';
   const title=directions||e.category||e.number||'Смета';
   const metadata=[e.client||'Без клиента',e.date||''].filter(Boolean).map(esc).join(' · ');
   const status=e.status||'Черновик';
   return `<article class="saved home-estimate-card"><div class="home-estimate-content"><div class="home-estimate-top"><b class="home-estimate-title">${esc(title)}</b><strong class="home-estimate-total">${formatHomeAmount(e.total)} MDL</strong></div><div class="home-estimate-bottom"><span class="home-estimate-meta">${metadata}</span><span class="home-estimate-status ${v58cl(status)}">${esc(status)}</span></div></div><button type="button" class="open" data-open="${esc(String(e.id))}" aria-label="Открыть смету ${esc(e.number||'')}">›</button></article>`;
  }).join(''):'<div class="empty">Пока нет сохранённых смет.</div>';
+ const dashboardNode=$('dashboard');
+ if(dashboardNode)dashboardNode.classList.remove('mg-home-render-pending');
 }
 /* v59: analytics + internal finance + settings tabs */
 const V59_PAYMENTS='master_group_payments_v1',V59_SETTINGS_TAB='master_group_settings_tab_v1',V59_ANALYTICS_TAB='master_group_analytics_tab_v1';

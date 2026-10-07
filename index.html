@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v433"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v433"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v433</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v435"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v435"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v435</title>
 
 
 
@@ -17,8 +17,62 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css?v=433">
+<link rel="stylesheet" href="css/styles.css?v=435">
 <link rel="stylesheet" href="css/contact-card-final.css?v=409-ui2">
+
+<style id="mg-home-render-gate-v434">
+/* Keep the legacy first dashboard render out of view until the current one is ready. */
+#dashboard.mg-home-render-pending #saved,
+#dashboard.mg-home-render-pending .home-summary-value{visibility:hidden!important}
+</style>
+
+<style id="mg-sidebar-refine-v435">
+/* Clean monochrome sidebar with account actions anchored below navigation. */
+.drawer{width:min(360px,88vw)!important;background:#fff!important;color:#171819!important;border-right:1px solid #e2e3e5!important;border-radius:0 23px 23px 0!important;box-shadow:16px 0 44px rgba(0,0,0,.14)!important}
+.drawer-head{padding:calc(14px + env(safe-area-inset-top)) 17px 14px!important;border-bottom:1px solid #e8e8ea!important}
+.drawer-brand{gap:11px!important}
+.drawer-mg-logo{width:44px!important;height:44px!important;border:0!important;border-radius:14px!important;background:#171819!important;color:#fff!important;font-size:16px!important;letter-spacing:0!important}
+.drawer-title{color:#171819!important;font-size:18px!important;font-weight:650!important;letter-spacing:-.2px!important}
+.drawer-brand-copy small{margin-top:3px!important;color:#77797d!important;font-size:11px!important;font-weight:450!important}
+.drawer-close{width:38px!important;height:38px!important;border:0!important;border-radius:12px!important;background:#f1f1f2!important;color:#55575a!important;font-size:25px!important;padding:0 0 2px!important}
+.drawer-scroll{padding:15px 15px 8px!important;overflow-y:auto!important}
+.drawer-create{min-height:60px!important;height:60px!important;margin:0 0 21px!important;padding:8px 11px!important;gap:10px!important;border:0!important;border-radius:15px!important;background:#171819!important;color:#fff!important}
+.drawer-create-icon{width:38px!important;height:38px!important;border:1px solid #ffffff35!important;border-radius:11px!important;background:#ffffff12!important;color:#fff!important;font-size:25px!important}
+.drawer-create-copy{gap:2px!important}
+.drawer-create-copy b{font-size:14px!important;font-weight:600!important;letter-spacing:0!important}
+.drawer-create-copy small{color:#c7c8ca!important;font-size:10px!important;font-weight:400!important}
+.drawer-chevron{font-size:22px!important;color:#c9cacc!important}
+.drawer-section-title{margin:0 4px 7px!important;color:#8a8c90!important;font-size:10px!important;font-weight:500!important;letter-spacing:.14em!important}
+.drawer-system-title{margin-top:17px!important}
+.drawer-list{gap:3px!important}
+.drawer-item{min-height:52px!important;height:52px!important;grid-template-columns:34px minmax(0,1fr) 12px!important;gap:10px!important;padding:0 9px!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#222325!important;transition:background .15s ease!important}
+.drawer-item:active{background:#ededee!important;transform:none!important}
+.drawer-item-home{background:#f0f0f1!important;box-shadow:inset 3px 0 #171819!important}
+.drawer-item>span:nth-child(2){gap:2px!important}
+.drawer-item b{color:#242527!important;font-size:13px!important;font-weight:550!important;letter-spacing:0!important}
+.drawer-item small{color:#85878a!important;font-size:10px!important;font-weight:400!important}
+.drawer-item i{color:#a0a2a5!important;font-size:19px!important}
+.drawer-icon{width:32px!important;height:32px!important;border:0!important;border-radius:10px!important;background:#f1f1f2!important;color:#444649!important}
+.drawer-icon svg{width:18px!important;height:18px!important;stroke-width:1.8!important}
+.drawer-item-home .drawer-icon{background:#e4e4e6!important;color:#171819!important}
+.drawer-account{flex:0 0 auto!important;margin:0!important;padding:12px 15px calc(12px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid #e8e8ea!important;border-radius:0!important;background:#fafafa!important;color:#222325!important;box-shadow:none!important}
+.drawer-account-state[hidden],.drawer-account-actions[hidden]{display:none!important}
+.drawer-cloud-row{grid-template-columns:38px minmax(0,1fr) 8px!important;gap:10px!important}
+.drawer-cloud-icon{width:38px!important;height:38px!important;border-radius:12px!important;background:#ededee!important;color:#333537!important;font-size:12px!important;font-weight:600!important}
+.drawer-cloud-icon svg{width:20px!important;height:20px!important;stroke-width:1.7!important}
+.drawer-cloud-row b{color:#292a2c!important;font-size:12px!important;font-weight:550!important}
+.drawer-cloud-row small{margin-top:2px!important;color:#7d7f83!important;font-size:10px!important;font-weight:400!important;line-height:1.3!important}
+.drawer-account-dot{width:7px!important;height:7px!important;background:#4f5052!important;box-shadow:none!important}
+.drawer-account.offline .drawer-account-dot{background:#a4a5a8!important}
+.drawer-account-email{margin:8px 0 10px 48px!important;padding:0!important;border:0!important;color:#77797d!important;font-size:10px!important;font-weight:400!important}
+.drawer-account-actions{grid-template-columns:1fr 1fr!important;gap:7px!important;margin-top:10px!important}
+.drawer-account-actions#mgCloudSignedOutActions{grid-template-columns:1fr!important}
+.drawer-account-actions button{min-height:38px!important;border:1px solid #dedfe1!important;border-radius:11px!important;background:#fff!important;color:#444649!important;font-size:11px!important;font-weight:500!important;box-shadow:none!important}
+.drawer-account-actions button:active{background:#efeff0!important}
+#mgCloudSignedOutActions .drawer-account-login{box-sizing:border-box!important;width:100%!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;margin-top:10px!important;padding:0 12px!important;border:0!important;border-radius:11px!important;background:#171819!important;color:#fff!important;font:inherit!important;font-size:12px!important;font-weight:550!important;text-align:left!important}
+#mgCloudSignedOutActions .drawer-account-login span{font-size:18px!important;color:#d0d1d2!important}
+@media(max-width:520px){.drawer{width:min(360px,88vw)!important}.drawer-scroll{padding-left:14px!important;padding-right:14px!important}.drawer-account{padding-left:14px!important;padding-right:14px!important}}
+</style>
 
 <style id="mg-analytics-tabs-v307">
 /* v307 — Finance / Overview tabs: visible below the fixed header, compact and monochrome. */
@@ -361,7 +415,7 @@
 </div>
 
 <!-- Master Group v105: responsive notification controls -->
-<div id="dashboard" class="app screen dashboard-v3">
+<div id="dashboard" class="app screen dashboard-v3 mg-home-render-pending">
 <header class="home-head">
   <button class="home-menu menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
   <div class="home-brand"><span class="home-mark">MG</span><div><b>Master Group</b><small>Рабочее пространство</small></div></div>
@@ -593,14 +647,24 @@
         </button>
       </nav>
 
-      <div class="drawer-account" id="mgCloudStatus" hidden>
+    </div>
+    <div class="drawer-account" id="mgCloudStatus" aria-label="Аккаунт">
+      <div class="drawer-account-state" id="mgCloudSignedIn" hidden>
         <div class="drawer-cloud-row">
-          <span class="drawer-cloud-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 18.5h10.1a4.2 4.2 0 0 0 .4-8.4A6 6 0 0 0 6.3 8.6a4.1 4.1 0 0 0 .9 9.9Z"/></svg></span>
-          <span><b id="mgCloudStatusText">Облако подключено</b><small>Синхронизация активна</small></span>
-          <span class="drawer-account-dot dot"></span>
+          <span class="drawer-cloud-icon" aria-hidden="true">MG</span>
+          <span><b id="mgCloudStatusText">Аккаунт подключён</b><small id="mgCloudStatusSubtext">Синхронизация активна</small></span>
+          <span class="drawer-account-dot dot" aria-hidden="true"></span>
         </div>
         <div id="mgCloudAccount" class="drawer-account-email"></div>
-        <div class="drawer-account-actions"><button id="mgFirebaseDiagnosticOpen" type="button">Диагностика</button><button id="mgCloudLogout" type="button">Выйти</button></div>
+        <div class="drawer-account-actions" id="mgCloudSignedInActions"><button id="mgFirebaseDiagnosticOpen" type="button">Диагностика</button><button id="mgCloudLogout" type="button">Выйти из аккаунта</button></div>
+      </div>
+      <div class="drawer-account-state" id="mgCloudSignedOut">
+        <div class="drawer-cloud-row">
+          <span class="drawer-cloud-icon" aria-hidden="true">MG</span>
+          <span><b>Облачный аккаунт</b><small id="mgCloudSignedOutText">Вход не выполнен</small></span>
+          <span class="drawer-account-dot dot" aria-hidden="true"></span>
+        </div>
+        <div class="drawer-account-actions" id="mgCloudSignedOutActions"><button type="button" id="mgCloudLoginButton" class="drawer-account-login">Войти в аккаунт <span aria-hidden="true">›</span></button></div>
       </div>
     </div>
   </aside>
@@ -630,7 +694,7 @@
 <script src="js/estimate-ui.js"></script>
 <script src="js/mg-ai-service.js"></script>
 <script src="js/estimate-core.js"></script>
-<script src="js/finance-ui.js?v=433"></script>
+<script src="js/finance-ui.js?v=434"></script>
 <script src="js/estimate-templates.js"></script>
 <script src="js/app-core.js"></script>
 
@@ -700,7 +764,7 @@
 <script src="js/offline-engine.js"></script>
 <script src="js/firebase-client.js"></script>
 <script src="js/firebase-repository.js"></script>
-<script src="js/firebase-sync.js"></script>
+<script src="js/firebase-sync.js?v=435"></script>
 <script src="js/direct-interaction-fix.js"></script>
 <script src="js/settings-trash-fix.js"></script>
 <script src="js/status-direct-fix.js"></script>

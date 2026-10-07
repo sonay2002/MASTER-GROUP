@@ -16,7 +16,7 @@
   const uid=()=>{try{if(window.crypto?.randomUUID)return window.crypto.randomUUID()}catch(e){}return 'mg_'+Date.now()+'_'+Math.random().toString(36).slice(2)};
   const newId=uid;
   const toast=(t)=>{try{if(typeof window.__mgToast==='function')return window.__mgToast(t)}catch(e){}try{const x=$('toast');if(x){x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1700)}}catch(e){}};
-  let user=null,cloudMode=false,busy=false,pending=false,db=null,auth=null,root=null,estimateListener=null,catalogListener=null,companyListener=null,metaListener=null,starting=false,authAttempt=false;
+  let user=null,cloudMode=false,busy=false,pending=false,db=null,auth=null,root=null,estimateListener=null,catalogListener=null,companyListener=null,metaListener=null,starting=false,authAttempt=false,explicitLogout=false;
   function msg(t,error){if(!$('mgCloudMsg'))return;$('mgCloudMsg').textContent=t||'';$('mgCloudMsg').classList.toggle('error',!!error)}
   const firebaseFriendlyError=(err,context)=>window.MGFirebaseClient?.friendlyError(err,context)||'Произошла ошибка облачного сервиса. Попробуйте ещё раз.';
   function cloudError(err,context){
@@ -27,7 +27,16 @@
     try{if(typeof toast==='function')toast(friendly)}catch(e){}
     return friendly;
   }
-  function status(text,offline){if(!$('mgCloudStatus'))return;$('mgCloudStatus').hidden=false;$('mgCloudStatusText').textContent=text;$('mgCloudStatus').classList.toggle('offline',!!offline);$('mgCloudAccount').textContent=user?.email||''}
+  function status(text,offline){
+    const box=$('mgCloudStatus');if(!box)return;
+    const signedIn=!!user;box.hidden=false;box.classList.toggle('offline',!!offline);
+    if($('mgCloudSignedIn'))$('mgCloudSignedIn').hidden=!signedIn;
+    if($('mgCloudSignedOut'))$('mgCloudSignedOut').hidden=signedIn;
+    if($('mgCloudStatusText'))$('mgCloudStatusText').textContent=signedIn?'Аккаунт подключён':(text||'Вход не выполнен');
+    if($('mgCloudStatusSubtext'))$('mgCloudStatusSubtext').textContent=text||'Синхронизация активна';
+    if($('mgCloudSignedOutText'))$('mgCloudSignedOutText').textContent=offline&&text&&text!=='Локальный режим'?text:'Вход не выполнен';
+    if($('mgCloudAccount'))$('mgCloudAccount').textContent=user?.email||'';
+  }
   function showAuth(mode){
     const signup=mode==='signup';
     $('mgCloudAuth').hidden=false;
@@ -458,7 +467,8 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       if(!u){
         cloudMode=false;
         stopListeners();
-        if($('mgCloudStatus'))$('mgCloudStatus').hidden=true;
+        status('Вход не выполнен',true);
+        if(explicitLogout){explicitLogout=false;unlockAuthGate();return}
         // Never hide the authentication gate while Firebase is resolving or after a failed attempt.
         keepAuthVisible();
         if(authAttempt)msg('Подключение…');
@@ -483,6 +493,9 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     el.style.display='none';
     authAttempt=false;
   };
+  const openCloudLogin=()=>{explicitLogout=false;document.getElementById('drawerOverlay')?.classList.remove('open');showAuth('login');return false};
+  if($('mgCloudLoginButton'))$('mgCloudLoginButton').onclick=openCloudLogin;
+  window.__mgOpenCloudLogin=openCloudLogin;
   $('mgCloudLoginTab').onclick=()=>showAuth('login');
   $('mgCloudSignupTab').onclick=()=>showAuth('signup');
   $('mgCloudCreate').onclick=()=>showAuth($('mgCloudSignupTab').classList.contains('active')?'login':'signup');
@@ -504,7 +517,7 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     }catch(err){cloudError(err,'auth')}
     finally{setTimeout(()=>{if($('mgCloudSignupTab').classList.contains('active'))$('mgCloudForgot').disabled=true;else $('mgCloudForgot').disabled=false},800)}
   };
-  $('mgCloudLogout').onclick=async()=>{if(confirm('Выйти из Firebase аккаунта?'))await auth.signOut()};
+  $('mgCloudLogout').onclick=async()=>{if(!auth||!user)return;if(!confirm('Выйти из Firebase аккаунта?'))return;explicitLogout=true;try{await auth.signOut();unlockAuthGate();status('Локальный режим',true)}catch(err){explicitLogout=false;cloudError(err,'auth')}};
   $('mgCloudAuthForm').addEventListener('submit',async e=>{e.preventDefault();if(!auth||busy||authAttempt)return;const email=$('mgCloudEmail').value.trim(),password=$('mgCloudPassword').value,signup=$('mgCloudSignupTab').classList.contains('active');authAttempt=true;keepAuthVisible();msg('Подключение…');$('mgCloudSubmit').disabled=true;try{if(signup)await auth.createUserWithEmailAndPassword(email,password);else await auth.signInWithEmailAndPassword(email,password)}catch(err){authAttempt=false;keepAuthVisible();cloudError(err,'auth')}finally{$('mgCloudSubmit').disabled=false}});
   window.__mgFirebaseSyncNow=syncNow;
   window.__mgFirebaseRetry=async function(){if(!user){showAuth('login');return false}return await initialSync()};

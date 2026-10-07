@@ -1,11 +1,11 @@
-/* Master Group v433 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v433';
+/* Master Group v435 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v435';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=433",
+  "./css/styles.css?v=435",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -17,7 +17,7 @@ const CORE = [
   "./js/estimate-ui.js",
   "./js/mg-ai-service.js",
   "./js/estimate-core.js",
-  "./js/finance-ui.js?v=433",
+  "./js/finance-ui.js?v=434",
   "./js/document-actions-v419.js?v=431",
   "./js/estimate-templates.js",
   "./js/app-core.js",
@@ -30,7 +30,7 @@ const CORE = [
   "./js/offline-engine.js",
   "./js/firebase-client.js",
   "./js/firebase-repository.js",
-  "./js/firebase-sync.js",
+  "./js/firebase-sync.js?v=435",
   "./js/direct-interaction-fix.js",
   "./js/settings-trash-fix.js",
   "./js/status-direct-fix.js",
