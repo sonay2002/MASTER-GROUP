@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v432"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v432"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v432</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v433"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v433"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v433</title>
 
 
 
@@ -17,7 +17,7 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css?v=432">
+<link rel="stylesheet" href="css/styles.css?v=433">
 <link rel="stylesheet" href="css/contact-card-final.css?v=409-ui2">
 
 <style id="mg-analytics-tabs-v307">
@@ -368,19 +368,26 @@
 
 </header>
 
-<button class="home-create" data-action="new" aria-label="Создать новую смету">
-  <span class="home-create-icon">＋</span>
-  <span class="home-create-text"><b>Новая смета</b><small>Создать новый документ</small></span>
-  <span class="home-create-arrow">→</span>
-</button>
+<section class="home-summary" aria-label="Краткая сводка по сметам">
+  <div class="home-summary-card">
+    <span class="home-summary-label">В работе</span>
+    <b class="home-summary-value" id="homeWorkingCount">0 смет</b>
+    <small class="home-summary-note">текущий статус</small>
+  </div>
+  <div class="home-summary-card">
+    <span class="home-summary-label">Ожидают оплаты</span>
+    <b class="home-summary-value" id="homePendingAmount">0 MDL</b>
+    <small class="home-summary-note">сумма остатков</small>
+  </div>
+</section>
 
 <section class="home-quick">
-  <button class="home-quick-card" data-v58="estimates" data-nav="estimates"><span class="home-quick-icon">▤</span><span><b>Все сметы</b><small>Документы</small></span><i>›</i></button>
-  <button class="home-quick-card" data-v58="stats" data-nav="stats"><span class="home-quick-icon">◒</span><span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i></button>
+  <button class="home-quick-card" data-v58="estimates" data-nav="estimates"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h9l3 3V20.5H6z"/><path d="M14.5 3.5v4H18M9 11h6M9 14h6M9 17h4"/></svg></span><span><b>Все сметы</b><small>Документы</small></span><i>›</i></button>
+  <button class="home-quick-card" data-v58="stats" data-nav="stats"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V11M10 19V7M16 19V13M22 19V4"/><path d="m4 8 5-4 5 3 7-5"/></svg></span><span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i></button>
 </section>
 
 <section class="home-recent">
-  <div class="home-section-head"><div><span>ПОСЛЕДНИЕ ДОКУМЕНТЫ</span><h2>Ваши сметы</h2></div><button class="home-see-all" data-v58="estimates" data-nav="estimates">Все&nbsp; →</button></div>
+  <div class="home-section-head"><div><h2>Последние сметы</h2></div><button class="home-see-all" data-v58="estimates" data-nav="estimates">Все&nbsp; →</button></div>
   <div id="saved"></div>
 </section>
 <div id="count" hidden>0</div><div id="sum" hidden>0</div>
@@ -623,7 +630,7 @@
 <script src="js/estimate-ui.js"></script>
 <script src="js/mg-ai-service.js"></script>
 <script src="js/estimate-core.js"></script>
-<script src="js/finance-ui.js"></script>
+<script src="js/finance-ui.js?v=433"></script>
 <script src="js/estimate-templates.js"></script>
 <script src="js/app-core.js"></script>
 
@@ -1128,4 +1135,55 @@
 <style id="mg-finance-safe-area-fix-v432">
 /* Keep finance tabs below the fixed navigation, including the iPhone safe area. */
 #statsScreen{padding-top:calc(env(safe-area-inset-top, 0px) + 70px)!important;box-sizing:border-box!important}
+</style>
+
+<style id="mg-home-dashboard-v433">
+/* Home-only refresh: compact live summary and recent estimates. */
+#dashboard .home-summary{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:9px!important;margin:0 0 13px!important;
+}
+#dashboard .home-summary-card{
+  min-width:0!important;padding:11px 12px 10px!important;
+  border:1px solid #e0e1e3!important;border-radius:15px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+#dashboard .home-summary-label{display:block!important;color:#737579!important;font-size:11px!important;font-weight:600!important}
+#dashboard .home-summary-value{display:block!important;margin-top:5px!important;color:#17181a!important;font-size:18px!important;font-weight:760!important;letter-spacing:-.35px!important;white-space:nowrap!important}
+#dashboard .home-summary-note{display:block!important;margin-top:2px!important;color:#8b8d91!important;font-size:10px!important}
+#dashboard .home-quick{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;margin:0 0 21px!important}
+#dashboard .home-quick-card{
+  min-width:0!important;min-height:62px!important;grid-template-columns:35px minmax(0,1fr) 10px!important;
+  gap:8px!important;padding:9px 10px!important;border:1px solid #e0e1e3!important;
+  border-radius:15px!important;background:#fff!important;color:#17181a!important;box-shadow:none!important;
+}
+#dashboard .home-quick-icon{width:35px!important;height:35px!important;border-radius:11px!important;background:#f0f0f1!important;color:#292a2c!important}
+#dashboard .home-quick-icon svg{width:18px!important;height:18px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#dashboard .home-quick-card b{font-size:12px!important;font-weight:700!important}
+#dashboard .home-quick-card small{margin-top:3px!important;color:#85878b!important;font-size:10px!important}
+#dashboard .home-quick-card i{font-size:19px!important;color:#a0a2a6!important}
+#dashboard .home-section-head{align-items:center!important;margin:0 1px 9px!important;padding:0!important}
+#dashboard .home-section-head h2{margin:0!important;color:#17181a!important;font-size:18px!important;font-weight:750!important;letter-spacing:-.3px!important}
+#dashboard .home-see-all{padding:5px 2px!important;color:#65676b!important;font-size:11px!important;font-weight:650!important}
+#dashboard .home-recent #saved{display:flex!important;flex-direction:column!important;gap:8px!important}
+#dashboard #saved .home-estimate-card{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 32px!important;align-items:center!important;gap:8px!important;
+  margin:0!important;padding:11px 12px!important;border:1px solid #e0e1e3!important;border-radius:15px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+#dashboard .home-estimate-content{min-width:0!important}
+#dashboard .home-estimate-top,#dashboard .home-estimate-bottom{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8px!important}
+#dashboard .home-estimate-title{min-width:0!important;overflow:hidden!important;color:#202124!important;font-size:12px!important;font-weight:720!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#dashboard .home-estimate-total{flex:0 0 auto!important;color:#17181a!important;font-size:12px!important;font-weight:750!important;white-space:nowrap!important}
+#dashboard .home-estimate-bottom{margin-top:7px!important}
+#dashboard .home-estimate-meta{min-width:0!important;overflow:hidden!important;color:#83858a!important;font-size:10px!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#dashboard .home-estimate-status{flex:0 0 auto!important;padding:4px 7px!important;border:0!important;border-radius:999px!important;background:#f0f0f1!important;color:#55575b!important;font-size:9px!important;font-weight:650!important;white-space:nowrap!important}
+#dashboard #saved .home-estimate-card .open{width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid #e0e1e3!important;border-radius:10px!important;background:#f8f8f9!important;color:#55575b!important;font-size:20px!important;font-weight:400!important;line-height:1!important;box-shadow:none!important}
+@media(max-width:390px){
+  #dashboard .home-summary{gap:8px!important}
+  #dashboard .home-summary-card{padding:10px!important}
+  #dashboard .home-summary-value{font-size:16px!important}
+  #dashboard .home-quick-card{gap:7px!important;padding:8px!important}
+  #dashboard .home-quick-card b{font-size:11px!important}
+}
 </style>
