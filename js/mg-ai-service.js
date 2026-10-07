@@ -1193,7 +1193,17 @@
     if(inWords.length>=2 && cWords.length<2)return false;
     if(!inputConceptsMustSurvive(input,c))return false;
     const inObject=inferObject(input,[]), cObject=inferObject(c,[]);
-    if(inObject?.id && cObject?.id && inObject.id!==cObject.id)return false;
+    if(inObject?.id){
+      // A recognized object is a hard semantic anchor. Previously we only
+      // rejected a different *known* object; an unrelated unknown phrase such
+      // as «опорная ось» therefore slipped through for «задний багажник».
+      if(cObject?.id && inObject.id!==cObject.id)return false;
+      if(!cObject?.id){
+        const forms=(inObject.forms||[]).map(norm).filter(x=>x.length>=3);
+        const hasObjectAnchor=cWords.some(word=>forms.some(form=>tokenSimilarity(form,word)>=.56));
+        if(!hasObjectAnchor)return false;
+      }
+    }
     const inAction=inferAction(input,[]), cAction=inferAction(c,[]);
     // When the user clearly supplied an action, the AI is not allowed to
     // silently replace it with a different service type.
@@ -1219,9 +1229,8 @@
       const text=cleanupGenerated(row?.text||row?.name||'');
       if(!text||seen.has(norm(text))||text.length>180)continue;
       const same=norm(text)===norm(input);
-      // A correct multi-word input may legitimately be returned unchanged. A
-      // lone noun must still produce service phrases rather than «confirming» it.
-      if(same && (tokenise(input).length<2 || hasSuspiciousToken(input)))continue;
+      // A correct word or phrase may legitimately be returned unchanged; this
+      // assistant corrects the user's wording and must not invent a service.
       if(!remoteSuggestionCompatible(text,input))continue;
       seen.add(norm(text));
       out.push({text,note:String(row?.note|| (same?'AI подтвердил введённую формулировку':'Понято AI по смыслу всей фразы')),confidence:Math.max(.45,Math.min(.99,Number(row?.confidence)||.88))});
@@ -1250,30 +1259,15 @@
     }).slice(0,5);
 
     const system=[
-      'Ты — главный языковой интеллект приложения Master Group.',
-      'Понимай ВСЮ фразу целиком. Не исправляй слова механически по одному.',
-      'Пользователь может писать с сильными опечатками, пропусками букв, на русском, румынском, смешанно или транслитом.',
-      'Сначала восстанови намерение, затем сформируй профессиональное название услуги на русском.',
-      'КРИТИЧЕСКОЕ ПРАВИЛО: если во входе уже явно указан вид работы, например «крепление», «монтаж», «ремонт», «замена», «утепление», НЕ меняй его на другой вид работы.',
-      'Если указан объект, например «мотор», «багажник», «раковина», сохраняй именно этот объект. Не подменяй его другим объектом.',
-      'Направление каталога — только слабый контекст. Оно НИКОГДА не может переопределять смысл исходной фразы.',
-      'Если исходная фраза из двух и более слов уже грамматически и профессионально нормальна, верни её без изменения.',
-      'НИКОГДА не заменяй существительное/объект пользователя на другой объект только потому, что другой термин чаще встречается в каталоге. Это правило действует даже для неизвестных слов.',
-      'Если не уверен, что слово является опечаткой, сохрани его. Исправление должно быть минимальным: меняй только явно ошибочные буквы/окончания, а не смысл.',
-      'Ты обязан сохранить все смысловые сущности исходной фразы: объект, действие, часть объекта и указание положения (например «задний маятник» не превращается в «ремонт заднего моста»).',
-      'Если введён только один объект, предложи 3–5 реальных услуг с этим объектом: например «багажник» → «Установка багажника», «Монтаж багажника», «Ремонт багажника».',
-      'Для парных операций используй естественный профессиональный порядок: «разборка и сборка квадроцикла», а не «сборка разборки квадроцикла» и не «сборка разборка квадроцикла».',
-      'Если во входе есть одновременно «сборка» и «разборка», сохрани оба действия и соедини их через «и».',
-      'Не придумывай детали, цены, количество, материалы или факты.',
-      'Верни ТОЛЬКО JSON. Никаких рассуждений, Markdown, пояснений или текста до/после JSON.'
+      'Ты — корректор русского текста. Пользователь может писать с любым количеством опечаток, пропускать и переставлять буквы, писать слова на слух.',
+      'Твоя задача — исправить орфографию и грамматику исходного текста, сохранив его смысл и формулировку.',
+      'НЕ превращай текст в название услуги. НЕ добавляй слова «установка», «монтаж», «ремонт», «замена» или любые другие слова, которых пользователь не подразумевал.',
+      'Если введено одно слово, верни одно исправленное слово. Если слово уже написано правильно — верни его без изменений.',
+      'Если введена фраза, исправь только необходимые ошибки и согласование. Не заменяй предмет, действие, часть предмета или положение другими понятиями.',
+      'Если не уверен, оставь сомнительное слово как есть. Не угадывай по частотности и не используй каталог как источник смысла.',
+      'Верни 1 вариант в JSON указанного формата. Никаких рассуждений и пояснений.'
     ].join('\n');
-    const user=[
-      `Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}`,
-      `Выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}`,
-      `Справочная память (только если совпадает с объектом/действием): ${hints.join(' | ')||'нет'}`,
-      `Исходный текст пользователя: ${clean(text)}`,
-      'Верни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.'
-    ].join('\n');
+    const user=`Исправь только написание и грамматику. Исходный текст: ${clean(text)}\nВерни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.`;
 
     remoteBrainPromise=(async()=>{
       remoteBrainState='loading';
@@ -1492,6 +1486,20 @@
     const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
     if(CACHE.has(key))return CACHE.get(key);
 
+    // User-facing AI behavior is proofreading, not semantic service generation.
+    const remote=await remoteBrainSuggest(input,'',[],[]);
+    if(remote?.suggestions?.length){
+      CACHE.set(key,remote);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
+      return remote;
+    }
+    const dict=await dictionarySuggest(input);
+    const corrected=String(dict?.corrected||input).trim();
+    const same=norm(corrected)===norm(input);
+    const result={corrected,suggestions:[{text:corrected,note:same?'Написание проверено':'Исправлено по словарю; AI сейчас недоступен',confidence:same?.7:(dict?.confidence||.65)}],changed:!same,engine:dict?'master-dictionary-10m':'master-proofreading-fallback',offline:true,dictionaryUsed:!!dict,dictionaryEntries:10000000,uncertain:!dict&&!same,confidence:same?.7:(dict?.confidence||.45)};
+    CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
+    return result;
+
+    {
     // ONLINE BRAIN FIRST: the entire phrase goes to OpenRouter before any
     // token-by-token correction. Local memory is supporting evidence only.
     const memorySuggestions=memoryPhraseCandidates(input,direction,services);
@@ -1634,6 +1642,7 @@
     }
     CACHE.set(key,result);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
     return result;
+    }
   }
 
   function clearCache(){CACHE.clear();}
@@ -1652,5 +1661,5 @@
     configured:hasOpenRouterKey()
   };}
 
-  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v416-openrouter-open-vocabulary-guard'};
+  window.MG_AI_SERVICE={suggestServiceName,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,esc,region:null,version:'v425-proofreading-only'};
 })();
