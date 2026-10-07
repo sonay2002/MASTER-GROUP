@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v435"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v435"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v435</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v436"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v436"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v436</title>
 
 
 
@@ -17,61 +17,13 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css?v=435">
+<link rel="stylesheet" href="css/styles.css?v=436">
 <link rel="stylesheet" href="css/contact-card-final.css?v=409-ui2">
 
 <style id="mg-home-render-gate-v434">
 /* Keep the legacy first dashboard render out of view until the current one is ready. */
 #dashboard.mg-home-render-pending #saved,
 #dashboard.mg-home-render-pending .home-summary-value{visibility:hidden!important}
-</style>
-
-<style id="mg-sidebar-refine-v435">
-/* Clean monochrome sidebar with account actions anchored below navigation. */
-.drawer{width:min(360px,88vw)!important;background:#fff!important;color:#171819!important;border-right:1px solid #e2e3e5!important;border-radius:0 23px 23px 0!important;box-shadow:16px 0 44px rgba(0,0,0,.14)!important}
-.drawer-head{padding:calc(14px + env(safe-area-inset-top)) 17px 14px!important;border-bottom:1px solid #e8e8ea!important}
-.drawer-brand{gap:11px!important}
-.drawer-mg-logo{width:44px!important;height:44px!important;border:0!important;border-radius:14px!important;background:#171819!important;color:#fff!important;font-size:16px!important;letter-spacing:0!important}
-.drawer-title{color:#171819!important;font-size:18px!important;font-weight:650!important;letter-spacing:-.2px!important}
-.drawer-brand-copy small{margin-top:3px!important;color:#77797d!important;font-size:11px!important;font-weight:450!important}
-.drawer-close{width:38px!important;height:38px!important;border:0!important;border-radius:12px!important;background:#f1f1f2!important;color:#55575a!important;font-size:25px!important;padding:0 0 2px!important}
-.drawer-scroll{padding:15px 15px 8px!important;overflow-y:auto!important}
-.drawer-create{min-height:60px!important;height:60px!important;margin:0 0 21px!important;padding:8px 11px!important;gap:10px!important;border:0!important;border-radius:15px!important;background:#171819!important;color:#fff!important}
-.drawer-create-icon{width:38px!important;height:38px!important;border:1px solid #ffffff35!important;border-radius:11px!important;background:#ffffff12!important;color:#fff!important;font-size:25px!important}
-.drawer-create-copy{gap:2px!important}
-.drawer-create-copy b{font-size:14px!important;font-weight:600!important;letter-spacing:0!important}
-.drawer-create-copy small{color:#c7c8ca!important;font-size:10px!important;font-weight:400!important}
-.drawer-chevron{font-size:22px!important;color:#c9cacc!important}
-.drawer-section-title{margin:0 4px 7px!important;color:#8a8c90!important;font-size:10px!important;font-weight:500!important;letter-spacing:.14em!important}
-.drawer-system-title{margin-top:17px!important}
-.drawer-list{gap:3px!important}
-.drawer-item{min-height:52px!important;height:52px!important;grid-template-columns:34px minmax(0,1fr) 12px!important;gap:10px!important;padding:0 9px!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#222325!important;transition:background .15s ease!important}
-.drawer-item:active{background:#ededee!important;transform:none!important}
-.drawer-item-home{background:#f0f0f1!important;box-shadow:inset 3px 0 #171819!important}
-.drawer-item>span:nth-child(2){gap:2px!important}
-.drawer-item b{color:#242527!important;font-size:13px!important;font-weight:550!important;letter-spacing:0!important}
-.drawer-item small{color:#85878a!important;font-size:10px!important;font-weight:400!important}
-.drawer-item i{color:#a0a2a5!important;font-size:19px!important}
-.drawer-icon{width:32px!important;height:32px!important;border:0!important;border-radius:10px!important;background:#f1f1f2!important;color:#444649!important}
-.drawer-icon svg{width:18px!important;height:18px!important;stroke-width:1.8!important}
-.drawer-item-home .drawer-icon{background:#e4e4e6!important;color:#171819!important}
-.drawer-account{flex:0 0 auto!important;margin:0!important;padding:12px 15px calc(12px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid #e8e8ea!important;border-radius:0!important;background:#fafafa!important;color:#222325!important;box-shadow:none!important}
-.drawer-account-state[hidden],.drawer-account-actions[hidden]{display:none!important}
-.drawer-cloud-row{grid-template-columns:38px minmax(0,1fr) 8px!important;gap:10px!important}
-.drawer-cloud-icon{width:38px!important;height:38px!important;border-radius:12px!important;background:#ededee!important;color:#333537!important;font-size:12px!important;font-weight:600!important}
-.drawer-cloud-icon svg{width:20px!important;height:20px!important;stroke-width:1.7!important}
-.drawer-cloud-row b{color:#292a2c!important;font-size:12px!important;font-weight:550!important}
-.drawer-cloud-row small{margin-top:2px!important;color:#7d7f83!important;font-size:10px!important;font-weight:400!important;line-height:1.3!important}
-.drawer-account-dot{width:7px!important;height:7px!important;background:#4f5052!important;box-shadow:none!important}
-.drawer-account.offline .drawer-account-dot{background:#a4a5a8!important}
-.drawer-account-email{margin:8px 0 10px 48px!important;padding:0!important;border:0!important;color:#77797d!important;font-size:10px!important;font-weight:400!important}
-.drawer-account-actions{grid-template-columns:1fr 1fr!important;gap:7px!important;margin-top:10px!important}
-.drawer-account-actions#mgCloudSignedOutActions{grid-template-columns:1fr!important}
-.drawer-account-actions button{min-height:38px!important;border:1px solid #dedfe1!important;border-radius:11px!important;background:#fff!important;color:#444649!important;font-size:11px!important;font-weight:500!important;box-shadow:none!important}
-.drawer-account-actions button:active{background:#efeff0!important}
-#mgCloudSignedOutActions .drawer-account-login{box-sizing:border-box!important;width:100%!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;margin-top:10px!important;padding:0 12px!important;border:0!important;border-radius:11px!important;background:#171819!important;color:#fff!important;font:inherit!important;font-size:12px!important;font-weight:550!important;text-align:left!important}
-#mgCloudSignedOutActions .drawer-account-login span{font-size:18px!important;color:#d0d1d2!important}
-@media(max-width:520px){.drawer{width:min(360px,88vw)!important}.drawer-scroll{padding-left:14px!important;padding-right:14px!important}.drawer-account{padding-left:14px!important;padding-right:14px!important}}
 </style>
 
 <style id="mg-analytics-tabs-v307">
@@ -609,40 +561,40 @@
   <aside class="drawer" data-menu-panel aria-label="Основное меню">
     <div class="drawer-head">
       <div class="drawer-brand">
-        <div class="drawer-mg-logo">MG</div>
-        <div class="drawer-brand-copy"><div class="drawer-title">Master Group</div><small>Управление сметами</small></div>
+        <div class="drawer-mg-logo" aria-hidden="true">MG</div>
+        <div class="drawer-brand-copy"><div class="drawer-title">Master Group</div><small>Сметы и финансы</small></div>
       </div>
       <button class="drawer-close" data-menu="close" aria-label="Закрыть меню">×</button>
     </div>
 
     <div class="drawer-scroll">
       <button class="drawer-create" data-menu-action="new">
-        <span class="drawer-create-icon">+</span>
+        <span class="drawer-create-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
         <span class="drawer-create-copy"><b>Новая смета</b><small>Создать документ</small></span>
         <span class="drawer-chevron">›</span>
       </button>
 
-      <div class="drawer-section-title">РАБОЧЕЕ</div>
+      <div class="drawer-section-title drawer-main-title">Главное меню</div>
       <nav class="drawer-list">
         <button class="drawer-item drawer-item-home" data-menu-action="home">
-          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.8 12 3.5l8.5 7.3v9.2a1 1 0 0 1-1 1h-5.2v-6.2H9.7V21H4.5a1 1 0 0 1-1-1z"/></svg></span>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.2 8.5-7 8.5 7"/><path d="M5.5 9.5v10.8h5v-6h3v6h5V9.5"/><path d="M9 6.4v-2h2.2"/></svg></span>
           <span><b>Главный экран</b><small>Обзор приложения</small></span><i>›</i>
         </button>
         <button class="drawer-item" data-menu-action="estimates">
-          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3 3V20.5H6z"/><path d="M14.5 3.5v4h3.5M9 11h6M9 14h6M9 17h4"/></svg></span>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4.5h11v15h-11z"/><path d="M5 7.5H3.5v13h11v-1"/><path d="M10 9h6M10 12.5h6M10 16h4"/></svg></span>
           <span><b>Все сметы</b><small>Список документов</small></span><i>›</i>
         </button>
         <button class="drawer-item" data-menu-action="stats">
-          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11M10 19V7M16 19V13M22 19V4"/><path d="m4 8 5-4 5 3 7-5"/></svg></span>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v11H4z"/><path d="M4 11h16"/><path d="M16.5 15.3h3.5"/><circle cx="14.3" cy="15.2" r="1.2"/><path d="M6 8.5V6.7c0-.9.7-1.7 1.7-1.7H18"/></svg></span>
           <span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i>
         </button>
         
       </nav>
 
-      <div class="drawer-section-title drawer-system-title">СИСТЕМА</div>
+      <div class="drawer-menu-separator" aria-hidden="true"></div>
       <nav class="drawer-list">
         <button type="button" class="drawer-item" data-menu-action="settings" aria-label="Открыть настройки">
-          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 3.5h4.6l.7 2.1 1.9 1.1 2.1-.5 2.3 4-1.5 1.6v2.2l1.5 1.6-2.3 4-2.1-.5-1.9 1.1-.7 2.1H9.7L9 20.2l-1.9-1.1-2.1.5-2.3-4 1.5-1.6v-2.2L2.7 10.2l2.3-4 2.1.5L9 5.6z"/><circle cx="12" cy="12.9" r="3.1"/></svg></span>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg></span>
           <span><b>Настройки</b><small>Услуги и профиль компании</small></span><i>›</i>
         </button>
       </nav>
@@ -651,7 +603,7 @@
     <div class="drawer-account" id="mgCloudStatus" aria-label="Аккаунт">
       <div class="drawer-account-state" id="mgCloudSignedIn" hidden>
         <div class="drawer-cloud-row">
-          <span class="drawer-cloud-icon" aria-hidden="true">MG</span>
+          <span class="drawer-cloud-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.5-3.6 2.7-5.5 6.5-5.5s6 1.9 6.5 5.5"/></svg></span>
           <span><b id="mgCloudStatusText">Аккаунт подключён</b><small id="mgCloudStatusSubtext">Синхронизация активна</small></span>
           <span class="drawer-account-dot dot" aria-hidden="true"></span>
         </div>
@@ -660,7 +612,7 @@
       </div>
       <div class="drawer-account-state" id="mgCloudSignedOut">
         <div class="drawer-cloud-row">
-          <span class="drawer-cloud-icon" aria-hidden="true">MG</span>
+          <span class="drawer-cloud-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.5-3.6 2.7-5.5 6.5-5.5s6 1.9 6.5 5.5"/></svg></span>
           <span><b>Облачный аккаунт</b><small id="mgCloudSignedOutText">Вход не выполнен</small></span>
           <span class="drawer-account-dot dot" aria-hidden="true"></span>
         </div>
@@ -1250,4 +1202,56 @@
   #dashboard .home-quick-card{gap:7px!important;padding:8px!important}
   #dashboard .home-quick-card b{font-size:11px!important}
 }
+</style>
+
+<style id="mg-sidebar-redesign-v436">
+/* Rebuilt menu hierarchy: bright brand, distinct navigation icons, neutral actions and a pinned account area. */
+#drawerOverlay{background:rgba(0,0,0,.22)!important;backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
+#drawerOverlay .drawer{box-sizing:border-box;width:min(350px,88vw)!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;color:#171819!important;border:0!important;border-right:1px solid #e2e3e5!important;border-radius:0 22px 22px 0!important;box-shadow:14px 0 38px rgba(0,0,0,.14)!important}
+#drawerOverlay .drawer-head{flex:0 0 auto!important;min-height:78px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:calc(13px + env(safe-area-inset-top)) 17px 13px!important;border-bottom:1px solid #e7e7e9!important;background:#fff!important}
+#drawerOverlay .drawer-brand{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important}
+#drawerOverlay .drawer-mg-logo{box-sizing:border-box!important;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;border:1px solid #dedfe1!important;border-radius:15px!important;background:#eeeeef!important;color:#171819!important;font-size:15px!important;font-weight:800!important;letter-spacing:.02em!important}
+#drawerOverlay .drawer-brand-copy{min-width:0!important}
+#drawerOverlay .drawer-brand-copy .drawer-title{display:block!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#171819!important;opacity:1!important;font-size:20px!important;font-weight:800!important;line-height:1.15!important;letter-spacing:-.3px!important;box-shadow:none!important;text-shadow:none!important}
+#drawerOverlay .drawer-brand-copy small{display:block!important;margin-top:4px!important;color:#707276!important;font-size:12px!important;font-weight:500!important;line-height:1.2!important}
+#drawerOverlay .drawer-close{box-sizing:border-box!important;width:38px!important;height:38px!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;padding:0!important;border:1px solid #e4e5e7!important;border-radius:12px!important;background:#f5f5f6!important;color:#55575a!important;font-size:24px!important;line-height:1!important;box-shadow:none!important}
+#drawerOverlay .drawer-scroll{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:17px 15px 10px!important;background:#fff!important;scrollbar-width:none!important}
+#drawerOverlay .drawer-scroll::-webkit-scrollbar{display:none!important}
+#drawerOverlay .drawer-create{box-sizing:border-box!important;width:100%!important;min-height:60px!important;height:60px!important;display:flex!important;align-items:center!important;gap:11px!important;margin:0 0 22px!important;padding:8px 11px!important;border:1px solid #e2e3e5!important;border-radius:15px!important;background:#f3f3f4!important;color:#222325!important;box-shadow:none!important;text-align:left!important}
+#drawerOverlay .drawer-create-icon{box-sizing:border-box!important;width:39px!important;height:39px!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;border:1px solid #e5e6e8!important;border-radius:12px!important;background:#fff!important;color:#303235!important;font-size:21px!important;line-height:1!important}
+#drawerOverlay .drawer-create-icon svg{width:19px!important;height:19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important}
+#drawerOverlay .drawer-create-copy{min-width:0!important;display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:3px!important}
+#drawerOverlay .drawer-create-copy b{color:#202123!important;font-size:15px!important;font-weight:700!important;letter-spacing:0!important;line-height:1.15!important}
+#drawerOverlay .drawer-create-copy small{color:#727478!important;font-size:11px!important;font-weight:500!important;line-height:1.2!important}
+#drawerOverlay .drawer-chevron{margin-left:auto!important;color:#8a8c90!important;font-size:24px!important;font-weight:400!important;line-height:1!important}
+#drawerOverlay .drawer-section-title.drawer-main-title{margin:0 4px 9px!important;color:#202123!important;font-size:17px!important;font-weight:750!important;letter-spacing:0!important;line-height:1.25!important}
+#drawerOverlay .drawer-list{display:grid!important;gap:4px!important;margin:0!important;padding:0!important}
+#drawerOverlay .drawer-item{box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:58px!important;height:58px!important;display:grid!important;grid-template-columns:40px minmax(0,1fr) 16px!important;align-items:center!important;gap:11px!important;padding:0 10px!important;border:1px solid transparent!important;border-radius:14px!important;background:#fff!important;color:#27282a!important;text-align:left!important;box-shadow:none!important;transform:none!important;transition:background .14s ease,border-color .14s ease!important}
+#drawerOverlay .drawer-item:active{background:#f1f1f2!important;border-color:#e7e7e9!important;transform:none!important}
+#drawerOverlay .drawer-item-home{background:#f0f0f1!important;border-color:#e5e5e7!important}
+#drawerOverlay .drawer-item>span:nth-child(2){min-width:0!important;display:flex!important;flex-direction:column!important;gap:3px!important}
+#drawerOverlay .drawer-item b{display:block!important;color:#222325!important;font-size:14px!important;font-weight:650!important;line-height:1.15!important;letter-spacing:0!important}
+#drawerOverlay .drawer-item small{display:block!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.2!important}
+#drawerOverlay .drawer-item i{color:#a0a2a5!important;font-size:19px!important;font-weight:400!important;line-height:1!important}
+#drawerOverlay .drawer-icon{box-sizing:border-box!important;width:38px!important;height:38px!important;display:grid!important;place-items:center!important;border:1px solid #e6e6e8!important;border-radius:12px!important;background:#f5f5f6!important;color:#424447!important}
+#drawerOverlay .drawer-icon svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#drawerOverlay .drawer-item-home .drawer-icon{border-color:#dddee0!important;background:#e5e5e7!important;color:#242527!important}
+#drawerOverlay .drawer-menu-separator{height:1px!important;margin:13px 5px!important;background:#e7e7e9!important}
+#drawerOverlay .drawer-account{box-sizing:border-box!important;flex:0 0 auto!important;margin:0!important;padding:12px 15px calc(12px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid #e5e6e8!important;border-radius:0!important;background:#fff!important;color:#242527!important;box-shadow:none!important}
+#drawerOverlay .drawer-account-state[hidden],#drawerOverlay .drawer-account-actions[hidden]{display:none!important}
+#drawerOverlay .drawer-cloud-row{display:grid!important;grid-template-columns:40px minmax(0,1fr) 8px!important;align-items:center!important;gap:11px!important}
+#drawerOverlay .drawer-cloud-icon{box-sizing:border-box!important;width:40px!important;height:40px!important;display:grid!important;place-items:center!important;border:1px solid #e3e4e6!important;border-radius:13px!important;background:#f1f1f2!important;color:#424447!important}
+#drawerOverlay .drawer-cloud-icon svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#drawerOverlay .drawer-cloud-row b{display:block!important;color:#242527!important;font-size:12px!important;font-weight:650!important;line-height:1.2!important}
+#drawerOverlay .drawer-cloud-row small{display:block!important;margin-top:3px!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.25!important;overflow-wrap:anywhere!important}
+#drawerOverlay .drawer-account-dot{width:8px!important;height:8px!important;border-radius:50%!important;background:#56585b!important;box-shadow:none!important}
+#drawerOverlay .drawer-account.offline .drawer-account-dot{background:#a3a4a7!important}
+#drawerOverlay .drawer-account-email{margin:8px 0 0 51px!important;padding:0!important;border:0!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#drawerOverlay .drawer-account-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:10px!important}
+#drawerOverlay .drawer-account-actions button{box-sizing:border-box!important;width:100%!important;min-height:40px!important;padding:0 9px!important;border:1px solid #e0e1e3!important;border-radius:11px!important;background:#f4f4f5!important;color:#3c3e41!important;font:inherit!important;font-size:11px!important;font-weight:600!important;box-shadow:none!important}
+#drawerOverlay .drawer-account-actions button:active{background:#e9e9eb!important}
+#drawerOverlay #mgCloudSignedOutActions{grid-template-columns:1fr!important}
+#drawerOverlay #mgCloudSignedOutActions .drawer-account-login{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-top:11px!important;padding:0 11px!important;background:#f0f0f1!important;color:#242527!important;text-align:left!important}
+#drawerOverlay #mgCloudSignedOutActions .drawer-account-login span{color:#686a6d!important;font-size:20px!important;font-weight:400!important}
+@media(max-width:390px){#drawerOverlay .drawer{width:min(340px,88vw)!important}#drawerOverlay .drawer-head{padding-left:14px!important;padding-right:12px!important}#drawerOverlay .drawer-scroll{padding-left:12px!important;padding-right:12px!important}#drawerOverlay .drawer-account{padding-left:12px!important;padding-right:12px!important}}
 </style>
