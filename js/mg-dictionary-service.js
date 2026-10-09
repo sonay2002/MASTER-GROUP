@@ -1072,10 +1072,13 @@
   // starts using the dictionary, then cached in IndexedDB for later/offline use.
   // The built-in Master Group rules remain available if the download fails.
   const EXPANDED_DICTIONARY_URLS=[
-    {url:'https://github.com/Goudron/ru-spelling-dictionary/releases/download/v1.0.9/ru_RU.txt.gz',kind:'gzip-forms'},
+    // CSpell export is a plain, alphabetically sorted list of 2,357,415
+    // Russian word forms (not Hunspell roots with flags). Prefer jsDelivr for CORS.
+    {url:'https://cdn.jsdelivr.net/gh/Goudron/ru-spelling-dictionary@main/cspell/ru_RU.txt',kind:'forms'},
+    {url:'https://raw.githubusercontent.com/Goudron/ru-spelling-dictionary/main/cspell/ru_RU.txt',kind:'forms'},
     {url:'https://cdn.jsdelivr.net/gh/Goudron/ru-spelling-dictionary@main/ru_RU.dic',kind:'hunspell-roots'}
   ];
-  const EXPANDED_DB='master-group-dictionary-cache-v1';
+  const EXPANDED_DB='master-group-dictionary-cache-v2';
   const EXPANDED_STORE='corpora';
   const EXPANDED_KEY='ru-RU';
   let expandedText='';
@@ -1121,6 +1124,7 @@
       lineNumber++;
       if(!(lineNumber===1&&/^\d+$/.test(raw))){
         if(kind==='hunspell-roots')raw=raw.split('/')[0];
+        else if(kind==='forms')raw=raw.split(/\s+/)[0];
         const word=raw.toLowerCase().replace(/ё/g,'е');
         if(/^[а-яa-z]+$/i.test(word)&&word.length>=3&&word.length<=40){
           expandedWordCount++;
@@ -1150,15 +1154,22 @@
   function isKnownExpandedWord(word){
     const key=norm(word).replace(/ё/g,'е'),range=expandedRanges.get(key.slice(0,2));
     if(!range)return false;
-    let pos=range.start;
-    while(pos<=range.end){
-      const candidate=getExpandedLine(pos,range.end);
+    // The public forms list is alphabetically sorted. Binary search keeps
+    // checking every token fast even when the corpus contains millions of forms.
+    let lo=range.start,hi=range.end,guard=0;
+    while(lo<hi&&guard++<80){
+      const lineStart=expandedLineStartAt((lo+hi)>>>1,range);
+      const candidate=getExpandedLine(lineStart,range.end);
+      if(!candidate){lo=Math.min(range.end,lineStart+1);continue;}
       if(candidate===key)return true;
-      const next=expandedText.indexOf('\n',pos);
-      if(next<0||next>=range.end)break;
-      pos=next+1;
+      if(candidate<key){
+        const next=expandedText.indexOf('\n',lineStart);
+        if(next<0||next>=range.end)return false;
+        lo=next+1;
+      }else hi=lineStart;
     }
-    return false;
+    const finalWord=getExpandedLine(expandedLineStartAt(lo,range),range.end);
+    return finalWord===key;
   }
   async function prepareExpandedDictionary(){
     if(expandedState==='ready')return getStatus();
@@ -1188,7 +1199,7 @@
             }finally{if(timeout)clearTimeout(timeout)}
             if(!text||text.length<10000)throw new Error('Dictionary file was empty or incomplete');
             await indexExpandedText(text,item.kind);
-            expandedSource=item.kind==='gzip-forms'?'RusSpell Russian forms (2M+ list)':'RusSpell Hunspell root dictionary';
+            expandedSource=item.kind==='forms'?'Goudron CSpell Russian word forms (2,357,415 entries)':item.kind==='gzip-forms'?'RusSpell Russian forms (2M+ list)':'Russian Hunspell root dictionary';
             try{await expandedDbPut({text,kind:item.kind,source:expandedSource,savedAt:Date.now()});}catch(err){console.warn('Dictionary cache write failed:',err);}
             expandedState='ready';
             return getStatus();
@@ -1303,7 +1314,7 @@
     let changes=0;
     let corrected=String(input);
     for(const token of tokens){
-      if(changes>=2)break;
+      if(changes>=12)break;
       if(token.length<4||/^[A-Z]{2,}$/.test(token))continue;
       const candidate=expandedSpellingCandidate(token);
       if(!candidate||norm(candidate)===norm(token))continue;
@@ -1446,7 +1457,19 @@
     let result;
     try{
       result=targetedProfessionalRepair(input);
+      if(result){
+        const extra=repairWithExpandedDictionary(result.corrected);
+        if(extra&&extra.changed){
+          result={...result,corrected:extra.corrected,suggestions:[{text:extra.corrected,note:'Исправлены слова во всей фразе по расширенному словарю',confidence:.88}],changed:true,confidence:.88};
+        }
+      }
       if(!result)result=repairKnownTypos(input);
+      if(result){
+        const extra=repairWithExpandedDictionary(result.corrected);
+        if(extra&&extra.changed){
+          result={...result,corrected:extra.corrected,suggestions:[{text:extra.corrected,note:'Проверены все слова фразы по расширенному словарю',confidence:.86}],changed:true,confidence:.86};
+        }
+      }
       if(!result)result=repairWithExpandedDictionary(input);
       if(!result)result=fallback(input,clean(direction,MAX_DIRECTION),uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS));
     }
@@ -1467,5 +1490,5 @@
   }
   function clearCache(){CACHE.clear();}
   function getStatus(){return {engine:'master-dictionary-v2',offline:true,remoteInference:false,modelLoaded:false,apiKeyRequired:false,personalTerms:readPersonalTerms().length,expandedDictionaryState:expandedState,expandedDictionarySource:expandedSource,expandedDictionaryWords:expandedWordCount,expandedDictionaryProgress:expandedProgress};}
-  if(typeof window!=='undefined')window.MG_DICTIONARY={suggestServiceName,clearCache,getStatus,prepare:prepareExpandedDictionary,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,version:'v446-general-spellcheck'};
+  if(typeof window!=='undefined')window.MG_DICTIONARY={suggestServiceName,clearCache,getStatus,prepare:prepareExpandedDictionary,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,version:'v448-large-dictionary-loader'};
 })();

@@ -7363,3 +7363,9 @@ html,body,#app,.app,.screen{
 .tpl-signatures i{display:block;width:86%;height:1px;border-bottom:1px solid #aeb4ba}
 @media(max-width:600px){#document .tpl-signatures{gap:8px;padding:9px 7px 6px;font-size:6px}#document .tpl-signatures>div{gap:9px}}
 @media print{#document .tpl-head-date{font-size:7pt}#document .tpl-signatures{font-size:7pt;padding:4mm 4mm 2mm}}
+
+/* v447 — compact live correction panel; keep only the correction choice visible. */
+.direction-service-dictionary-suggestion{margin:0 16px!important;padding:5px 9px!important;border-radius:10px!important;box-shadow:none!important;}
+.direction-service-dictionary-head,.direction-service-dictionary-tools,.direction-service-dictionary-status{display:none!important;}
+.direction-service-dictionary-main{margin:0!important;font-size:14px!important;line-height:1.2!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;}
+@media(max-width:600px){.direction-service-dictionary-suggestion{margin:0 13px!important;padding:5px 8px!important;}.direction-service-dictionary-main{font-size:13px!important;}}
