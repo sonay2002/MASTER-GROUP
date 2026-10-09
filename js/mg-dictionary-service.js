@@ -1200,44 +1200,101 @@
     })();
     return expandedPromise;
   }
-  function editDistanceAtMostOne(a,b){
-    if(Math.abs(a.length-b.length)>1)return 2;
-    let i=0,j=0,edits=0;
-    while(i<a.length&&j<b.length){
-      if(a[i]===b[j]){i++;j++;continue;}
-      if(++edits>1)return 2;
-      if(a.length>b.length)i++;else if(b.length>a.length)j++;else{i++;j++;}
+  function editDistanceAtMostTwo(a,b){
+    a=norm(a).replace(/ё/g,'е');b=norm(b).replace(/ё/g,'е');
+    if(a===b)return 0;
+    if(Math.abs(a.length-b.length)>2)return 3;
+    // Damerau-Levenshtein for adjacent transpositions, capped at two edits.
+    const rows=a.length+1,cols=b.length+1;
+    const d=Array.from({length:rows},()=>new Array(cols).fill(0));
+    for(let i=0;i<rows;i++)d[i][0]=i;
+    for(let j=0;j<cols;j++)d[0][j]=j;
+    for(let i=1;i<rows;i++){
+      let rowMin=3;
+      for(let j=1;j<cols;j++){
+        const cost=a[i-1]===b[j-1]?0:1;
+        d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+cost);
+        if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1])d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1);
+        rowMin=Math.min(rowMin,d[i][j]);
+      }
+      if(rowMin>2)return 3;
     }
-    if(i<a.length||j<b.length)edits++;
-    return edits;
+    return d[a.length][b.length];
+  }
+  function expandedLineStartAt(offset,range){
+    if(offset<=range.start)return range.start;
+    const n=expandedText.lastIndexOf('\n',offset-1);
+    return Math.max(range.start,n+1);
+  }
+  function expandedLowerBound(word,range){
+    let lo=range.start,hi=range.end;
+    while(lo<hi){
+      const mid=(lo+hi)>>>1;
+      const lineStart=expandedLineStartAt(mid,range);
+      const lineEnd=expandedText.indexOf('\n',lineStart);
+      const stop=lineEnd<0||lineEnd>range.end?range.end:lineEnd;
+      const candidate=expandedText.slice(lineStart,stop).trim().toLowerCase().replace(/ё/g,'е').split('/')[0];
+      if(!candidate){lo=Math.min(range.end,lineStart+1);continue;}
+      if(candidate<word){
+        const next=expandedText.indexOf('\n',lineStart);
+        lo=next<0||next>=range.end?range.end:next+1;
+      }else hi=lineStart;
+    }
+    return expandedLineStartAt(lo,range);
+  }
+  function preserveWordCase(original,replacement){
+    if(original===original.toUpperCase())return replacement.toUpperCase();
+    if(original&&original[0]===original[0].toUpperCase())return replacement.charAt(0).toUpperCase()+replacement.slice(1);
+    return replacement;
   }
   function expandedSpellingCandidate(token){
-    if(!expandedText||!token||token.length<5||token.length>28)return null;
+    if(!expandedText||!token||token.length<4||token.length>28||!/^[А-Яа-яЁё]+$/.test(token))return null;
     const word=norm(token).replace(/ё/g,'е');
     if(isKnownExpandedWord(word))return null;
+    const alphabet='абвгдежзийклмнопрстуфхцчшщьыъэюя';
     const prefixes=new Set([word.slice(0,2)]);
-    // Also allow one of the first two characters to be mistyped.
-    const alphabet='абвгдеёжзийклмнопрстуфхцчшщьыъэюя';
+    // Search likely first/second-letter typos as well as the exact prefix.
     for(const ch of alphabet){prefixes.add(ch+word[1]);prefixes.add(word[0]+ch);}
-    const candidates=new Set();
-    let scanned=0;
+    const candidates=new Map();let scanned=0;
     for(const prefix of prefixes){
       const range=expandedRanges.get(prefix);if(!range)continue;
-      let pos=range.start;
-      while(pos<=range.end){
-        if(scanned>=8000)break;
-        scanned++;
-        const candidate=getExpandedLine(pos,range.end);
-        if(candidate&&candidate!==word&&candidate.length>=4&&Math.abs(candidate.length-word.length)<=1&&editDistanceAtMostOne(word,candidate)<=1)candidates.add(candidate);
-        const next=expandedText.indexOf('\n',pos);
-        if(next<0||next>=range.end)break;
-        pos=next+1;
-        if(candidates.size>8||scanned>=8000)break;
+      // The corpus is grouped alphabetically by two-letter prefix. Binary search
+      // the likely location instead of repeatedly scanning thousands of entries
+      // from the beginning of a large bucket (especially slow on iPhone Safari).
+      const pivot=expandedLowerBound(word,range);
+      const positions=[pivot];let left=pivot,right=pivot;
+      for(let i=0;i<70;i++){
+        const prev=expandedText.lastIndexOf('\n',Math.max(range.start,left-2));
+        if(left<=range.start||prev<range.start)break;
+        left=prev+1;positions.push(left);
       }
-      if(candidates.size>8)break;
+      for(let i=0;i<70;i++){
+        const next=expandedText.indexOf('\n',right);
+        if(next<0||next>=range.end)break;
+        right=next+1;positions.push(right);
+      }
+      for(const pos of positions){
+        if(++scanned>5000)break;
+        const candidate=getExpandedLine(pos,range.end);
+        if(!candidate||candidate===word||candidate.length<4||Math.abs(candidate.length-word.length)>2)continue;
+        const distance=editDistanceAtMostTwo(word,candidate);
+        if(distance<1||distance>2)continue;
+        const prefixMatch=word.slice(0,2)===candidate.slice(0,2)?1:0;
+        const suffixMatch=word.slice(-2)===candidate.slice(-2)?1:0;
+        const score=distance*10+(1-prefixMatch)*1.4+(1-suffixMatch)*.6+Math.abs(word.length-candidate.length)*.7;
+        const old=candidates.get(candidate);
+        if(!old||score<old.score)candidates.set(candidate,{word:candidate,distance,score});
+      }
+      if(scanned>5000)break;
     }
-    if(candidates.size!==1)return null;
-    return [...candidates][0];
+    const ranked=[...candidates.values()].sort((a,b)=>a.score-b.score);
+    if(!ranked.length)return null;
+    const best=ranked[0],second=ranked[1];
+    // One-edit candidates are only safe when unique. For two edits require a
+    // clear score margin, otherwise the app must not guess between real words.
+    if(second&&((best.distance===1&&second.distance===1)||(best.distance===2&&second.score-best.score<2.5)))return null;
+    if(best.distance===2&&second&&second.score-best.score<2.5)return null;
+    return best.word;
   }
   function repairWithExpandedDictionary(input){
     if(!expandedText)return null;
@@ -1247,15 +1304,49 @@
     let corrected=String(input);
     for(const token of tokens){
       if(changes>=2)break;
-      if(token.length<5||/^[A-Z]{2,}$/.test(token))continue;
+      if(token.length<4||/^[A-Z]{2,}$/.test(token))continue;
       const candidate=expandedSpellingCandidate(token);
       if(!candidate||norm(candidate)===norm(token))continue;
       const escaped=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      corrected=corrected.replace(new RegExp('(^|[^\\p{L}])'+escaped+'(?=$|[^\\p{L}])','iu'),(m,left)=>left+candidate);
+      const replacement=preserveWordCase(token,candidate);
+      corrected=corrected.replace(new RegExp('(^|[^\\p{L}])'+escaped+'(?=$|[^\\p{L}])','iu'),(m,left)=>left+replacement);
       changes++;
     }
     if(!changes)return null;
     return {corrected:cleanupGenerated(corrected),suggestions:[{text:cleanupGenerated(corrected),note:'Проверено по расширенному русскому словарю',confidence:.78}],changed:true,engine:'master-expanded-dictionary',offline:true,dictionaryUsed:true,confidence:.78};
+  }
+
+  // High-confidence built-in spelling fixes for frequent service/estimate typos.
+  // This runs even when the optional large corpus cannot be downloaded.
+  const BUILTIN_TYPO_FIXES={
+    'строителный':'строительный','строителная':'строительная','строителное':'строительное','строителную':'строительную',
+    'канализацыи':'канализации','канализацыя':'канализация','канализацыю':'канализацию','канализацыи':'канализации',
+    'устанвка':'установка','устанока':'установка','устанофка':'установка','устанвить':'установить',
+    'покраскаа':'покраска','покрас':'покраска','шпаклевкаа':'шпаклевка','шпатлевкаа':'шпатлевка',
+    'бетонна':'бетона','бетоне':'бетоне','сантехнка':'сантехника','сантехика':'сантехника',
+    'смесител':'смеситель','смеситль':'смеситель','розетк':'розетка','розеткаа':'розетка',
+    'плитк':'плитка','кафел':'кафель','ваной':'ванной','ваной комнате':'ванной комнате',
+    'отверстие':'отверстие','потолокк':'потолок','стенна':'стена','стен':'стен',
+    'крышаа':'крыша','заборр':'забор','мусорр':'мусор','покос травы на учатске':'покос травы на участке',
+    'учатске':'участке','участак':'участок','вывос':'вывоз','демонтажж':'демонтаж',
+    'укладкка':'укладка','укладка плитки в ваной':'укладка плитки в ванной комнате',
+    'монтаж плитки в ваной':'Укладка плитки в ванной комнате'
+  };
+  function repairKnownTypos(input){
+    const raw=clean(input,MAX_INPUT);
+    let corrected=raw, changes=0;
+    const entries=Object.entries(BUILTIN_TYPO_FIXES).sort((a,b)=>b[0].length-a[0].length);
+    for(const [wrong,right] of entries){
+      const re=new RegExp('(^|[^\\p{L}])'+wrong.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\$&')+'(?=$|[^\\p{L}])','giu');
+      const next=corrected.replace(re,(match,left)=>left+right);
+      if(next!==corrected){corrected=next;changes++;}
+      if(changes>=3)break;
+    }
+    if(!changes||norm(corrected)===norm(raw))return null;
+    corrected=cleanupGenerated(corrected);
+    const professional=targetedProfessionalRepair(corrected);
+    if(professional)return professional;
+    return {corrected,suggestions:[{text:corrected,note:'Исправлена известная опечатка в словаре Master Group',confidence:.93}],changed:true,engine:'master-dictionary-typo-rules',offline:true,dictionaryUsed:true,confidence:.93};
   }
 
   function targetedProfessionalRepair(input){
@@ -1276,6 +1367,7 @@
       [/^(?:evacuare|transportare)\s+(?:gunoi|gunoiului|deseuri|deșeuri)$/i,'Вывоз мусора']
     ];
     const russianRules=[
+      [/^штробов(?:ка|ки|ку|кой)?\s+канала\s+канализац(?:ия|ии|ию)$/i,'Штробление канала канализации'],
       [/^(?:сверл(?:ить)?|сверл)\s+(?:дырк(?:а|у|и)?|отверст(?:ие|ия|ий)?)\s+(?:бет|бетон|бетоне|в бетоне)$/i,'Сверление отверстия в бетоне'],
       [/^(?:сверл(?:ение)?|просверл(?:ить)?)\s+(?:дырк(?:а|у|и)?|отверст(?:ие|ия|ий)?)\s+(?:в\s+)?бет(?:он(?:е|а)?)?$/i,'Сверление отверстия в бетоне'],
       [/^(?:укладка|уложить|укладывать)\s+(?:плитк(?:а|у|и)?|кафел(?:ь|я|ю)?)\s+(?:в\s+)?(?:ванной|ваной|ванна|ванной комнате|ванной комнатe)$/i,'Укладка плитки в ванной комнате'],
@@ -1354,6 +1446,7 @@
     let result;
     try{
       result=targetedProfessionalRepair(input);
+      if(!result)result=repairKnownTypos(input);
       if(!result)result=repairWithExpandedDictionary(input);
       if(!result)result=fallback(input,clean(direction,MAX_DIRECTION),uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS));
     }
@@ -1374,5 +1467,5 @@
   }
   function clearCache(){CACHE.clear();}
   function getStatus(){return {engine:'master-dictionary-v2',offline:true,remoteInference:false,modelLoaded:false,apiKeyRequired:false,personalTerms:readPersonalTerms().length,expandedDictionaryState:expandedState,expandedDictionarySource:expandedSource,expandedDictionaryWords:expandedWordCount,expandedDictionaryProgress:expandedProgress};}
-  if(typeof window!=='undefined')window.MG_DICTIONARY={suggestServiceName,clearCache,getStatus,prepare:prepareExpandedDictionary,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,version:'v443-dictionary-performance'};
+  if(typeof window!=='undefined')window.MG_DICTIONARY={suggestServiceName,clearCache,getStatus,prepare:prepareExpandedDictionary,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,version:'v446-general-spellcheck'};
 })();

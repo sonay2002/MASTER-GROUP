@@ -127,7 +127,7 @@ let dictionaryActiveValue='';
 function resetServiceDictionaryState(){
   dictionaryRequestSeq++;clearTimeout(dictionarySuggestTimer);dictionarySuggestTimer=null;dictionaryActiveValue='';
   const card=$('directionServiceDictionarySuggestion'),main=card?.querySelector('[data-dictionary-apply]'),alts=$('directionServiceDictionaryAlternatives'),status=$('directionServiceDictionaryStatus');
-  if(card)card.hidden=true;if(main){main.textContent='';main.disabled=true;main.dataset.dictionaryApply='';}if(alts){alts.innerHTML='';alts.hidden=true;}if(status)status.textContent='';
+  if(card)card.hidden=false;if(main){main.textContent='Начните вводить название услуги';main.disabled=true;main.dataset.dictionaryApply='';}if(alts){alts.innerHTML='';alts.hidden=true;}if(status)status.textContent='Подсказки будут обновляться прямо во время набора.';
 }
 window.__mgResetServiceDictionary=resetServiceDictionaryState;
 function setDictionaryStatus(text){const status=$('directionServiceDictionaryStatus');if(status)status.textContent=text||'';}
@@ -137,8 +137,8 @@ function dictionarySetSuggestion(result,inputValue){
   const suggestions=Array.isArray(result?.suggestions)?result.suggestions.filter(x=>x?.text&&String(x.text).trim()):[];
   const corrected=String(result?.corrected||suggestions[0]?.text||'').trim();
   if(!corrected||corrected===String(inputValue||'').trim()){
-    main.dataset.dictionaryApply='';main.textContent=corrected?'Словарь не нашёл очевидной ошибки':'Подходящий вариант не найден';main.disabled=true;alts.innerHTML='';alts.hidden=true;
-    status.textContent='Исходный текст сохранён. При необходимости добавьте свой вариант.';card.hidden=false;return;
+    main.dataset.dictionaryApply='';main.textContent=corrected?'Надёжное исправление не найдено':'Подходящий вариант не найден';main.disabled=true;alts.innerHTML='';alts.hidden=true;
+    status.textContent='Важно: это НЕ подтверждение правильности текста. Встроенный словарь не распознал опечатку; расширенный словарь может быть недоступен.';card.hidden=false;return;
   }
   main.dataset.dictionaryApply=corrected;main.textContent=corrected;main.disabled=false;
   alts.innerHTML=suggestions.slice(1,3).map(x=>`<button type="button" class="direction-service-dictionary-alt" data-dictionary-apply="${esc(x.text)}">${esc(x.text)}</button>`).join('');
@@ -156,17 +156,17 @@ function warmExpandedDictionary(){
       setDictionaryStatus(`Расширенный словарь загружен (${Number(status.expandedDictionaryWords||0).toLocaleString('ru-RU')} словоформ). Сохранён на этом устройстве.`);
       if(input&&String(input.value||'').trim().length>=2)serviceWordSuggestions();
     }else{
-      setDictionaryStatus('Расширенный словарь не загрузился. Встроенный словарь продолжает работать офлайн.');
+      setDictionaryStatus('Расширенный словарь не загрузился. Доступны только встроенные правила; неизвестные опечатки могут остаться незамеченными.');
     }
   }).catch(err=>{
     console.warn('Expanded dictionary unavailable:',err);
-    setDictionaryStatus('Расширенный словарь недоступен. Встроенный словарь продолжает работать.');
+    setDictionaryStatus('Расширенный словарь недоступен. Работают только встроенные правила; отсутствие подсказки не означает, что текст написан правильно.');
   });
 }
 function serviceWordSuggestions(){
   const input=$('directionServiceQuickInput');if(!input)return;const value=String(input.value||'').trim();const seq=++dictionaryRequestSeq;clearTimeout(dictionarySuggestTimer);dictionaryActiveValue=value;
-  if(value.length<2){resetServiceDictionaryState();dictionaryActiveValue=value;return;}
   const card=$('directionServiceDictionarySuggestion'),main=card?.querySelector('[data-dictionary-apply]'),alts=$('directionServiceDictionaryAlternatives');
+  if(value.length<2){resetServiceDictionaryState();dictionaryActiveValue=value;return;}
   if(card)card.hidden=false;if(main){main.textContent='Проверяю словарь…';main.disabled=true;main.dataset.dictionaryApply='';}if(alts){alts.innerHTML='';alts.hidden=true;}setDictionaryStatus('Локальная проверка — без интернета и ИИ-модели.');
   dictionarySuggestTimer=setTimeout(()=>{
     if(seq!==dictionaryRequestSeq||value!==String(input.value||'').trim()||value!==dictionaryActiveValue)return;

@@ -72,11 +72,11 @@
     const quick=ctx.$('directionServiceQuickInput');
     if(quick)quick.value='';
     const dictionaryCard=ctx.$('directionServiceDictionarySuggestion');
-    if(dictionaryCard)dictionaryCard.hidden=true;
+    if(dictionaryCard)dictionaryCard.hidden=false;
     const dictionaryStatus=ctx.$('directionServiceDictionaryStatus');
-    if(dictionaryStatus)dictionaryStatus.textContent='';
+    if(dictionaryStatus)dictionaryStatus.textContent='Подсказки будут обновляться прямо во время набора.';
     const dictionaryMain=dictionaryCard?.querySelector('[data-dictionary-apply]');
-    if(dictionaryMain){dictionaryMain.textContent='';dictionaryMain.disabled=true;dictionaryMain.dataset.dictionaryApply='';}
+    if(dictionaryMain){dictionaryMain.textContent='Начните вводить название услуги';dictionaryMain.disabled=true;dictionaryMain.dataset.dictionaryApply='';}
   }
   function openDirectionServiceModal(){
     const overlay=ctx.$('directionServiceOverlay');
