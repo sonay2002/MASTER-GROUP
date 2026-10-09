@@ -1,11 +1,11 @@
-/* Master Group v449 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v449';
+/* Master Group v450 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v450';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=439",
+  "./css/styles.css?v=450",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -19,7 +19,7 @@ const CORE = [
   "./js/estimate-core.js",
   "./js/finance-ui.js?v=434",
   "./js/document-actions-v419.js?v=431",
-  "./js/settings-preferences-v449.js?v=449",
+  "./js/settings-preferences-v450.js?v=450",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",
