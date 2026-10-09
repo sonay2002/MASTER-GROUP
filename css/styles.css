@@ -7196,7 +7196,7 @@ html,body,#app,.app,.screen{
 }
 .direction-service-list::-webkit-scrollbar{width:6px!important;height:6px!important}
 .direction-service-list::-webkit-scrollbar-thumb{background:#c8cdd4!important;border-radius:99px!important}
-.direction-service-ai-suggestion{
+.direction-service-dictionary-suggestion{
   position:relative!important;
   left:auto!important;
   right:auto!important;
@@ -7214,10 +7214,10 @@ html,body,#app,.app,.screen{
   backdrop-filter:none!important;
   -webkit-backdrop-filter:none!important;
 }
-.direction-service-ai-head{min-height:16px!important;gap:6px!important;font-size:10px!important}
-.direction-service-ai-badge{height:17px!important;min-width:22px!important;padding:0 5px!important;border-radius:6px!important;font-size:8px!important}
-.direction-service-ai-close{font-size:16px!important;line-height:16px!important;padding:0 1px!important}
-.direction-service-ai-main{
+.direction-service-dictionary-head{min-height:16px!important;gap:6px!important;font-size:10px!important}
+.direction-service-dictionary-badge{height:17px!important;min-width:22px!important;padding:0 5px!important;border-radius:6px!important;font-size:8px!important}
+.direction-service-dictionary-close{font-size:16px!important;line-height:16px!important;padding:0 1px!important}
+.direction-service-dictionary-main{
   display:block!important;
   width:100%!important;
   margin:4px 0 0!important;
@@ -7232,12 +7232,12 @@ html,body,#app,.app,.screen{
   overflow:hidden!important;
   text-overflow:ellipsis!important;
 }
-.direction-service-ai-alternatives{gap:5px!important;margin-top:5px!important;max-height:28px!important;overflow:hidden!important}
-.direction-service-ai-alt{font-size:10px!important;padding:5px 7px!important;border-radius:8px!important;white-space:nowrap!important}
-.direction-service-ai-status{margin-top:3px!important;font-size:9px!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-.direction-service-ai-tools{display:flex!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:6px!important;margin-top:5px!important}
-.direction-service-ai-tools button{min-height:28px!important;padding:3px 7px!important;border:1px solid #e3e7ec!important;border-radius:8px!important;background:#f8fafc!important;color:#526071!important;font-size:9px!important;font-weight:700!important;white-space:nowrap!important}
-.direction-service-ai-tools [data-ai-local-download]{flex:1 0 100%!important;background:#eef4ff!important;border-color:#d5e2fa!important;color:#273b5e!important}
+.direction-service-dictionary-alternatives{gap:5px!important;margin-top:5px!important;max-height:28px!important;overflow:hidden!important}
+.direction-service-dictionary-alt{font-size:10px!important;padding:5px 7px!important;border-radius:8px!important;white-space:nowrap!important}
+.direction-service-dictionary-status{margin-top:3px!important;font-size:9px!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+.direction-service-dictionary-tools{display:flex!important;justify-content:flex-end!important;flex-wrap:wrap!important;gap:6px!important;margin-top:5px!important}
+.direction-service-dictionary-tools button{min-height:28px!important;padding:3px 7px!important;border:1px solid #e3e7ec!important;border-radius:8px!important;background:#f8fafc!important;color:#526071!important;font-size:9px!important;font-weight:700!important;white-space:nowrap!important}
+.direction-service-dictionary-tools [data-dictionary-export],[data-dictionary-import]{flex:0 1 auto!important}
 .direction-service-quick-add{flex:0 0 auto!important}
 @media(max-width:600px){
   .direction-service-list{
@@ -7247,11 +7247,11 @@ html,body,#app,.app,.screen{
     flex:0 1 auto!important;
     overflow-y:auto!important;
   }
-  .direction-service-ai-suggestion{
+  .direction-service-dictionary-suggestion{
     left:auto!important;right:auto!important;bottom:auto!important;
     margin:0 13px!important;padding:8px 9px!important;border-radius:11px!important;
   }
-  .direction-service-ai-main{font-size:12px!important}
+  .direction-service-dictionary-main{font-size:12px!important}
 }
 
 

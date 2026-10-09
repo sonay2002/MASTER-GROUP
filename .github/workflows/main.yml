@@ -38,8 +38,7 @@ jobs:
           node tests/finance-sync-smoke.js
           node tests/firebase-sync-boundary-smoke.js
           node tests/offline-engine-smoke.js
-          node tests/ai-service-smoke.js
-          node tests/ai-ui-race-smoke.js
+          node tests/dictionary-service-smoke.js
 
   deploy:
     needs: validate

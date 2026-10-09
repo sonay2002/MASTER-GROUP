@@ -1,7 +1,5 @@
-/* Master Group — local-first Russian proofreader.
- * Qwen3 runs on-device when WebGPU is supported. A remote model is tried only
- * when local correction is unavailable or fails conservative meaning checks.
- * The public API is kept stable for the existing estimate UI.
+/* Master Group — offline professional dictionary and text correction engine.
+ * This service runs locally and does not connect to remote providers or download models.
  */
 (function(){
   'use strict';
@@ -11,35 +9,6 @@
   const MAX_CONTEXT_ITEMS=12;
   const CACHE=new Map();
   const MAX_CACHE=256;
-  let nativeSession=null;
-  let nativeState='unknown';
-  let nativePromise=null;
-
-  // On-device generation uses WebGPU only: the 570 MB model is too heavy for
-  // the old mobile WASM path. Unsupported browsers go to the online fallback.
-  const LOCAL_LLM_MODEL='onnx-community/Qwen3-0.6B-ONNX';
-  const LOCAL_LLM_CDN='https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
-  const LOCAL_LLM_READY_STORAGE='mg_qwen3_local_ready_v1';
-  const LOCAL_LLM_PENDING_STORAGE='mg_qwen3_local_pending_v1';
-  let localLlmPipeline=null;
-  let localLlmState='not-loaded';
-  let localLlmPromise=null;
-  let localLlmRetryAfter=0;
-  let localLlmAutoEnabled=false;
-  let localLlmNeedsManualRetry=false;
-  let localLlmManualRequested=false;
-  let localLlmProgress={status:'idle',progress:0,loaded:0,total:570000000,file:''};
-  try{
-    if(localStorage.getItem(LOCAL_LLM_PENDING_STORAGE)==='1'){
-      localLlmNeedsManualRetry=true;
-      localLlmState='retry-required';
-    }else if(localStorage.getItem(LOCAL_LLM_READY_STORAGE)==='1'){
-      localLlmAutoEnabled=true;
-      localLlmState='cached';
-    }
-  }catch(_){}
-
-
   const RU_VOWELS='аеёиоуыэюя';
   const RO_VOWELS='aeiouăâî';
   const escRe=/[&<>"']/g;
@@ -325,7 +294,7 @@
       let best=0,bestFormText='';
       for(const tok of toks){
         const b=bestForm(tok,item.forms);
-        // Very short tokens are too ambiguous for an AI-style service name.
+        // Very short tokens are too ambiguous for an guessed service name.
         const effective=(tok.length<=2?Math.min(b.score,.58):b.score);
         if(effective>best){best=effective;bestFormText=b.text;}
       }
@@ -403,7 +372,7 @@
     'ustnovka rakovina':'Установка раковины'
   };
 
-  function semanticBrainPhrase(text,direction='',selectedServices=[]){
+  function semanticDictionaryPhrase(text,direction='',selectedServices=[]){
     const raw=stripPunct(text); if(!raw)return null;
     const knownSemantic=KNOWN_SEMANTIC_PHRASES[norm(raw)];
     if(knownSemantic)return {text:knownSemantic,confidence:.99,note:'Понято по смыслу и профессиональному шаблону фразы'};
@@ -532,7 +501,7 @@
   }
 
   // Dynamic catalog indexing means newly created Master Group services are
-  // learned automatically; there is no need to modify this AI file.
+  // learned automatically; there is no need to modify this dictionary file.
   function catalogRows(){
     const catalog=Array.isArray(window.MGCatalog?.data)?window.MGCatalog.data:[];const rows=[];
     for(const d of catalog){
@@ -960,7 +929,7 @@
     let s=capital(stripPunct(text));
     s=s.replace(/^(услуга|работа|название услуги)\s*[:—-]?\s*/i,'');
     s=s.replace(/\s+/g,' ').trim();
-    // Canonicalize a few high-value professional constructions after AI output.
+    // Canonicalize a few high-value professional constructions after candidate generation.
     // The remote model may understand the meaning but occasionally choose an
     // unnatural word order such as "Сборка разборки квадроцикла". These rules
     // change grammar/order only; they do not invent a new object or service.
@@ -978,7 +947,7 @@
     return `${base} ${location.ru}`;
   }
 
-  function buildLocalGeneration(text,direction,selectedServices){
+  function buildDictionarySuggestion(text,direction,selectedServices){
     const loose=normalizeLooseInput(text);
     const analysisText=loose||text;
     const catalog=semanticCatalogCandidates(analysisText,direction,selectedServices);
@@ -1004,7 +973,7 @@
     if(!phrase && catalog[0]&&catalog[0].score>=.72){
       let out=catalog[0].name;
       if(location && !norm(out).includes(norm(location.ru)))out=appendLocation(out,location);
-      return {text:cleanupGenerated(out),confidence:Math.min(.98,catalog[0].score+.06),note:'Понято локальным интеллектом по каталогу'};
+      return {text:cleanupGenerated(out),confidence:Math.min(.98,catalog[0].score+.06),note:'Подобрано по словарю и каталогу'};
     }
 
     if(!phrase){
@@ -1030,7 +999,7 @@
       // Quantity is shown by the estimate UI separately; don't put it into the
       // service name. This keeps generated names stable and avoids inventing units.
     }
-    return {text:cleanupGenerated(phrase),confidence:Math.max(.42,Math.min(.9,(action?.score||0)+(object?.score||0))*.5+.3),note:'Сгенерировано автономным интеллектом Master Group'};
+    return {text:cleanupGenerated(phrase),confidence:Math.max(.42,Math.min(.9,(action?.score||0)+(object?.score||0))*.5+.3),note:'Сгенерировано локальным словарём Master Group'};
   }
 
   function contextualServicePhrase(text){
@@ -1088,9 +1057,254 @@
     return cleanupGenerated(s);
   }
 
+
+  function normalizeKeyboardHomoglyphs(value){
+    // Repair common Latin characters accidentally entered inside Cyrillic words.
+    const map={a:'а',c:'с',e:'е',o:'о',p:'р',x:'х',y:'у',k:'к',m:'м',t:'т',b:'в',h:'н'};
+    return String(value||'').replace(/[a-z]/g,ch=>{
+      const lower=ch.toLowerCase();
+      return map[lower]||ch;
+    });
+  }
+
+
+  // Optional free public Hunspell corpus. It is fetched only after the user
+  // starts using the dictionary, then cached in IndexedDB for later/offline use.
+  // The built-in Master Group rules remain available if the download fails.
+  const EXPANDED_DICTIONARY_URLS=[
+    {url:'https://github.com/Goudron/ru-spelling-dictionary/releases/download/v1.0.9/ru_RU.txt.gz',kind:'gzip-forms'},
+    {url:'https://cdn.jsdelivr.net/gh/Goudron/ru-spelling-dictionary@main/ru_RU.dic',kind:'hunspell-roots'}
+  ];
+  const EXPANDED_DB='master-group-dictionary-cache-v1';
+  const EXPANDED_STORE='corpora';
+  const EXPANDED_KEY='ru-RU';
+  let expandedText='';
+  let expandedRanges=new Map();
+  let expandedState='not-loaded';
+  let expandedSource='';
+  let expandedPromise=null;
+  let expandedWordCount=0;
+  let expandedProgress=0;
+
+  function openExpandedDb(){
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in globalThis)){reject(new Error('IndexedDB unavailable'));return;}
+      const req=indexedDB.open(EXPANDED_DB,1);
+      req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(EXPANDED_STORE))req.result.createObjectStore(EXPANDED_STORE);};
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
+    });
+  }
+  async function expandedDbGet(){
+    const db=await openExpandedDb();
+    return new Promise((resolve,reject)=>{const tx=db.transaction(EXPANDED_STORE,'readonly');const req=tx.objectStore(EXPANDED_STORE).get(EXPANDED_KEY);req.onsuccess=()=>{db.close();resolve(req.result||null)};req.onerror=()=>{db.close();reject(req.error)};});
+  }
+  async function expandedDbPut(value){
+    const db=await openExpandedDb();
+    return new Promise((resolve,reject)=>{const tx=db.transaction(EXPANDED_STORE,'readwrite');tx.objectStore(EXPANDED_STORE).put(value,EXPANDED_KEY);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>{db.close();reject(tx.error||new Error('IndexedDB write failed'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('IndexedDB write aborted'))};});
+  }
+  function inflateGzip(buffer){
+    if(typeof DecompressionStream==='undefined')return Promise.reject(new Error('Gzip decompression unavailable'));
+    const stream=new Blob([buffer]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return new Response(stream).text();
+  }
+  async function indexExpandedText(text,kind){
+    // Keep the corpus as one string and index character ranges. Do the work in
+    // small batches so a multi-million-entry list cannot freeze Safari on iPhone.
+    expandedText=String(text||'');
+    expandedRanges=new Map();
+    expandedWordCount=0;expandedProgress=0;
+    let lineStart=0, lineNumber=0, batch=0;
+    while(lineStart<expandedText.length){
+      let lineEnd=expandedText.indexOf('\n',lineStart);
+      if(lineEnd<0)lineEnd=expandedText.length;
+      let raw=expandedText.slice(lineStart,lineEnd).trim();
+      lineNumber++;
+      if(!(lineNumber===1&&/^\d+$/.test(raw))){
+        if(kind==='hunspell-roots')raw=raw.split('/')[0];
+        const word=raw.toLowerCase().replace(/ё/g,'е');
+        if(/^[а-яa-z]+$/i.test(word)&&word.length>=3&&word.length<=40){
+          expandedWordCount++;
+          const prefix=word.slice(0,2);
+          const range=expandedRanges.get(prefix);
+          if(range)range.end=lineEnd;
+          else expandedRanges.set(prefix,{start:lineStart,end:lineEnd});
+        }
+      }
+      lineStart=lineEnd+1;batch++;
+      if(batch>=25000){
+        expandedProgress=Math.min(99,Math.round((lineStart/Math.max(1,expandedText.length))*100));
+        batch=0;
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+    expandedProgress=100;
+  }
+  function getExpandedLine(offset,end){
+    const lineEnd=expandedText.indexOf('\n',offset);
+    const stop=lineEnd<0||lineEnd>end?end:lineEnd;
+    let word=expandedText.slice(offset,stop).trim();
+    if(!word)return '';
+    if(word.includes('/'))word=word.split('/')[0];
+    return word.toLowerCase().replace(/ё/g,'е');
+  }
+  function isKnownExpandedWord(word){
+    const key=norm(word).replace(/ё/g,'е'),range=expandedRanges.get(key.slice(0,2));
+    if(!range)return false;
+    let pos=range.start;
+    while(pos<=range.end){
+      const candidate=getExpandedLine(pos,range.end);
+      if(candidate===key)return true;
+      const next=expandedText.indexOf('\n',pos);
+      if(next<0||next>=range.end)break;
+      pos=next+1;
+    }
+    return false;
+  }
+  async function prepareExpandedDictionary(){
+    if(expandedState==='ready')return getStatus();
+    if(expandedPromise)return expandedPromise;
+    expandedPromise=(async()=>{
+      expandedState='loading';
+      try{
+        let cached=null;
+        try{cached=await expandedDbGet();}catch(_){}
+        if(cached&&typeof cached.text==='string'&&cached.text.length>10000){
+          await indexExpandedText(cached.text,cached.kind||'gzip-forms');
+          expandedSource=cached.source||'cached public Russian dictionary';
+          expandedState='ready';
+          return getStatus();
+        }
+        let lastError=null;
+        for(const item of EXPANDED_DICTIONARY_URLS){
+          try{
+            const controller=typeof AbortController!=='undefined'?new AbortController():null;
+            const timeout=controller?setTimeout(()=>controller.abort(),25000):null;
+            let text;
+            try{
+              const response=await fetch(item.url,{mode:'cors',cache:'force-cache',...(controller?{signal:controller.signal}:{})});
+              if(!response.ok)throw new Error('HTTP '+response.status);
+              if(item.kind==='gzip-forms')text=await inflateGzip(await response.arrayBuffer());
+              else text=await response.text();
+            }finally{if(timeout)clearTimeout(timeout)}
+            if(!text||text.length<10000)throw new Error('Dictionary file was empty or incomplete');
+            await indexExpandedText(text,item.kind);
+            expandedSource=item.kind==='gzip-forms'?'RusSpell Russian forms (2M+ list)':'RusSpell Hunspell root dictionary';
+            try{await expandedDbPut({text,kind:item.kind,source:expandedSource,savedAt:Date.now()});}catch(err){console.warn('Dictionary cache write failed:',err);}
+            expandedState='ready';
+            return getStatus();
+          }catch(err){lastError=err;console.warn('Expanded dictionary source unavailable:',item.url,err);}
+        }
+        expandedState='unavailable';
+        return {...getStatus(),error:lastError?.message||'Expanded dictionary unavailable'};
+      }finally{expandedPromise=null;}
+    })();
+    return expandedPromise;
+  }
+  function editDistanceAtMostOne(a,b){
+    if(Math.abs(a.length-b.length)>1)return 2;
+    let i=0,j=0,edits=0;
+    while(i<a.length&&j<b.length){
+      if(a[i]===b[j]){i++;j++;continue;}
+      if(++edits>1)return 2;
+      if(a.length>b.length)i++;else if(b.length>a.length)j++;else{i++;j++;}
+    }
+    if(i<a.length||j<b.length)edits++;
+    return edits;
+  }
+  function expandedSpellingCandidate(token){
+    if(!expandedText||!token||token.length<5||token.length>28)return null;
+    const word=norm(token).replace(/ё/g,'е');
+    if(isKnownExpandedWord(word))return null;
+    const prefixes=new Set([word.slice(0,2)]);
+    // Also allow one of the first two characters to be mistyped.
+    const alphabet='абвгдеёжзийклмнопрстуфхцчшщьыъэюя';
+    for(const ch of alphabet){prefixes.add(ch+word[1]);prefixes.add(word[0]+ch);}
+    const candidates=new Set();
+    let scanned=0;
+    for(const prefix of prefixes){
+      const range=expandedRanges.get(prefix);if(!range)continue;
+      let pos=range.start;
+      while(pos<=range.end){
+        if(scanned>=8000)break;
+        scanned++;
+        const candidate=getExpandedLine(pos,range.end);
+        if(candidate&&candidate!==word&&candidate.length>=4&&Math.abs(candidate.length-word.length)<=1&&editDistanceAtMostOne(word,candidate)<=1)candidates.add(candidate);
+        const next=expandedText.indexOf('\n',pos);
+        if(next<0||next>=range.end)break;
+        pos=next+1;
+        if(candidates.size>8||scanned>=8000)break;
+      }
+      if(candidates.size>8)break;
+    }
+    if(candidates.size!==1)return null;
+    return [...candidates][0];
+  }
+  function repairWithExpandedDictionary(input){
+    if(!expandedText)return null;
+    const tokens=String(input||'').match(/[А-Яа-яЁёA-Za-zĂÂÎȘȚăâîșț]+/g)||[];
+    if(!tokens.length)return null;
+    let changes=0;
+    let corrected=String(input);
+    for(const token of tokens){
+      if(changes>=2)break;
+      if(token.length<5||/^[A-Z]{2,}$/.test(token))continue;
+      const candidate=expandedSpellingCandidate(token);
+      if(!candidate||norm(candidate)===norm(token))continue;
+      const escaped=token.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+      corrected=corrected.replace(new RegExp('(^|[^\\p{L}])'+escaped+'(?=$|[^\\p{L}])','iu'),(m,left)=>left+candidate);
+      changes++;
+    }
+    if(!changes)return null;
+    return {corrected:cleanupGenerated(corrected),suggestions:[{text:cleanupGenerated(corrected),note:'Проверено по расширенному русскому словарю',confidence:.78}],changed:true,engine:'master-expanded-dictionary',offline:true,dictionaryUsed:true,confidence:.78};
+  }
+
+  function targetedProfessionalRepair(input){
+    const raw=clean(input,MAX_INPUT);
+    const original=norm(raw).replace(/\s+/g,' ').trim();
+    const s=norm(normalizeKeyboardHomoglyphs(raw)).replace(/\s+/g,' ').trim();
+    const latinRules=[
+      [/^(?:reparatie|reparație|repararea|reparare)\s+(?:acoperis|acoperiș|acoperisului|acoperișului)$/i,'Ремонт крыши'],
+      [/^(?:spalat|spălat|spalare|spălare)\s+(?:curte|curtea|teren|teritoriu)$/i,'Мойка территории'],
+      [/^(?:montare|montarea)\s+(?:faianta|faianță|gresie)\s+(?:baie|baia)$/i,'Укладка плитки в ванной комнате'],
+      [/^(?:cosire|cosit|taiere)\s+(?:iarba|iarbă|gazon)\s+(?:teren|terenul|curte|curtea)$/i,'Покос травы на участке'],
+      [/^(?:evacuare|transportare)\s+(?:deseuri|deșeuri)\s+(?:constructie|construcție)$/i,'Вывоз строительного мусора'],
+      [/^(?:montare|montarea|instalare|instalarea)\s+(?:robinet|robinetul|baterie|bateria)$/i,'Установка смесителя'],
+      [/^(?:schimbare|inlocuire|înlocuire|schimbarea)\s+(?:robinet|robinetul|baterie|bateria)$/i,'Замена смесителя'],
+      [/^(?:montare|montarea|instalare|instalarea)\s+(?:priza|priză|prize|prizele)$/i,'Установка розеток'],
+      [/^(?:curatare|curățare|curatarea|curățarea)\s+(?:teren|terenul|curte|curtea)$/i,'Уборка территории'],
+      [/^(?:taiere|tăiere|taierea|tăierea)\s+(?:copac|copaci|copacilor)$/i,'Спил деревьев'],
+      [/^(?:evacuare|transportare)\s+(?:gunoi|gunoiului|deseuri|deșeuri)$/i,'Вывоз мусора']
+    ];
+    const russianRules=[
+      [/^(?:сверл(?:ить)?|сверл)\s+(?:дырк(?:а|у|и)?|отверст(?:ие|ия|ий)?)\s+(?:бет|бетон|бетоне|в бетоне)$/i,'Сверление отверстия в бетоне'],
+      [/^(?:сверл(?:ение)?|просверл(?:ить)?)\s+(?:дырк(?:а|у|и)?|отверст(?:ие|ия|ий)?)\s+(?:в\s+)?бет(?:он(?:е|а)?)?$/i,'Сверление отверстия в бетоне'],
+      [/^(?:укладка|уложить|укладывать)\s+(?:плитк(?:а|у|и)?|кафел(?:ь|я|ю)?)\s+(?:в\s+)?(?:ванной|ваной|ванна|ванной комнате|ванной комнатe)$/i,'Укладка плитки в ванной комнате'],
+      [/^(?:покрас(?:ить)?|покраска|окрасить)\s+(?:стен(?:а|у|ы)?|стену)\s+(?:на\s+)?кухн(?:я|е|ю)$/i,'Покраска стен на кухне'],
+      [/^(?:покрас(?:ить)?|покраска|окрасить)\s+(?:стен(?:а|у|ы)?|стену)$/i,'Покраска стен'],
+      [/^(?:установ(?:ка|ить)|монтаж)\s+(?:смесител(?:ь|я|ю|ем)?|кран(?:а|у)?)$/i,'Установка смесителя'],
+      [/^(?:замен(?:а|ить)|поменять)\s+(?:смесител(?:ь|я|ю|ем)?|кран(?:а|у)?)$/i,'Замена смесителя'],
+      [/^(?:устранение|устранить|ремонт)\s+(?:протечк(?:а|и|у)?|теч(?:ь|и))$/i,'Устранение протечки'],
+      [/^(?:установ(?:ка|ить)|монтаж)\s+(?:розетк(?:а|и|у|у)?|розеток)$/i,'Установка розеток'],
+      [/^(?:замен(?:а|ить)|поменять)\s+(?:розетк(?:а|и|у)?|розеток)$/i,'Замена розеток'],
+      [/^(?:монтаж|установ(?:ка|ить)|поставить)\s+(?:забор(?:а|у|ом)?|ограждени(?:е|я|ю))$/i,'Установка забора'],
+      [/^(?:покос|косить|скосить)\s+(?:трав(?:а|ы|у)|газон)(?:\s+(?:на\s+)?участк(?:е|а))?$/i,'Покос травы на участке'],
+      [/^(?:уборка|убрать|очистка|очистить)\s+(?:строительн(?:ый|ого)\s+)?мусор(?:а)?$/i,'Уборка строительного мусора'],
+      [/^(?:вывоз|вывезти|вывозить)\s+(?:строительн(?:ый|ого)\s+)?мусор(?:а)?$/i,'Вывоз строительного мусора'],
+      [/^(?:демонтаж|снять|снятие)\s+(?:стар(?:ой|ую|ого)\s+)?(?:плитк(?:а|и|у)|кафел(?:ь|я))$/i,'Демонтаж плитки'],
+      [/^(?:покрас(?:ить)?|покраска|окрасить)\s+потол(?:ок|ка|ок)$/i,'Покраска потолка'],
+      [/^(?:шпаклев(?:ка|ать|ание)|шпатлев(?:ка|ать|ание))\s+стен(?:ы|у)?$/i,'Шпаклевка стен']
+    ];
+    for(const [re,corrected] of latinRules){
+      if(re.test(original))return {corrected,suggestions:[{text:corrected,note:'Исправлено по профессиональному словарю Master Group',confidence:.98}],changed:norm(corrected)!==norm(raw),engine:'master-dictionary-rules-v2',offline:true,dictionaryUsed:true,confidence:.98};
+    }
+    for(const [re,corrected] of russianRules){
+      if(re.test(s))return {corrected,suggestions:[{text:corrected,note:'Исправлено по профессиональному словарю Master Group',confidence:.98}],changed:norm(corrected)!==norm(raw),engine:'master-dictionary-rules-v2',offline:true,dictionaryUsed:true,confidence:.98};
+    }
+    return null;
+  }
   function fallback(text,direction,selectedServices){
-    const semantic=semanticBrainPhrase(text,direction,selectedServices);
-    const generated=buildLocalGeneration(text,direction,selectedServices);
+    const semantic=semanticDictionaryPhrase(text,direction,selectedServices);
+    const generated=buildDictionarySuggestion(text,direction,selectedServices);
     const catalog=semanticCatalogCandidates(text,direction,selectedServices);
     const suggestions=[];
     const contextual=contextualServicePhrase(text);
@@ -1118,560 +1332,47 @@
       return true;
     }).slice(0,3);
     const corrected=filtered[0]?.text||cleaned;
-    return {corrected,suggestions:filtered,changed:norm(corrected)!==norm(text),engine:'master-local-ai-open-v4',offline:true,confidence:filtered[0]?.confidence||.35};
+    return {corrected,suggestions:filtered,changed:norm(corrected)!==norm(text),engine:'master-dictionary-v1',offline:true,confidence:filtered[0]?.confidence||.35};
   }
 
-  // OpenRouter remote brain. The key is stored only in this browser's localStorage;
-  // it is NEVER written into the public GitHub Pages source. For a personal PWA this
-  // avoids Firebase Functions/Blaze costs while still moving the heavy reasoning off
-  // the iPhone. The provider is forced to the free router so paid models are not
-  // selected accidentally.
-  const OPENROUTER_ENDPOINT='https://openrouter.ai/api/v1/chat/completions';
-  const OPENROUTER_MODEL='openrouter/free';
-  const OPENROUTER_FALLBACK_MODELS=['google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free'];
-  const OPENROUTER_KEY_STORAGE='mg_openrouter_api_key_v1';
-  const PERSONAL_TERMS_STORAGE='mg_ai_personal_terms_v1';
-  const PERSONAL_TERMS_FORMAT='master-group-ai-terms-v1';
-  let remoteBrainState='not-configured';
-  let remoteBrainError='';
 
-  function getOpenRouterKey(){
-    try{return String(localStorage.getItem(OPENROUTER_KEY_STORAGE)||'').trim();}catch(_){return '';}
-  }
-  function setOpenRouterKey(key){
-    const k=String(key||'').trim();
-    if(k){localStorage.setItem(OPENROUTER_KEY_STORAGE,k);remoteBrainState='idle';remoteBrainError='';}
-    else{localStorage.removeItem(OPENROUTER_KEY_STORAGE);remoteBrainState='not-configured';remoteBrainError='API-ключ OpenRouter не настроен на этом устройстве.';}
-    clearCache();
-    return !!k;
-  }
-  function hasOpenRouterKey(){return /^sk-or-v1-[A-Za-z0-9_-]+$/.test(getOpenRouterKey());}
-
+  const PERSONAL_TERMS_STORAGE='mg_dictionary_personal_terms_v1';
+  const PERSONAL_TERMS_FORMAT='master-group-dictionary-terms-v1';
   function readPersonalTerms(){
-    try{
-      const data=JSON.parse(localStorage.getItem(PERSONAL_TERMS_STORAGE)||'[]');
-      if(!Array.isArray(data))return [];
-      return data.map(x=>({input:clean(x?.input),corrected:clean(x?.corrected,180)})).filter(x=>x.input&&x.corrected).slice(0,500);
-    }catch(_){return [];}
-  }
-  function writePersonalTerms(terms){
-    try{localStorage.setItem(PERSONAL_TERMS_STORAGE,JSON.stringify(terms.slice(0,500)));clearCache();return true;}catch(_){return false;}
+    try{const v=JSON.parse(localStorage.getItem(PERSONAL_TERMS_STORAGE)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.input==='string'&&typeof x.corrected==='string'):[];}catch(_){return [];}
   }
   function rememberCorrection(input,corrected){
-    const source=clean(input),answer=clean(corrected,180);
-    if(!source||!answer||norm(source)===norm(answer)||!proofreadCandidateCompatible(source,answer))return false;
-    const terms=readPersonalTerms(),key=norm(source),i=terms.findIndex(x=>norm(x.input)===key);
-    const row={input:source,corrected:answer};if(i>=0)terms.splice(i,1);terms.unshift(row);
-    return writePersonalTerms(terms);
+    const a=clean(input),b=clean(corrected);if(!a||!b||norm(a)===norm(b)||a.length>MAX_INPUT||b.length>180)return false;
+    try{const terms=readPersonalTerms().filter(x=>norm(x.input)!==norm(a));terms.unshift({input:a,corrected:b,updatedAt:Date.now()});localStorage.setItem(PERSONAL_TERMS_STORAGE,JSON.stringify(terms.slice(0,2000)));CACHE.clear();return true;}catch(_){return false;}
   }
-  function exportPersonalTerms(){
-    return JSON.stringify({format:PERSONAL_TERMS_FORMAT,exportedAt:new Date().toISOString(),terms:readPersonalTerms()},null,2);
-  }
-  function importPersonalTerms(payload){
+  function suggestServiceName({text,direction='',selectedServices=[]}={}){
+    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-dictionary-v1',offline:true,confidence:1};
+    const remembered=readPersonalTerms().find(x=>norm(x.input)===norm(input));
+    if(remembered)return {corrected:remembered.corrected,suggestions:[{text:remembered.corrected,note:'Ваше сохранённое исправление',confidence:1}],changed:norm(remembered.corrected)!==norm(input),engine:'master-dictionary-personal',offline:true,confidence:1};
+    const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS)});
+    if(CACHE.has(key))return CACHE.get(key);
+    let result;
     try{
-      const data=typeof payload==='string'?JSON.parse(payload):payload;
-      if(data?.format!==PERSONAL_TERMS_FORMAT||!Array.isArray(data.terms))return {ok:false,count:0,error:'Файл словаря Master Group не распознан.'};
-      const terms=readPersonalTerms();
-      for(const item of data.terms.slice(0,500)){
-        const input=clean(item?.input),corrected=clean(item?.corrected,180);
-        if(!input||!corrected||norm(input)===norm(corrected)||!proofreadCandidateCompatible(input,corrected))continue;
-        const i=terms.findIndex(x=>norm(x.input)===norm(input));if(i>=0)terms.splice(i,1);
-        terms.unshift({input,corrected});
-      }
-      const ok=writePersonalTerms(terms);
-      return {ok,count:ok?terms.length:0,error:ok?'':'Не удалось сохранить резервную копию на устройстве.'};
+      result=targetedProfessionalRepair(input);
+      if(!result)result=repairWithExpandedDictionary(input);
+      if(!result)result=fallback(input,clean(direction,MAX_DIRECTION),uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS));
+    }
+    catch(err){console.warn('Master Group dictionary:',err);result={corrected:input,suggestions:[],changed:false,engine:'master-dictionary-v1',offline:true,confidence:0};}
+    const rows=Array.isArray(result.suggestions)?result.suggestions.filter(x=>x&&typeof x.text==='string'&&clean(x.text)&&clean(x.text).length<=180):[];
+    // Keep the input available as a safe fallback; no automatic replacement is performed.
+    const corrected=clean(result.corrected)||input;
+    const safe={...result,corrected,suggestions:rows.slice(0,3),changed:norm(corrected)!==norm(input),engine:'master-dictionary-v1',offline:true,dictionaryUsed:true};
+    CACHE.set(key,safe);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);return safe;
+  }
+  function exportPersonalTerms(){return JSON.stringify({format:PERSONAL_TERMS_FORMAT,exportedAt:new Date().toISOString(),terms:readPersonalTerms()},null,2);}
+  function importPersonalTerms(raw){
+    try{const data=JSON.parse(String(raw||''));if(data?.format!==PERSONAL_TERMS_FORMAT||!Array.isArray(data.terms))return {ok:false,count:0,error:'Файл словаря не распознан.'};
+      const terms=[];for(const x of data.terms){if(!x||typeof x.input!=='string'||typeof x.corrected!=='string')continue;const input=clean(x.input),corrected=clean(x.corrected);if(input&&corrected&&norm(input)!==norm(corrected))terms.push({input,corrected,updatedAt:Number(x.updatedAt)||Date.now()});}
+      const merged=[...terms,...readPersonalTerms()].reduce((a,x)=>{if(!a.some(y=>norm(y.input)===norm(x.input)))a.push(x);return a;},[]).slice(0,2000);
+      localStorage.setItem(PERSONAL_TERMS_STORAGE,JSON.stringify(merged));CACHE.clear();return {ok:true,count:terms.length};
     }catch(_){return {ok:false,count:0,error:'Не удалось прочитать файл словаря.'};}
   }
-
-  const PRESERVE_STOPWORDS=new Set(['и','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без','не','это','как','или','а','мне','надо','нужно']);
-  function tokenSimilarity(a,b){
-    const aa=norm(translitToRussian(a)), bb=norm(translitToRussian(b));
-    if(!aa||!bb)return 0;
-    if(aa===bb)return 1;
-    const d=dice(aa,bb);
-    const lev=1-(levenshtein(aa,bb)/Math.max(aa.length,bb.length));
-    return Math.max(d,lev);
-  }
-  function inputConceptsMustSurvive(input,candidate){
-    const src=tokenise(input).map(norm).filter(t=>t.length>=4&&!PRESERVE_STOPWORDS.has(t));
-    const dst=tokenise(candidate).map(norm);
-    const inObject=inferObject(input,[]), cObject=inferObject(candidate,[]);
-    const inAction=inferAction(input,[]), cAction=inferAction(candidate,[]);
-    const knownObjectSame=!!(inObject?.id&&cObject?.id&&inObject.id===cObject.id);
-    const knownActionSame=!!(inAction?.id&&cAction?.id&&inAction.id===cAction.id);
-    // Known concepts may be expressed with normal synonyms/morphology
-    // («кафел» -> «плитки»). Preserve the concept, not the literal spelling.
-    // For unknown vocabulary we deliberately do NOT require every context word
-    // to survive (e.g. Romanian «baie» may become «ванной»), but an unknown
-    // object must have a surviving lexical anchor. This is what blocks
-    // «задний маятник» -> «ремонт заднего моста» without requiring a hard-coded
-    // «маятник» entry in the application.
-    const unknownAnchors=src.filter(sw=>{
-      const actionKnown=(inAction?.forms||[]).some(f=>norm(f)===sw);
-      const objectKnown=(inObject?.forms||[]).some(f=>norm(f)===sw);
-      const adjectiveKnown=Object.values(ADJ_FORMS).some(v=>Object.values(v).some(f=>norm(f)===sw));
-      return !actionKnown&&!objectKnown&&!adjectiveKnown;
-    });
-    if(!inObject?.id && unknownAnchors.length===1){
-      let best=0;for(const dw of dst)best=Math.max(best,tokenSimilarity(unknownAnchors[0],dw));
-      if(best<0.56)return false;
-    }
-    for(const sw of src){
-      const objectConcept = knownObjectSame && (inObject.forms||[]).some(f=>norm(f)===sw);
-      const actionConcept = knownActionSame && (inAction.forms||[]).some(f=>norm(f)===sw);
-      if(objectConcept || actionConcept) continue;
-      // If a recognized object is preserved, surrounding words may be
-      // legitimately translated/normalized by the brain.
-      if(knownObjectSame) continue;
-      let best=0;for(const dw of dst)best=Math.max(best,tokenSimilarity(sw,dw));
-      if(best<0.56 && !inAction?.id && !inObject?.id)return false;
-    }
-    return true;
-  }
-  function remoteSuggestionCompatible(candidate,input){
-    const c=clean(candidate,180); if(!c)return false;
-    const inWords=tokenise(input), cWords=tokenise(c);
-    if(inWords.length>=2 && cWords.length<2)return false;
-    if(!inputConceptsMustSurvive(input,c))return false;
-    const inObject=inferObject(input,[]), cObject=inferObject(c,[]);
-    if(inObject?.id){
-      // A recognized object is a hard semantic anchor. Previously we only
-      // rejected a different *known* object; an unrelated unknown phrase such
-      // as «опорная ось» therefore slipped through for «задний багажник».
-      if(cObject?.id && inObject.id!==cObject.id)return false;
-      if(!cObject?.id){
-        const forms=(inObject.forms||[]).map(norm).filter(x=>x.length>=3);
-        const hasObjectAnchor=cWords.some(word=>forms.some(form=>tokenSimilarity(form,word)>=.56));
-        if(!hasObjectAnchor)return false;
-      }
-    }
-    const inAction=inferAction(input,[]), cAction=inferAction(c,[]);
-    // When the user clearly supplied an action, the AI is not allowed to
-    // silently replace it with a different service type.
-    if(inAction?.id && cAction?.id && inAction.id!==cAction.id)return false;
-    return true;
-  }
-
-  const PROOFREAD_FUNCTION_WORDS=new Set(['и','а','но','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без']);
-  function proofreadCandidateCompatible(input,candidate){
-    const source=clean(input),out=clean(candidate,180);if(!source||!out)return false;
-    const sourceNumbers=(source.match(/\d+(?:[.,]\d+)?/g)||[]),candidateNumbers=(out.match(/\d+(?:[.,]\d+)?/g)||[]);
-    if(sourceNumbers.join('|')!==candidateNumbers.join('|'))return false;
-    if(norm(source)===norm(out))return true;
-    const src=tokenise(source),dst=tokenise(out);
-    if(!src.length||!dst.length||dst.length>src.length+2)return false;
-    const meaningfulSrc=src.filter(w=>w.length>=3&&!PROOFREAD_FUNCTION_WORDS.has(w));
-    const meaningfulDst=dst.filter(w=>w.length>=3&&!PROOFREAD_FUNCTION_WORDS.has(w));
-    // Match content words one-to-one. This permits spelling and ending repairs
-    // while rejecting duplicated or invented nouns and preserving repeated words.
-    const allHavePartner=(left,right)=>{
-      const used=new Set();
-      for(const word of left){
-        let best=-1,score=.55;
-        for(let i=0;i<right.length;i++)if(!used.has(i)){
-          const similarity=tokenSimilarity(word,right[i]);
-          if(similarity>score){best=i;score=similarity;}
-        }
-        if(best<0)return false;
-        used.add(best);
-      }
-      return true;
-    };
-    if(!allHavePartner(meaningfulDst,meaningfulSrc)||!allHavePartner(meaningfulSrc,meaningfulDst))return false;
-    return true;
-  }
-
-  function parseRemoteSuggestions(content,input){
-    let raw=String(content||'').trim();
-    raw=raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
-    let data=null;
-    try{data=JSON.parse(raw);}catch(_){
-      const m=raw.match(/\{[\s\S]*\}/); if(m)try{data=JSON.parse(m[0]);}catch(__){}
-    }
-    let rows=Array.isArray(data?.suggestions)?data.suggestions:[];
-    if(!rows.length && typeof data?.corrected==='string')rows=[{text:data.corrected,note:'OpenRouter AI',confidence:.9}];
-    // Never treat free-form model prose as a valid service suggestion.
-    // If the structured contract is broken, reject the response and let the
-    // deterministic fallback handle it. This prevents UI text such as
-    // «Text: ...» / «Here's a thinking process» from becoming a suggestion.
-    const out=[]; const seen=new Set();
-    for(const row of rows){
-      const text=cleanupGenerated(row?.text||row?.name||'');
-      if(!text||seen.has(norm(text))||text.length>180)continue;
-      const same=norm(text)===norm(input);
-      // A correct word or phrase may legitimately be returned unchanged; this
-      // assistant corrects the user's wording and must not invent a service.
-      if(!proofreadCandidateCompatible(input,text))continue;
-      seen.add(norm(text));
-      out.push({text,note:String(row?.note|| (same?'AI подтвердил введённую формулировку':'Понято AI по смыслу всей фразы')),confidence:Math.max(.45,Math.min(.99,Number(row?.confidence)||.88))});
-      if(out.length>=5)break;
-    }
-    return out;
-  }
-
-  async function remoteBrainSuggest(text,direction,selectedServices,memoryHints=[]){
-    let key=getOpenRouterKey();
-    if(!key && isBrowserRuntime() && typeof window.prompt==='function'){
-      const entered=window.prompt('OpenRouter API-ключ\n\nВставьте ключ sk-or-v1-… . Он сохранится только на этом устройстве и не попадёт в код GitHub Pages.');
-      if(entered){setOpenRouterKey(entered);key=getOpenRouterKey();}
-    }
-    if(!key){remoteBrainState='not-configured';remoteBrainError='API-ключ OpenRouter не настроен на этом устройстве.';return null;}
-    const inputAction=inferAction(text,[]), inputObject=inferObject(text,[]);
-    // Only send memory hints that agree with the concepts in the user's phrase.
-    // Direction/catalog context is deliberately weaker than the actual text.
-    const hints=memoryHints.slice(0,10).map(x=>cleanupGenerated(x?.text||'')).filter(Boolean).filter(h=>{
-      const ho=inferObject(h,[]), ha=inferAction(h,[]);
-      if(inputObject?.id && ho?.id && inputObject.id!==ho.id)return false;
-      if(inputAction?.id && ha?.id && inputAction.id!==ha.id)return false;
-      return true;
-    }).slice(0,5);
-
-    const system=[
-      'Ты — корректор русского текста. Пользователь может писать с любым количеством опечаток, пропускать и переставлять буквы, писать слова на слух.',
-      'Твоя задача — исправить орфографию и грамматику исходного текста, сохранив его смысл и формулировку.',
-      'НЕ превращай текст в название услуги. НЕ добавляй слова «установка», «монтаж», «ремонт», «замена» или любые другие слова, которых пользователь не подразумевал.',
-      'Если введено одно слово, верни одно исправленное слово. Если слово уже написано правильно — верни его без изменений.',
-      'Если введена фраза, исправь только необходимые ошибки и согласование. Не заменяй предмет, действие, часть предмета или положение другими понятиями.',
-      'Если не уверен, оставь сомнительное слово как есть. Не угадывай по частотности и не используй каталог как источник смысла.',
-      'Верни 1 вариант в JSON указанного формата. Никаких рассуждений и пояснений.'
-    ].join('\n');
-    const user=`Исправь только написание и грамматику. Исходный текст: ${clean(text)}\nВерни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.`;
-
-    const requestPromise=(async()=>{
-      remoteBrainState='loading';
-      const controller=typeof AbortController!=='undefined'?new AbortController():null;
-      const timer=controller?setTimeout(()=>controller.abort(),30000):null;
-      try{
-        const res=await fetch(OPENROUTER_ENDPOINT,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json','HTTP-Referer':location.origin,'X-Title':'Master Group'},signal:controller?.signal,body:JSON.stringify({
-          // Pick a currently healthy free model dynamically, then try two
-          // explicit free Gemma endpoints if the router/provider errors.
-          models:[OPENROUTER_MODEL,...OPENROUTER_FALLBACK_MODELS],
-          messages:[{role:'system',content:system},{role:'user',content:user}],
-          temperature:0,
-          max_tokens:160,
-          // Gemma's free endpoint supports JSON mode, but does not enforce
-          // JSON Schema. Asking for strict schema can make the provider reject
-          // the request before inference starts.
-          response_format:{type:'json_object'},
-        })});
-        if(!res.ok){
-          let payload=null,detail='';try{payload=await res.json();}catch(_){detail=await res.text().catch(()=> '');}
-          const providerError=payload?.error||{},metadata=providerError.metadata||{};
-          detail=[providerError.message,metadata.provider_name||metadata.provider,metadata.raw,detail].filter(Boolean).join(' — ');
-          const e=new Error(detail||('OpenRouter HTTP '+res.status));e.code='OPENROUTER_HTTP_'+res.status;throw e;
-        }
-        const data=await res.json();
-        const content=data?.choices?.[0]?.message?.content||'';
-        const suggestions=parseRemoteSuggestions(content,text);
-        if(!suggestions.length)throw new Error('OpenRouter returned no compatible suggestions');
-        remoteBrainState='ready';
-        remoteBrainError='';
-        return {corrected:suggestions[0].text,suggestions,changed:norm(suggestions[0].text)!==norm(text),engine:'openrouter-gemma4-free-brain',offline:false,remoteInference:true,remoteApi:true,remoteHost:true,model:data?.model||OPENROUTER_MODEL,confidence:suggestions[0].confidence};
-      }catch(err){
-        remoteBrainState=hasOpenRouterKey()?'error':'not-configured';
-        remoteBrainError=`${err?.code?err.code+': ':''}${String(err?.message||err||'Ошибка запроса к AI')}`.slice(0,420);
-        console.warn('Master Group OpenRouter:',err);
-        return null;
-      }finally{
-        if(timer)clearTimeout(timer);
-      }
-    })();
-    return requestPromise;
-  }
-
-  async function testOpenRouter(){
-    const result=await remoteBrainSuggest('креплние мотра к рам','',[],[]);
-    return !!result?.suggestions?.length;
-  }
-
-  function isBrowserRuntime(){
-    try{return typeof window!=='undefined' && typeof document!=='undefined';}catch(_){return false;}
-  }
-
-  function isWebGPUAvailable(){
-    try{return typeof navigator!=='undefined' && !!navigator.gpu;}catch(_){return false;}
-  }
-
-  function recordLocalLlmProgress(info){
-    if(!info||typeof info!=='object')return;
-    const progress=Number(info.progress);
-    const loaded=Number(info.loaded),total=Number(info.total);
-    localLlmProgress={
-      status:String(info.status||'loading'),
-      progress:Number.isFinite(progress)?Math.max(0,Math.min(100,progress)):localLlmProgress.progress,
-      loaded:Number.isFinite(loaded)&&loaded>=0?loaded:localLlmProgress.loaded,
-      total:Number.isFinite(total)&&total>0?total:localLlmProgress.total,
-      file:String(info.file||localLlmProgress.file||'')
-    };
-  }
-
-  function markLocalLlmAttemptPending(){
-    try{
-      localStorage.removeItem(LOCAL_LLM_READY_STORAGE);
-      localStorage.setItem(LOCAL_LLM_PENDING_STORAGE,'1');
-      return true;
-    }catch(_){return false;}
-  }
-  function markLocalLlmAttemptComplete(){
-    try{
-      localStorage.setItem(LOCAL_LLM_READY_STORAGE,'1');
-      localStorage.removeItem(LOCAL_LLM_PENDING_STORAGE);
-      localLlmAutoEnabled=true;
-      localLlmNeedsManualRetry=false;
-    }catch(_){
-      localLlmAutoEnabled=false;
-      localLlmNeedsManualRetry=true;
-    }
-    localLlmManualRequested=false;
-  }
-  function markLocalLlmAttemptFailed(){
-    try{localStorage.removeItem(LOCAL_LLM_PENDING_STORAGE);localStorage.removeItem(LOCAL_LLM_READY_STORAGE);}catch(_){}
-    localLlmPipeline=null;
-    localLlmAutoEnabled=false;
-    localLlmManualRequested=false;
-    localLlmNeedsManualRetry=true;
-    localLlmState='retry-required';
-    localLlmRetryAfter=Date.now()+30000;
-    localLlmProgress={...localLlmProgress,status:'error'};
-  }
-
-  async function ensureLocalLlm(manual=false){
-    if(!isBrowserRuntime())return null;
-    if(localLlmPipeline)return localLlmPipeline;
-    if(!localLlmAutoEnabled&&!manual)return null;
-    if(localLlmNeedsManualRetry&&!manual)return null;
-    if(manual){localLlmManualRequested=true;localLlmNeedsManualRetry=false;}
-    if(localLlmState==='webgpu-unavailable')return null;
-    if(localLlmState==='unavailable'&&Date.now()<localLlmRetryAfter)return null;
-    if(['unavailable','retry-required','cached'].includes(localLlmState))localLlmState='not-loaded';
-    if(localLlmPromise)return localLlmPromise;
-    // This ONNX weight is about 570 MB; avoid the WASM-on-phone path that
-    // previously caused memory pressure and page reloads.
-    if(!isWebGPUAvailable()){localLlmState='webgpu-unavailable';return null;}
-    if(!markLocalLlmAttemptPending()){localLlmState='retry-required';localLlmNeedsManualRetry=true;return null;}
-    localLlmState='loading';
-    localLlmPromise=(async()=>{
-      try{
-        const mod=await import(LOCAL_LLM_CDN);
-        const {pipeline,env}=mod;
-        // Use browser cache so that after the first model download, inference is
-        // local even with the network switched off. Remote models are allowed
-        // only for that initial model acquisition.
-        if(env?.useBrowserCache!==undefined)env.useBrowserCache=true;
-        if(env?.allowRemoteModels!==undefined)env.allowRemoteModels=true;
-        localLlmProgress={status:'loading',progress:0,loaded:0,total:570000000,file:''};
-        localLlmPipeline=await pipeline('text-generation',LOCAL_LLM_MODEL,{device:'webgpu',dtype:'q4f16',progress_callback:recordLocalLlmProgress});
-        localLlmState='ready-webgpu';
-        localLlmProgress={...localLlmProgress,status:'ready',progress:100};
-        return localLlmPipeline;
-      }catch(err){
-        markLocalLlmAttemptFailed();
-        console.warn('Master Group local LLM unavailable',err);
-        return null;
-      }finally{localLlmPromise=null;}
-    })();
-    return localLlmPromise;
-  }
-
-  async function prepareLocalModel(){
-    if(!isBrowserRuntime())return null;
-    if(!isWebGPUAvailable()){localLlmState='webgpu-unavailable';return null;}
-    return ensureLocalLlm(true);
-  }
-
-  function extractGeneratedText(output){
-    let out='';
-    try{
-      const item=Array.isArray(output)?output[0]:output;
-      if(typeof item==='string')out=item;
-      else if(Array.isArray(item?.generated_text)){
-        const last=item.generated_text[item.generated_text.length-1];
-        out=typeof last==='string'?last:String(last?.content||'');
-      }else out=String(item?.generated_text||item?.text||'');
-    }catch(_){out='';}
-    out=String(out||'')
-      .replace(/<think>[\s\S]*?<\/think>/gi,'')
-      .replace(/```[\s\S]*?```/g,'')
-      .replace(/^(?:ответ|правильная формулировка|название услуги)\s*[:—-]\s*/i,'')
-      .split(/\n+/).map(x=>x.trim()).find(Boolean)||'';
-    return cleanupGenerated(out);
-  }
-
-  async function localLlmSuggest(text,direction,selectedServices,retrievedText=text){
-    const generator=await ensureLocalLlm();
-    if(!generator)return null;
-    const system=`Ты — языковой мозг приложения Master Group.
-Работай как человек: сначала пойми, что пользователь хотел сказать, затем исправь слова и грамматику всей фразы.
-Пользователь может писать с пропущенными буквами, переставленными буквами, неправильными окончаниями, на слух, по-румынски, латиницей или смешанно.
-Слова из внешней памяти — это только кандидаты, а НЕ готовые ответы. Полная фраза может отсутствовать в базе.
-Согласуй род, число и падеж. Например: «задняя багажник» → «Задний багажник», «креплние мотра к рам» → «Крепление мотора к раме».
-Для поля услуги используй короткую профессиональную формулировку и не добавляй фактов, которых нет во вводе.
-Верни только одну итоговую фразу на русском, без объяснений.
-Примеры: «заднй бампр» → «Задний бампер»; «устновит раковн» → «Установка раковины»; «мне нада устновит мотор на машыну» → «Установка мотора на машину».`;
-    const user=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nПредварительная смысловая интерпретация: ${clean(semanticBrainPhrase(text,direction,selectedServices)?.text)||'нет'}\nУже выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nИсходный текст пользователя: ${clean(text)}\nРезультат предварительного поиска во внешней памяти словаря: ${clean(retrievedText)||'нет данных'}\n\nВерни только правильное название услуги на русском.`;
-    const messages=[{role:'system',content:system},{role:'user',content:user}];
-    try{
-      let output;
-      try{
-        const tokenizer=generator.tokenizer;
-        if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
-          const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
-          output=await generator(prompt,{max_new_tokens:48,do_sample:false,return_full_text:false});
-        }else{
-          output=await generator(messages,{max_new_tokens:48,do_sample:false});
-        }
-      }catch(firstErr){
-        output=await generator(messages,{max_new_tokens:48,do_sample:false});
-      }
-      const corrected=extractGeneratedText(output);
-      if(!corrected||corrected.length<2||corrected.length>180)return null;
-      if(/^(не могу|я не могу|не знаю|не удалось|как исправить)/i.test(corrected))return null;
-      return {
-        corrected,
-        suggestions:[{text:corrected,note:localLlmState==='ready-webgpu'?'Локальная AI-модель Qwen3 на устройстве':'Локальная AI-модель Qwen3 (CPU)',confidence:.96}],
-        changed:norm(corrected)!==norm(text),
-        engine:'local-llm-qwen3-0.6b',
-        offline:true,
-        modelCached:true,
-        remoteInference:false,
-        confidence:.96
-      };
-    }catch(err){
-      console.warn('Master Group local LLM generation failed',err);
-      return null;
-    }
-  }
-
-  async function localLlmRepair(text,direction,selectedServices){
-    const generator=await ensureLocalLlm();
-    if(!generator)return null;
-    if(!markLocalLlmAttemptPending()){markLocalLlmAttemptFailed();return null;}
-    const system=`Ты — корректор любого русского текста, а не генератор и не редактор смысла.
-Исправляй только орфографию и грамматику по всей фразе. Пользователь может пропускать и переставлять буквы, писать на слух, ошибаться в окончаниях или вводить редкое слово.
-Сохраняй исходные слова, предметы, действия и смысл. Не добавляй и не удаляй содержательные слова. Не превращай текст в название услуги и не добавляй «монтаж», «ремонт», «установка» или другие действия.
-Если введено одно слово — верни одно слово. Если написание уже правильное или слово незнакомое и уверенного исправления нет, верни исходный текст без изменения.
-Используй контекст только для выбора букв и окончаний. Не заменяй неизвестное слово другим распространённым словом.
-Верни только исправленный текст, без кавычек и пояснений.`;
-    const user=`Исправь написание этого текста, сохранив его смысл и слова:\n${clean(text)}`;
-    try{
-      const messages=[{role:'system',content:system},{role:'user',content:user}];
-      let output;
-      const tokenizer=generator.tokenizer;
-      if(tokenizer&&typeof tokenizer.apply_chat_template==='function'){
-        const prompt=await tokenizer.apply_chat_template(messages,{tokenize:false,add_generation_prompt:true,enable_thinking:false});
-        output=await generator(prompt,{max_new_tokens:64,do_sample:false,temperature:0,return_full_text:false});
-      }else output=await generator(messages,{max_new_tokens:64,do_sample:false,temperature:0});
-      const corrected=extractGeneratedText(output);
-      if(!corrected||corrected.length<2||corrected.length>180)return null;
-      if(!proofreadCandidateCompatible(text,corrected))return null;
-      const changed=norm(corrected)!==norm(text),confidence=changed?.91:.99;
-      return {corrected,suggestions:[{text:corrected,note:'Локальная проверка на устройстве',confidence}],changed,engine:'local-proofreader-qwen3-0.6b',offline:true,modelCached:true,remoteInference:false,confidence};
-    }catch(err){console.warn('Master Group Qwen3 repair failed',err);markLocalLlmAttemptFailed();return null;}
-    finally{if(localLlmState!=='retry-required')markLocalLlmAttemptComplete();}
-  }
-
-  function hasSuspiciousToken(text){
-    const toks=tokenise(text); if(!toks.length)return false;
-    const forms=[...ACTIONS,...OBJECTS,...OPEN_ACTIONS].flatMap(x=>x.forms||[]).map(norm).filter(x=>x.length>2);
-    const common=new Set(['и','в','во','на','по','для','с','со','из','у','к','от','до','за','под','над','без','не','все','это','как','или','а','для','внутри','наружный','наружная','задний','задняя','передний','передняя','правый','левый','новый','старая','старый']);
-    return toks.some(t=>t.length>=4 && !common.has(t) && !forms.includes(t) && bestForm(t,forms).score<.62);
-  }
-
-  async function ensureNativeSession(){
-    if(nativeState==='unavailable')return null;
-    if(nativeSession)return nativeSession;
-    if(nativePromise)return nativePromise;
-    nativePromise=(async()=>{
-      try{
-        if(!window.LanguageModel || typeof window.LanguageModel.create!=='function')throw new Error('No local LanguageModel API');
-        if(typeof window.LanguageModel.availability==='function'){
-          let status='unavailable';
-          try{status=await window.LanguageModel.availability();}catch(_){status='available';}
-          if(status!=='available')throw new Error('Local model unavailable');
-        }
-        nativeSession=await window.LanguageModel.create({
-          initialPrompts:[{role:'system',content:'Ты локальный интеллект Master Group. Пользователь может писать по-русски с сильными ошибками, по-румынски, латиницей, на слух, с пропущенными буквами или в разговорной форме. Пойми смысл и верни одно короткое профессиональное название услуги на русском языке. Не придумывай цены, количество, единицы измерения или факты. Можно использовать направление и каталог как контекст.'}]
-        });
-        nativeState='available';return nativeSession;
-      }catch(_){nativeState='unavailable';return null;}finally{nativePromise=null;}
-    })();
-    return nativePromise;
-  }
-
-  async function nativeSuggest(text,direction,selectedServices){
-    const s=await ensureNativeSession();if(!s)return null;
-    const prompt=`Направление: ${clean(direction,MAX_DIRECTION)||'не указано'}\nКаталог/выбранные услуги: ${uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS).join('; ')||'нет'}\nПользователь: ${clean(text)}\nВерни только одно правильное название услуги на русском.`;
-    try{
-      const raw=await s.prompt(prompt);const out=cleanupGenerated(String(raw||'').split(/\n+/).map(x=>x.replace(/^[-*•\d.)]+\s*/,'')).find(Boolean)||'');
-      if(!out||out.length>180||/пользователь:|направление:|каталог/i.test(out))return null;
-      return {corrected:out,suggestions:[{text:out,note:'Локальная языковая модель устройства',confidence:.95}],changed:norm(out)!==norm(text),engine:'native-local-ai',offline:true,confidence:.95};
-    }catch(_){return null;}
-  }
-
-  async function suggestServiceName({text,direction='',selectedServices=[]}={}){
-    const input=clean(text);if(!input)return {corrected:'',suggestions:[],changed:false,engine:'master-local-ai',offline:true,confidence:1};
-    const services=uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS);const key=JSON.stringify({input,d:clean(direction,MAX_DIRECTION),s:services});
-    if(CACHE.has(key))return CACHE.get(key);
-    const personal=readPersonalTerms().find(x=>norm(x.input)===norm(input));
-    if(personal){
-      const result={corrected:personal.corrected,suggestions:[{text:personal.corrected,note:'Ваше сохранённое исправление',confidence:1}],changed:true,engine:'personal-proofreader-memory',offline:true,dictionaryUsed:false,personalTerm:true,confidence:1};
-      CACHE.set(key,result);return result;
-    }
-
-    // Try on-device proofreading first. On the first visit the model may still
-    // be downloading; do not hold the input UI hostage while that happens.
-    const localTask=localLlmRepair(input,'',[]).catch(err=>{console.warn('Local proofreader:',err);return null;});
-    const localFirst=await Promise.race([localTask,new Promise(resolve=>setTimeout(()=>resolve(null),6500))]);
-    if(localFirst?.changed){
-      CACHE.set(key,localFirst);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
-      return localFirst;
-    }
-
-    // Use internet only when local inference is unsupported, still warming up,
-    // or cannot produce a conservative correction.
-    const remote=await remoteBrainSuggest(input,'',[],[]);
-    if(remote?.suggestions?.length){
-      CACHE.set(key,remote);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
-      return remote;
-    }
-    // A model that finishes while the online fallback is running can still
-    // answer this request. Bound this extra wait to keep the UI responsive.
-    if(localLlmState==='loading'){
-      const lateLocal=await Promise.race([localTask,new Promise(resolve=>setTimeout(()=>resolve(null),5000))]);
-      if(lateLocal?.changed){
-        CACHE.set(key,lateLocal);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
-        return lateLocal;
-      }
-    }
-    const localMessage=localLlmState==='loading'?'Локальная модель ещё загружается (~570 МБ). Повторите проверку после завершения загрузки.':localLlmState==='webgpu-unavailable'?'На этом устройстве локальная модель не поддерживается.':localLlmState==='retry-required'?'Загрузка локальной модели остановлена. Повторите её вручную кнопкой в карточке AI.':localLlmState==='not-loaded'?'Большая локальная модель не загружается автоматически; её можно включить вручную кнопкой в карточке AI.':'Локальная модель не смогла безопасно исправить эту фразу.';
-    const result={corrected:input,suggestions:[{text:input,note:'AI не подтвердил исправление; исходный текст сохранён',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:[localMessage,remoteBrainError||'Проверьте подключение и настройки API-ключа.'].join(' '),confidence:0};
-    return result;
-
-  }
-
   function clearCache(){CACHE.clear();}
-  function getStatus(){return {
-    engine:localLlmState==='ready-webgpu'?'local-proofreader-qwen3-0.6b':remoteBrainState==='ready'?'openrouter-gemma4-free-brain':'ai-unavailable',
-    native:nativeState,
-    localLlm:localLlmState,
-    localLlmRetryAfter,
-    localLlmProgress:{...localLlmProgress},
-    localModel:LOCAL_LLM_MODEL,
-    localModelDownloadBytes:570000000,
-    localModelOptInRequired:!localLlmAutoEnabled&&!localLlmManualRequested&&localLlmState!=='ready-webgpu',
-    localModelNeedsManualAction:isWebGPUAvailable()&&!localLlmAutoEnabled&&!['loading','ready-webgpu'].includes(localLlmState),
-    localFirst:localLlmAutoEnabled||localLlmManualRequested||localLlmState==='ready-webgpu',
-    model:OPENROUTER_MODEL,
-    offline:localLlmState==='ready-webgpu'||remoteBrainState!=='ready',
-    remoteInference:remoteBrainState==='ready',
-    remoteApi:true,
-    remoteHost:true,
-    remoteBrainState,
-    configured:hasOpenRouterKey(),
-    personalTerms:readPersonalTerms().length,
-    lastError:remoteBrainError
-  };}
-
-  if(window.__MG_AI_TEST__&&typeof window.__MG_AI_TEST__==='object')window.__MG_AI_TEST__.proofreadCandidateCompatible=proofreadCandidateCompatible;
-  window.MG_AI_SERVICE={suggestServiceName,prepareLocalModel,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,region:null,version:'v430-manual-local-model'};
+  function getStatus(){return {engine:'master-dictionary-v2',offline:true,remoteInference:false,modelLoaded:false,apiKeyRequired:false,personalTerms:readPersonalTerms().length,expandedDictionaryState:expandedState,expandedDictionarySource:expandedSource,expandedDictionaryWords:expandedWordCount,expandedDictionaryProgress:expandedProgress};}
+  if(typeof window!=='undefined')window.MG_DICTIONARY={suggestServiceName,clearCache,getStatus,prepare:prepareExpandedDictionary,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,version:'v443-dictionary-performance'};
 })();
