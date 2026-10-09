@@ -475,6 +475,9 @@
     <button type="button" class="settings-hub-card" data-settings-hub="updates">
       <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg></span><span class="settings-hub-copy"><b>Обновления</b><small>Версия приложения</small></span><span class="settings-hub-arrow">›</span>
     </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="preferences">
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7m10 10 2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg></span><span class="settings-hub-copy"><b>Язык и тема</b><small>Русский, română, светлая и тёмная</small></span><span class="settings-hub-arrow">›</span>
+    </button>
   </div>
 </section>
 <div id="settingsSectionNav" class="settings-section-nav-v357" hidden>
@@ -484,6 +487,16 @@
 
 
 
+
+<div id="settingsPanelPreferences" class="settings-panel-v2" hidden>
+  <section class="settings-card-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">文</div><div><span class="settings-overline">ПЕРСОНАЛИЗАЦИЯ</span><h2>Язык и оформление</h2><p>Выбери язык интерфейса и документов, а также тему приложения.</p></div></div>
+    <div class="settings-group-v2"><div class="settings-group-title">Язык интерфейса</div><label for="mgAppLanguage">Язык меню и экранов</label><select id="mgAppLanguage" class="settings-input"><option value="ru">Русский</option><option value="ro">Română</option></select><p class="muted">Выбор сохраняется на этом устройстве. Переводы экранов подключаются отдельно.</p></div>
+    <div class="settings-group-v2"><div class="settings-group-title">Язык документов</div><label for="mgDocumentLanguage">Язык стандартных подписей в сметах</label><select id="mgDocumentLanguage" class="settings-input"><option value="ru">Русский</option><option value="ro">Română</option></select><p class="muted">Не меняет имена клиентов и введённые вручную названия услуг.</p></div>
+    <div class="settings-group-v2"><div class="settings-group-title">Тема приложения</div><div class="mg-theme-options"><label class="mg-theme-option"><input type="radio" name="mgAppTheme" value="light"><span>☀️ Светлая</span></label><label class="mg-theme-option"><input type="radio" name="mgAppTheme" value="dark"><span>🌙 Тёмная</span></label></div><p class="muted">Тема применяется сразу и сохраняется после перезапуска.</p></div>
+    <div id="mgPreferencesStatus" class="muted" role="status" aria-live="polite"></div>
+  </section>
+</div>
 
 <div id="settingsPanelCatalog" class="settings-panel-v2" hidden>
   <section class="settings-card-v2 settings-add-v2">
@@ -736,6 +749,7 @@
 
 <script src="js/v284-settings-cleanup.js"></script>
 <script src="js/settings-hub-v357.js"></script>
+<script src="js/settings-preferences-v449.js?v=449"></script>
 <script src="js/document-actions-v419.js?v=431"></script>
 </body></html>
 
@@ -1276,4 +1290,13 @@
 #settingsScreen .settings-hub-arrow{color:#8a8c90!important;font-size:23px!important;line-height:1!important;text-align:center!important}
 @media(max-width:600px){#settingsScreen .settings-hub-grid{grid-template-columns:1fr!important;gap:9px!important}#settingsScreen .settings-hub-card{height:66px!important;min-height:66px!important;border-radius:15px!important}}
 @media(max-width:360px){#settingsScreen .settings-topbar-title{font-size:19px!important}#settingsScreen .settings-hub-card{grid-template-columns:38px minmax(0,1fr) 12px!important;gap:9px!important;padding:0 10px!important}#settingsScreen .settings-hub-copy small{font-size:10px!important}}
+</style>
+<style id="mg-settings-preferences-v449">
+#settingsPanelPreferences .settings-group-v2{padding:14px 0;border-bottom:1px solid #ececef}#settingsPanelPreferences .settings-group-v2:last-of-type{border-bottom:0}
+#settingsPanelPreferences .settings-group-v2>label{display:block;margin:8px 0 6px;font-size:13px;font-weight:600}
+#settingsPanelPreferences .settings-input{width:100%;min-height:44px;padding:0 12px;border:1px solid #dedfe2;border-radius:12px;background:#fff;color:#222;font:inherit}
+#settingsPanelPreferences .muted{font-size:12px;line-height:1.45;margin-top:7px}
+#settingsPanelPreferences .mg-theme-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+#settingsPanelPreferences .mg-theme-option{display:flex;align-items:center;gap:9px;min-height:48px;padding:0 12px;border:1px solid #dedfe2;border-radius:12px;background:#fff;font-size:14px;font-weight:600}
+#settingsPanelPreferences .mg-theme-option input{accent-color:#34363a}
 </style>

@@ -1,9 +1,0 @@
-Master Group v445 — spelling detection and honest dictionary status
-
-- Added built-in high-confidence corrections for common Russian construction/service typos, including канализацыи, строителный, устанвка, ваной, учатске and related forms.
-- These corrections work without a network connection or paid AI API.
-- Fixed the suggestion panel so unchanged input is NOT described as correct. It now explains that no reliable correction was found and that the expanded dictionary may be unavailable.
-- Improved failure status for the optional large dictionary to avoid claiming that arbitrary text was verified.
-- Bumped app and service worker cache to v445.
-
-Limit: without successfully loading the expanded dictionary, built-in typo coverage is finite; an unrecognized misspelling can still pass through.
