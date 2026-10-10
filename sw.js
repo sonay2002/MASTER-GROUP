@@ -1,5 +1,5 @@
-/* Master Group v454 — remove white flashes and surfaces */
-const CACHE = 'master-group-v454';
+/* Master Group v455 — borderless soft interface */
+const CACHE = 'master-group-v455';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -20,7 +20,7 @@ const CORE = [
   "./js/finance-ui.js?v=434",
   "./js/document-actions-v419.js?v=431",
   "./js/settings-preferences-v450.js?v=451",
-  "./css/soft-graphite-theme-v451.css?v=454",
+  "./css/soft-graphite-theme-v451.css?v=455",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",

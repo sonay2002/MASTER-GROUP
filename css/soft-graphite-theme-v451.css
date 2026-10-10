@@ -204,3 +204,63 @@ html[data-mg-theme="dark"] body :is(.analytics-tab-v3,button,.btn,[role="button"
 html[data-mg-theme="dark"] body :is(.analytics-tab-v3,button,.btn,[role="button"]) i {
   color: #929baa !important;
 }
+
+/* v455 — borderless, calm interface across every screen and both themes. */
+html body,
+html body * {
+  box-shadow: none !important;
+  outline-color: transparent !important;
+}
+html body * {
+  border-color: transparent !important;
+}
+html body :is(
+  button, .btn, [role="button"], .tab, .nav-link, .menu-item,
+  .card, .card-body, .card-header, .card-footer, .panel, .panel-body,
+  .modal, .modal-content, .modal-header, .modal-body, .modal-footer,
+  .settings-hub-card, .settings-card-v2, .settings-panel-v2,
+  .estimate-card, .client-card, .finance-card, .dashboard-card,
+  .form-card, .form-section, .list-item, .list-group-item,
+  .analytics-tab-v3, .mg-theme-option, .settings-input,
+  input, textarea, select, [contenteditable="true"],
+  .dropdown-menu, .popover, .sheet, .bottom-sheet, .drawer,
+  .sidebar, .side-menu, .side-menu-item, .empty-state,
+  .settings-group-v2, .tab-content, .tab-pane
+) {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html body :is(button,.btn,[role="button"],.tab,.nav-link,.menu-item,
+  .card,.panel,.modal-content,.settings-hub-card,.settings-card-v2,
+  .estimate-card,.client-card,.finance-card,.dashboard-card,
+  .form-card,.form-section,.analytics-tab-v3,.mg-theme-option) {
+  background-image: none !important;
+}
+/* Light theme: soft neutral surfaces, no outlined boxes or harsh elevation. */
+html[data-mg-theme="light"] body :is(
+  .card,.card-body,.card-header,.card-footer,.panel,.panel-body,
+  .modal-content,.settings-hub-card,.settings-card-v2,.settings-panel-v2,
+  .estimate-card,.client-card,.finance-card,.dashboard-card,
+  .form-card,.form-section,.list-item,.list-group-item,
+  .analytics-tab-v3,.mg-theme-option,.dropdown-menu,.popover,.sheet,
+  .bottom-sheet,.drawer,.sidebar,.side-menu,.empty-state
+) {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+html[data-mg-theme="light"] body :is(button,.btn,[role="button"],.tab,.nav-link,.menu-item,.analytics-tab-v3) {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+/* Dark theme: preserve the graphite palette but remove all visible outlines. */
+html[data-mg-theme="dark"] body * {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+html[data-mg-theme="dark"] body :is(
+  button,.btn,[role="button"],.tab,.nav-link,.menu-item,
+  .card,.panel,.modal-content,.settings-hub-card,.settings-card-v2,
+  .settings-panel-v2,.estimate-card,.client-card,.finance-card,
+  .dashboard-card,.form-card,.form-section,.analytics-tab-v3,
+  .mg-theme-option,input,textarea,select,[contenteditable="true"]
+) { border: 0 !important; box-shadow: none !important; }
