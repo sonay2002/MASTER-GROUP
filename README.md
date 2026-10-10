@@ -1,12 +1,12 @@
-# Master Group v430 — manual local model download
+# Master Group v440 — offline estimate and correction fixes
 
-The 570 MB Qwen3 model is never downloaded automatically. Text checks use the configured OpenRouter route until the user explicitly taps “Загрузить локальный ИИ”. The app then shows download progress and runs the model on-device if WebGPU is available. The app records an unfinished local-model attempt before loading or inference and clears that marker only after a successful inference. If the page reloads or the browser runs out of memory, a pending marker blocks automatic retries; another attempt requires a deliberate tap. The remote request is bounded by a 30-second timeout.
+This build fixes offline estimate creation, safely reconciles temporary local estimate numbers when cloud sync returns, allows the “Продолжить без облака” action to close the sign-in overlay, applies the “Запомнить меня” session choice, and disables public self-registration through the app client. Local term correction now receives direction/service context and is used if both model-based routes cannot provide a confident correction. The interface and visual styles are unchanged.
 
-Both paths use conservative checks to preserve content words and numbers; an unrelated suggestion is rejected and the original text stays intact. The old 10-million-word dictionary is not loaded or called. The API key, if configured, is stored in this browser's local storage and is not part of the application archive. Devices without WebGPU need a working internet connection and configured API key for the remote fallback.
+The 570 MB Qwen3 model is optional and is not downloaded automatically. Users can explicitly start the local model when WebGPU is available. OpenRouter remains optional and its key is stored only in this browser's local storage, not in the public source. If neither model route is available, local deterministic term rules try common Russian/Romanian shorthand and leave the source unchanged when confidence is insufficient.
 
-When the user accepts a correction, that exact correction can be remembered on the device. The AI card has controls to download those personal terms as JSON and restore them later, including after app data is cleared or the app is reinstalled.
+Temporary estimate numbers created offline are replaced with a unique account-scoped number during the first successful cloud upload. Cloud sync failures do not block a local save. Changes to Firebase Authentication and deployed database rules still require the Firebase Console; client-side registration controls alone are not a server-side security boundary.
 
-This build's checks cover JavaScript syntax, the opt-in and crash-loop guard, correction of «штробовка канала канализацыи», rejection of unrelated object/material substitutions, and personal-term backup/restore. Real-device WebGPU inference and first-run model download still need verification on a phone with the target browser.
+Real-device verification is still needed for iPhone memory behaviour, WebGPU inference and the live Firebase project's deployed rules.
 
 The notes below describe historical versions and are retained as project history.
 # Master Group v417 — five new work-first estimate templates + v416 AI

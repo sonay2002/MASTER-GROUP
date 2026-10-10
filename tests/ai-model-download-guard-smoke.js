@@ -12,7 +12,7 @@ function createService(seed={}){
     fetch:async(_url,opts)=>{
       fetchCalls++;
       const body=JSON.parse(opts.body),msg=String(body.messages?.find(x=>x.role==='user')?.content||'');
-      const text=(msg.match(/Исходный текст:\s*(.*)$/m)||[])[1]||'';
+      const text=(msg.match(/Исходный текст пользователя:\s*(.*)$/m)||[])[1]||'';
       return {ok:true,json:async()=>({choices:[{message:{content:JSON.stringify({suggestions:[{text,note:'mock',confidence:.99}]})}}]})};
     }
   };

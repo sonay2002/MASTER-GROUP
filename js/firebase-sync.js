@@ -17,6 +17,7 @@
   const newId=uid;
   const toast=(t)=>{try{if(typeof window.__mgToast==='function')return window.__mgToast(t)}catch(e){}try{const x=$('toast');if(x){x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1700)}}catch(e){}};
   let user=null,cloudMode=false,busy=false,pending=false,db=null,auth=null,root=null,estimateListener=null,catalogListener=null,companyListener=null,metaListener=null,starting=false,authAttempt=false,explicitLogout=false;
+  const cloudNumberPromises=new Map();
   function msg(t,error){if(!$('mgCloudMsg'))return;$('mgCloudMsg').textContent=t||'';$('mgCloudMsg').classList.toggle('error',!!error)}
   const firebaseFriendlyError=(err,context)=>window.MGFirebaseClient?.friendlyError(err,context)||'Произошла ошибка облачного сервиса. Попробуйте ещё раз.';
   function cloudError(err,context){
@@ -40,6 +41,7 @@
   function showAuth(mode){
     const signup=mode==='signup';
     $('mgCloudAuth').hidden=false;
+    $('mgCloudAuth').style.display='flex';
     $('mgCloudLoginTab').classList.toggle('active',!signup);
     $('mgCloudSignupTab').classList.toggle('active',signup);
     $('mgCloudSubmit').textContent=signup?'Создать аккаунт':'Войти';
@@ -53,7 +55,7 @@
     if($('mgCloudLocal'))$('mgCloudLocal').hidden=signup;
     msg('');
   }
-  function hideAuth(){ const el=$('mgCloudAuth'); if(!el)return; if(!user || !cloudMode)return; el.hidden=true; authAttempt=false }
+  function hideAuth(){ const el=$('mgCloudAuth'); if(!el)return; el.hidden=true; el.style.display='none'; authAttempt=false }
   function keepAuthVisible(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
   function lockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
   function unlockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=true;el.style.display='none'} authAttempt=false }
@@ -147,11 +149,41 @@
     return null;
   }
   window.__mgCloudIsConnected=()=>!!(cloudMode&&user&&root);
+  async function ensureCloudNumber(estimate){
+    const id=String(estimate?.id||'');
+    if(!id||!estimate?._localNumberPending)return estimate;
+    const inFlight=cloudNumberPromises.get(id);
+    if(inFlight)return inFlight;
+    const task=(async()=>{
+      // Another upload may have completed reconciliation while this caller was queued.
+      const latest=localEstimates().find(x=>String(x.id)===id);
+      if(latest&&!latest._localNumberPending)return latest;
+      const source=latest||estimate;
+      if(!root||!user||!cloudMode)throw Object.assign(new Error('Cloud not ready to assign an estimate number'),{code:'database/unavailable'});
+      const n=await FIREBASE_REPO.nextEstimateNumber(user.uid);
+      if(!Number.isFinite(Number(n))||Number(n)<1)throw new Error('Invalid cloud estimate number');
+      const updated={...source,number:'MG-'+String(Number(n)).padStart(4,'0'),_syncUpdatedAt:Date.now()};
+      delete updated._localNumberPending;
+      const all=localEstimates(),i=all.findIndex(x=>String(x.id)===id);
+      if(i>=0){all[i]=updated;if(!write(KEY,all))throw Object.assign(new Error('Could not persist cloud estimate number locally'),{code:'storage/unavailable'});}
+      try{localStorage.setItem('mg_counter',String(Number(n)))}catch(_){ }
+      try{
+        const st=window.MGState;
+        if(st&&String(st.id||'')===id&&st.estimate){st.estimate.number=updated.number;delete st.estimate._localNumberPending;}
+        refreshUi();
+      }catch(_){ }
+      return updated;
+    })();
+    cloudNumberPromises.set(id,task);
+    try{return await task}
+    finally{if(cloudNumberPromises.get(id)===task)cloudNumberPromises.delete(id)}
+  }
   async function uploadEstimate(id){
     let e=localEstimates().find(x=>String(x.id)===String(id));
     if(e&&window.MGFinance?.normalize){e=window.MGFinance.normalize(e);const all=localEstimates();const i=all.findIndex(x=>String(x.id)===String(id));if(i>=0){all[i]=e;write(KEY,all)}}
     if(!e){clearDirty(id);return;}
     if(!root||!user) throw Object.assign(new Error('Cloud not ready'),{code:'database/unavailable'});
+    e=await ensureCloudNumber(e);
     const payload=FIREBASE_REPO.sanitize(JSON.parse(JSON.stringify(e)));
     payload._cloudUpdatedAt=window.MGFirebaseClient.serverTimestamp();
     payload._clientUpdatedAt=Number(e._syncUpdatedAt)||Date.now();
@@ -186,6 +218,7 @@
     try{
       if(!estimate||!estimate.id) throw Object.assign(new Error('Estimate has no id'),{code:'database/invalid-estimate'});
       if(!user||!root||!cloudMode) { markDirty([String(estimate.id)]); return false; }
+      estimate=await ensureCloudNumber(estimate);
       const payload=FIREBASE_REPO.sanitize(JSON.parse(JSON.stringify(estimate)));
       payload._cloudUpdatedAt=window.MGFirebaseClient.serverTimestamp();
       payload._clientUpdatedAt=Number(estimate._syncUpdatedAt)||Date.now();
@@ -497,8 +530,10 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
   if($('mgCloudLoginButton'))$('mgCloudLoginButton').onclick=openCloudLogin;
   window.__mgOpenCloudLogin=openCloudLogin;
   $('mgCloudLoginTab').onclick=()=>showAuth('login');
-  $('mgCloudSignupTab').onclick=()=>showAuth('signup');
-  $('mgCloudCreate').onclick=()=>showAuth($('mgCloudSignupTab').classList.contains('active')?'login':'signup');
+  // This deployment is intended for one administrator account. Keep the existing
+  // controls in place, but do not permit public self-registration from the client.
+  $('mgCloudSignupTab').onclick=()=>msg('Регистрация через приложение отключена. Войдите в существующий аккаунт администратора.',true);
+  $('mgCloudCreate').onclick=()=>msg('Создание новых аккаунтов отключено. Сначала создайте аккаунт владельца в Firebase Console.',true);
   $('mgCloudLocal').onclick=()=>{hideAuth();status('Локальный режим',true)};
   $('mgCloudPasswordToggle').onclick=()=>{
     const input=$('mgCloudPassword'),show=input.type==='password';
@@ -518,7 +553,22 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     finally{setTimeout(()=>{if($('mgCloudSignupTab').classList.contains('active'))$('mgCloudForgot').disabled=true;else $('mgCloudForgot').disabled=false},800)}
   };
   $('mgCloudLogout').onclick=async()=>{if(!auth||!user)return;if(!confirm('Выйти из Firebase аккаунта?'))return;explicitLogout=true;try{await auth.signOut();unlockAuthGate();status('Локальный режим',true)}catch(err){explicitLogout=false;cloudError(err,'auth')}};
-  $('mgCloudAuthForm').addEventListener('submit',async e=>{e.preventDefault();if(!auth||busy||authAttempt)return;const email=$('mgCloudEmail').value.trim(),password=$('mgCloudPassword').value,signup=$('mgCloudSignupTab').classList.contains('active');authAttempt=true;keepAuthVisible();msg('Подключение…');$('mgCloudSubmit').disabled=true;try{if(signup)await auth.createUserWithEmailAndPassword(email,password);else await auth.signInWithEmailAndPassword(email,password)}catch(err){authAttempt=false;keepAuthVisible();cloudError(err,'auth')}finally{$('mgCloudSubmit').disabled=false}});
+  $('mgCloudAuthForm').addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!auth||busy||authAttempt)return;
+    const signup=$('mgCloudSignupTab').classList.contains('active');
+    if(signup){msg('Регистрация через приложение отключена. Войдите в существующий аккаунт администратора.',true);return;}
+    const email=$('mgCloudEmail').value.trim(),password=$('mgCloudPassword').value;
+    authAttempt=true;keepAuthVisible();msg('Подключение…');$('mgCloudSubmit').disabled=true;
+    try{
+      const persistence=firebase?.auth?.Auth?.Persistence;
+      if(typeof auth.setPersistence==='function'&&persistence){
+        await auth.setPersistence($('mgCloudRemember')?.checked===false?persistence.SESSION:persistence.LOCAL);
+      }
+      await auth.signInWithEmailAndPassword(email,password);
+    }catch(err){authAttempt=false;keepAuthVisible();cloudError(err,'auth')}
+    finally{$('mgCloudSubmit').disabled=false}
+  });
   window.__mgFirebaseSyncNow=syncNow;
   window.__mgFirebaseRetry=async function(){if(!user){showAuth('login');return false}return await initialSync()};
   window.addEventListener('online',()=>{if(user&&!cloudMode){setTimeout(()=>initialSync(),500)}else if(user&&cloudMode)scheduleUpload();if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOnlineAt:Date.now()})});

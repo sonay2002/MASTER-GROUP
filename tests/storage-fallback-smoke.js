@@ -1,0 +1,14 @@
+const fs = require('fs'), vm = require('vm');
+const source = fs.readFileSync(__dirname + '/../js/storage.js', 'utf8');
+const map = new Map(), messages=[];
+const localStorage={getItem(){throw new Error('blocked')},setItem(){throw new Error('blocked')},removeItem(){throw new Error('blocked')}};
+const sessionStorage={getItem(k){return map.has(k)?map.get(k):null},setItem(k,v){map.set(k,String(v))},removeItem(k){map.delete(k)}};
+const context={window:{__mgToast:m=>messages.push(m)},localStorage,sessionStorage,JSON,Map,Array,String,Number};
+vm.createContext(context);vm.runInContext(source,context);
+const row={id:'offline-1',number:'MG-0001'};
+if(!context.window.MGStorage.persist([row]))throw new Error('Session fallback should preserve data for the current tab');
+if(context.window.MGStorage.isPersistent()!==false)throw new Error('Session-only persistence must not be reported as durable');
+if(context.window.MGStorage.saved()[0]?.id!=='offline-1')throw new Error('Session fallback could not read the saved estimate');
+if(!messages.some(x=>/только до закрытия вкладки/i.test(x)))throw new Error('Session-only persistence warning missing');
+if(!context.window.MGStorage.persistDrafts([{id:'draft-1'}]))throw new Error('Draft saving should also use session fallback');
+console.log('Storage fallback smoke: PASS');

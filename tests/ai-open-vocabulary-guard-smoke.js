@@ -5,5 +5,5 @@ if(!src.includes('Не добавляй и не удаляй содержате�
 if(!src.includes('sourceNumbers.join(\'|\')!==candidateNumbers.join(\'|\')')) throw new Error('Number preservation guard missing');
 if(src.indexOf('localLlmRepair(input')>src.indexOf('remoteBrainSuggest(input')) throw new Error('Local model must run before online fallback once enabled');
 if(!src.includes('if(!localLlmAutoEnabled&&!manual)return null')) throw new Error('Large model is not protected by an opt-in gate');
-if(!src.includes("version:'v430-manual-local-model'")) throw new Error('Version mismatch');
+if(!src.includes("version:'v440-offline-fixes'")) throw new Error('Version mismatch');
 console.log('AI manual-download proofreader guard smoke: PASS');

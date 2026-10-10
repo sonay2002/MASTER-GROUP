@@ -708,7 +708,7 @@
   }
 
   const neutralObjectAction={
-    tile:'Укладка',laminate:'Укладка',parquet:'Укладка',wallpaper:'Поклейка',pipes:'Монтаж',cable:'Прокладка',plumbing:'Установка',sink:'Установка',toilet:'Установка',faucet:'Установка',camera:'Установка',recorder:'Настройка',socket:'Установка',switch:'Установка',door:'Установка',window:'Установка',metal:'Монтаж',fence:'Монтаж',gate:'Монтаж',tree:'Срез',branch:'Срез',root:'Удаление',grass:'Покос',site:'Очистка',roof:'Ремонт',wall:'Ремонт',ceiling:'Ремонт',floor:'Ремонт',facade:'Утепление',concrete:'Шлифовка',garbage:'Вывоз',equipment:'Настройка',heating:'Ремонт',sewer:'Монтаж',aircon:'Установка',insulation:'Утепление',constructionWaste:'Вывоз',power:'Монтаж',motor:'Монтаж',engine:'Ремонт',leak:'Поиск и устранение',washing:'Подключение'
+    tile:'Укладка',laminate:'Укладка',parquet:'Укладка',wallpaper:'Поклейка',trunk:'Установка',bumper:'Установка',hood:'Установка',headlight:'Установка',mirror:'Установка',wheel:'Установка',pipes:'Монтаж',cable:'Прокладка',plumbing:'Установка',sink:'Установка',toilet:'Установка',faucet:'Установка',camera:'Установка',recorder:'Настройка',socket:'Установка',switch:'Установка',door:'Установка',window:'Установка',metal:'Монтаж',fence:'Монтаж',gate:'Монтаж',tree:'Срез',branch:'Срез',root:'Удаление',grass:'Покос',site:'Очистка',roof:'Ремонт',wall:'Ремонт',ceiling:'Ремонт',floor:'Ремонт',facade:'Утепление',concrete:'Шлифовка',garbage:'Вывоз',equipment:'Настройка',heating:'Ремонт',sewer:'Монтаж',aircon:'Установка',insulation:'Утепление',constructionWaste:'Вывоз',power:'Монтаж',motor:'Монтаж',engine:'Ремонт',leak:'Поиск и устранение',washing:'Подключение'
   };
 
   function inflectPhrase(action,object){
@@ -1045,7 +1045,7 @@
       [/(?:^|\s)(?:разборка|разборки|разбор)\s+(?:и\s+)?(?:сборка|сборки|сбор)\s+(?:квадроцикл|квадроцикла)(?:$|\s)/i,'Разборка и сборка квадроцикла'],
       [/(?:^|\s)(?:сбрка|сборк|сборка)\s+(?:двигател|двгатель|двигатель)(?:$|\s)/i,'Сборка двигателя'],
       [/(?:^|\s)(?:настройка|настойка|настроыка)\s+(?:регистратора|регистратор)(?:$|\s)/i,'Настройка видеорегистратора'],
-      [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:кафла|кафел|кафель)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка кафеля в ванной комнате'],
+      [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:кафла|кафел|кафель)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
       [/(?:^|\s)(?:уклдк|укладк|укладка)\s+(?:плитк|плитка|плитки)\s+(?:ваной|ваннй|ванная|ванной)(?:$|\s)/i,'Укладка плитки в ванной комнате'],
       [/(?:^|\s)(?:убрть|убарт|убрать)\s+(?:корни|корен|корнеи)\s+(?:дерево|дерева|деревьев|дерев)(?:$|\s)/i,'Удаление корней дерева'],
       [/(?:^|\s)(?:покраска|покрас)\s+(?:стена|стен|стены)\s+(?:кухня|кухне)(?:$|\s)/i,'Покраска стен на кухне'],
@@ -1094,10 +1094,18 @@
     const catalog=semanticCatalogCandidates(text,direction,selectedServices);
     const suggestions=[];
     const contextual=contextualServicePhrase(text);
+    const bareRecognizedObject=tokenise(text).length===1&&!!inferObject(text,[]);
     if(contextual && norm(contextual)!==norm(text))suggestions.push({text:contextual,note:'Контекстное восстановление окончания и смысла',confidence:.95});
+    // A lone object such as “багажник” is a request to name a service in this
+    // app, so prefer a complete professional phrase over a bare case ending.
+    if(bareRecognizedObject&&generated.text&&!suggestions.some(x=>norm(x.text)===norm(generated.text)))suggestions.push({text:generated.text,note:generated.note,confidence:Math.max(.72,generated.confidence)});
     if(semantic && norm(semantic.text)!==norm(text) && !suggestions.some(x=>norm(x.text)===norm(semantic.text)))suggestions.push(semantic);
     if(generated.text && !suggestions.some(x=>norm(x.text)===norm(generated.text)))suggestions.push({text:generated.text,note:generated.note,confidence:generated.confidence});
     for(const row of catalog){
+      // Catalog similarity often overweights a shared verb (e.g. “установка”)
+      // and can surface a camera for a sink. Keep only candidates compatible
+      // with the action/object already present in the user's text.
+      if(!proofreadCandidateCompatible(text,row.name))continue;
       if(!suggestions.some(x=>norm(x.text)===norm(row.name)))suggestions.push({text:cleanupGenerated(row.name),note:'Подходит к каталогу Master Group',confidence:Math.min(.96,row.score)});
       if(suggestions.length>=3)break;
     }
@@ -1335,7 +1343,8 @@
       'Если не уверен, оставь сомнительное слово как есть. Не угадывай по частотности и не используй каталог как источник смысла.',
       'Верни 1 вариант в JSON указанного формата. Никаких рассуждений и пояснений.'
     ].join('\n');
-    const user=`Исправь только написание и грамматику. Исходный текст: ${clean(text)}\nВерни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.`;
+    const contextLine=[clean(direction,MAX_DIRECTION),...uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS)].filter(Boolean).join('; ');
+    const user=`Контекст направления и услуг (используй только для снятия неоднозначности; он не должен менять смысл): ${contextLine||'не указан'}\nИсправь написание и грамматику всей фразы. Исходный текст пользователя: ${clean(text)}\nВерни JSON вида: {"suggestions":[{"text":"...","note":"...","confidence":0.0}]}.`;
 
     const requestPromise=(async()=>{
       remoteBrainState='loading';
@@ -1552,7 +1561,8 @@
 Если введено одно слово — верни одно слово. Если написание уже правильное или слово незнакомое и уверенного исправления нет, верни исходный текст без изменения.
 Используй контекст только для выбора букв и окончаний. Не заменяй неизвестное слово другим распространённым словом.
 Верни только исправленный текст, без кавычек и пояснений.`;
-    const user=`Исправь написание этого текста, сохранив его смысл и слова:\n${clean(text)}`;
+    const ctx=[clean(direction,MAX_DIRECTION),...uniq(selectedServices).slice(0,MAX_CONTEXT_ITEMS)].filter(Boolean).join('; ');
+    const user=`Контекст (только для букв и окончаний, не для смены смысла): ${ctx||'не указан'}\nИсправь написание этого текста, сохранив его смысл и слова:\n${clean(text)}`;
     try{
       const messages=[{role:'system',content:system},{role:'user',content:user}];
       let output;
@@ -1620,7 +1630,7 @@
 
     // Try on-device proofreading first. On the first visit the model may still
     // be downloading; do not hold the input UI hostage while that happens.
-    const localTask=localLlmRepair(input,'',[]).catch(err=>{console.warn('Local proofreader:',err);return null;});
+    const localTask=localLlmRepair(input,clean(direction,MAX_DIRECTION),services).catch(err=>{console.warn('Local proofreader:',err);return null;});
     const localFirst=await Promise.race([localTask,new Promise(resolve=>setTimeout(()=>resolve(null),6500))]);
     if(localFirst?.changed){
       CACHE.set(key,localFirst);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
@@ -1629,7 +1639,7 @@
 
     // Use internet only when local inference is unsupported, still warming up,
     // or cannot produce a conservative correction.
-    const remote=await remoteBrainSuggest(input,'',[],[]);
+    const remote=await remoteBrainSuggest(input,clean(direction,MAX_DIRECTION),services,[]);
     if(remote?.suggestions?.length){
       CACHE.set(key,remote);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
       return remote;
@@ -1643,8 +1653,23 @@
         return lateLocal;
       }
     }
-    const localMessage=localLlmState==='loading'?'Локальная модель ещё загружается (~570 МБ). Повторите проверку после завершения загрузки.':localLlmState==='webgpu-unavailable'?'На этом устройстве локальная модель не поддерживается.':localLlmState==='retry-required'?'Загрузка локальной модели остановлена. Повторите её вручную кнопкой в карточке AI.':localLlmState==='not-loaded'?'Большая локальная модель не загружается автоматически; её можно включить вручную кнопкой в карточке AI.':'Локальная модель не смогла безопасно исправить эту фразу.';
-    const result={corrected:input,suggestions:[{text:input,note:'AI не подтвердил исправление; исходный текст сохранён',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:[localMessage,remoteBrainError||'Проверьте подключение и настройки API-ключа.'].join(' '),confidence:0};
+    // The built-in term engine works without API keys or a downloaded model.
+    // Prefer a high-confidence local correction over returning an unchanged phrase.
+    // It also handles common Russian/Romanian shorthand and professional service terms.
+    try{
+      const localFallback=fallback(input,clean(direction,MAX_DIRECTION),services);
+      if(localFallback&&localFallback.corrected){
+        localFallback.dictionaryUsed=true;
+        localFallback.aiUnavailable=false;
+        localFallback.aiFallback=true;
+        if(remoteBrainError)localFallback.aiError=remoteBrainError;
+        localFallback.uncertain=!localFallback.changed&&Number(localFallback.confidence)<.5;
+        CACHE.set(key,localFallback);if(CACHE.size>MAX_CACHE)CACHE.delete(CACHE.keys().next().value);
+        return localFallback;
+      }
+    }catch(err){console.warn('Master Group local term fallback:',err)}
+    const localMessage=localLlmState==='loading'?'Локальная модель ещё загружается (~570 МБ). Повторите проверку после завершения загрузки.':localLlmState==='webgpu-unavailable'?'На этом устройстве локальная модель не поддерживается.':localLlmState==='retry-required'?'Загрузка локальной модели остановлена. Повторите её вручную кнопкой в карточке AI.':localLlmState==='not-loaded'?'Большая локальная модель не загружается автоматически; доступные локальные правила использованы.':'Локальная модель не смогла безопасно исправить эту фразу.';
+    const result={corrected:input,suggestions:[{text:input,note:'Уверенное исправление не найдено; исходный текст сохранён',confidence:0}],changed:false,engine:'ai-unavailable',offline:true,dictionaryUsed:false,uncertain:true,aiUnavailable:true,aiError:[localMessage,remoteBrainError||'Можно проверить фразу позже или добавить свой термин в личный словарь.'].join(' '),confidence:0};
     return result;
 
   }
@@ -1673,5 +1698,5 @@
   };}
 
   if(window.__MG_AI_TEST__&&typeof window.__MG_AI_TEST__==='object')window.__MG_AI_TEST__.proofreadCandidateCompatible=proofreadCandidateCompatible;
-  window.MG_AI_SERVICE={suggestServiceName,prepareLocalModel,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,region:null,version:'v430-manual-local-model'};
+  window.MG_AI_SERVICE={suggestServiceName,prepareLocalModel,clearCache,getStatus,setOpenRouterKey,getOpenRouterKey,hasOpenRouterKey,testOpenRouter,rememberCorrection,exportPersonalTerms,importPersonalTerms,esc,region:null,version:'v440-offline-fixes'};
 })();

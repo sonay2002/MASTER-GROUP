@@ -1,0 +1,11 @@
+const fs=require('fs');
+const sync=fs.readFileSync(__dirname+'/../js/firebase-sync.js','utf8');
+const core=fs.readFileSync(__dirname+'/../js/estimate-core.js','utf8');
+if(!sync.includes('async function ensureCloudNumber(estimate)'))throw new Error('Cloud number reconciliation helper missing');
+if(!sync.includes('FIREBASE_REPO.nextEstimateNumber(user.uid)'))throw new Error('Temporary numbers are not replaced with an account-scoped number');
+if(!sync.includes('const cloudNumberPromises=new Map()')||!sync.includes('if(inFlight)return inFlight'))throw new Error('Concurrent uploads can reserve multiple cloud numbers for one offline estimate');
+if(!sync.includes('e=await ensureCloudNumber(e)'))throw new Error('Queued uploads skip number reconciliation');
+if(!sync.includes('estimate=await ensureCloudNumber(estimate)'))throw new Error('Direct cloud saves skip number reconciliation');
+if(!core.includes('e._localNumberPending=true'))throw new Error('Offline estimates are not marked for later renumbering');
+if(!core.includes('if(state.estimate?._localNumberPending)e._localNumberPending=true'))throw new Error('Editing may lose the temporary-number marker');
+console.log('Offline number reconciliation smoke: PASS');

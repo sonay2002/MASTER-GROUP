@@ -27,7 +27,7 @@ const context = {
     if(JSON.stringify(body.models)!==JSON.stringify(['openrouter/free','google/gemma-4-26b-a4b-it:free','google/gemma-4-31b-it:free'])) throw new Error('Free model fallback list missing');
     if(body.provider) throw new Error('Provider sorting must remain automatic');
     const msg=String(body.messages?.find(x=>x.role==='user')?.content||'');
-    const input=(msg.match(/Исходный текст:\s*(.*)$/m)||[])[1]||'';
+    const input=(msg.match(/Исходный текст пользователя:\s*(.*)$/m)||[])[1]||'';
     if(input==='provider error test')return {ok:false,status:502,json:async()=>({error:{message:'Provider returned error',metadata:{provider_name:'Example provider',raw:'upstream timeout'}}})};
     const map={
       'укладк кафел':'Укладка кафеля',
@@ -56,7 +56,7 @@ vm.createContext(context);
 vm.runInContext(source, context, {filename:'mg-ai-service.js'});
 
 if (!context.window.MG_AI_SERVICE) throw new Error('MG_AI_SERVICE missing');
-if (context.window.MG_AI_SERVICE.version !== 'v430-manual-local-model') throw new Error('Unexpected AI service version');
+if (context.window.MG_AI_SERVICE.version !== 'v440-offline-fixes') throw new Error('Unexpected AI service version');
 if (context.window.MG_AI_SERVICE.getStatus().remoteApi !== true) throw new Error('OpenRouter API must be enabled');
 if (context.window.MG_AI_SERVICE.getStatus().localModelOptInRequired !== true) throw new Error('The 570 MB model must require a deliberate download action');
 context.window.MG_AI_SERVICE.setOpenRouterKey('sk-or-v1-test');
@@ -99,7 +99,7 @@ if(!source.includes('if(!localLlmAutoEnabled&&!manual)return null'))throw new Er
     if (input === 'montare faianta baie' && /установк|монтаж|ремонт/i.test(result.corrected)) throw new Error(`The proofreader invented a service: ${result.corrected}`);
   }
   const providerFailure=await context.window.MG_AI_SERVICE.suggestServiceName({text:'provider error test'});
-  if(!providerFailure.aiUnavailable||!/OPENROUTER_HTTP_502/.test(providerFailure.aiError)||!/Example provider/.test(providerFailure.aiError)||!/upstream timeout/.test(providerFailure.aiError)) throw new Error(`Provider diagnostics missing: ${providerFailure.aiError}`);
+  if(!providerFailure.dictionaryUsed||!providerFailure.aiFallback||!/OPENROUTER_HTTP_502/.test(providerFailure.aiError||'')||!/Example provider/.test(providerFailure.aiError||'')||!/upstream timeout/.test(providerFailure.aiError||'')) throw new Error(`Local fallback/provider diagnostics missing: ${providerFailure.aiError}`);
   if(!context.window.MG_AI_SERVICE.rememberCorrection('штробовка канала канализацыи','Штробовка канала канализации'))throw new Error('Could not save an accepted personal correction');
   const remembered=await context.window.MG_AI_SERVICE.suggestServiceName({text:'штробовка канала канализацыи'});
   if(remembered.engine!=='personal-proofreader-memory'||remembered.corrected!=='Штробовка канала канализации')throw new Error('Saved correction was not reused');

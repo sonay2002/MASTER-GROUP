@@ -1,0 +1,79 @@
+/* Master Group v441 — softer visual hierarchy.
+   Intentionally limits changes to visual emphasis: layout, dimensions, colors of
+   semantic states, component behavior and printed estimate documents stay intact.
+   The two :not() guards provide enough specificity to override legacy !important
+   rules that accumulated in earlier inline style blocks. */
+
+/* Softer default typography across every app screen. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) *:not(#document):not(#document *) {
+  font-weight: 500 !important;
+  text-shadow: none !important;
+}
+
+/* Keep a clear hierarchy without the very heavy bold weights. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  :is(h1, h2, h3, h4, .title, .section-title, .hero-title, .brand-title,
+      .settings-topbar-title, .home-section-head h2, .drawer-brand-copy .drawer-title,
+      .calc-group-head strong, .calc-name, .settings-hub-copy b,
+      .home-estimate-title, .home-estimate-total, .home-summary-value,
+      .calc-line b, .total b, .finance-kpi strong, .finance-kpi b)
+  :not(#document):not(#document *) {
+  font-weight: 600 !important;
+}
+
+/* Regular labels and supporting copy use a softer neutral gray. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  :is(p, .subtitle, .muted, .calc-unit, .calc-line, .field label,
+      .home-summary-label, .home-see-all, .drawer-brand-copy small,
+      .drawer-item small, .drawer-cloud-row small, .drawer-account-email,
+      .settings-hub-copy small, .calc-price span, .calc-field label)
+  :not(#document):not(#document *) {
+  color: #73777e !important;
+}
+
+/* Primary headings stay readable but are less stark than pure black. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  :is(h1, h2, h3, h4, .title, .section-title, .hero-title, .brand-title,
+      .settings-topbar-title, .home-section-head h2, .drawer-brand-copy .drawer-title,
+      .calc-name, .calc-group-head strong, .settings-hub-copy b,
+      .home-estimate-title, .home-estimate-total, .home-summary-value,
+      .calc-line b, .finance-kpi b, .drawer-item b)
+  :not(#document):not(#document *) {
+  color: #34383f !important;
+}
+
+/* Lighter outlines and restrained shadows for ordinary controls and cards.
+   Selected/primary controls and semantic state colors are deliberately excluded. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  :is(.card, .calc-group, .calc-row, .settings-hub-card, .home-quick-card,
+      .home-estimate-card, .finance-kpi, .drawer-create, .drawer-close,
+      .drawer-account-actions button, .field input, .field select, .field textarea,
+      input, select, textarea, .calc-stepper, .stepper, .calc-price input,
+      .calc-picker-service, .calc-picker-dir, .direction-picker-item,
+      .analytics-tabs-v3, .analytics-tab-v3:not(.active),
+      .btn:not(.primary):not(.active), button:not(.primary):not(.active):not(.danger),
+      [role="button"]:not(.primary):not(.active):not(.danger))
+  :not(#document):not(#document *) {
+  border-color: #e8eaed !important;
+  box-shadow: 0 1px 3px rgba(24, 30, 40, .025) !important;
+}
+
+/* Make separators less prominent without changing their spacing or geometry. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  :is(hr, .calc-line, .drawer-account, .drawer-account-state, .settings-divider)
+  :not(#document):not(#document *) {
+  border-color: #eceef0 !important;
+}
+
+/* Inputs should read calmly; preserve values, dimensions, and focus behavior. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  :is(input, select, textarea, .calc-stepper input, .calc-price input)
+  :not(#document):not(#document *) {
+  font-weight: 500 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) *:not(#document):not(#document *) {
+    transition-duration: .01ms !important;
+  }
+}

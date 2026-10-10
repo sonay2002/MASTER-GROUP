@@ -425,19 +425,31 @@ function toggleService(n,u){
  renderItems();
 }
 
-function build(){const e={id:state.id||uid(),number:state.estimate?.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:new Date().toLocaleDateString('ru-RU'),template:window.MGEstimateTemplates?.get?.()||'template1'};if(window.MGDataModel?.normalizeEstimate)Object.assign(e,window.MGDataModel.normalizeEstimate(e));return e}
+function build(){const e={id:state.id||uid(),number:state.estimate?.number||'MG-'+String((Number(localStorage.getItem('mg_counter')||0)+1)).padStart(4,'0'),client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,directions:JSON.parse(JSON.stringify(state.directions)),category:state.directions.map(d=>d.name).join(', '),items:allItems().map(x=>({...x})),total:total(),date:new Date().toLocaleDateString('ru-RU'),template:window.MGEstimateTemplates?.get?.()||'template1'};if(window.MGDataModel?.normalizeEstimate)Object.assign(e,window.MGDataModel.normalizeEstimate(e));if(state.estimate?._localNumberPending)e._localNumberPending=true;return e}
+function allocateLocalEstimateNumber(){
+  let max=0;
+  try{max=Math.max(max,Number(localStorage.getItem('mg_counter')||0)||0)}catch(_){ }
+  try{for(const e of saved()){const m=String(e?.number||'').match(/^MG-(\d+)$/i);if(m)max=Math.max(max,Number(m[1])||0)}}catch(_){ }
+  const next=max+1;
+  try{localStorage.setItem('mg_counter',String(next))}catch(_){ }
+  return 'MG-'+String(next).padStart(4,'0');
+}
 async function create(){
   const e=build();
-  if(!state.id&&window.__mgAllocateEstimateNumber){
-    try{
-      const n=await window.__mgAllocateEstimateNumber();
-      if(!n) throw new Error('Не удалось получить номер сметы из облачного счётчика');
-      e.number=n;
-      try{localStorage.setItem('mg_counter',String(Number(String(n).replace(/^MG-/i,''))||0))}catch(_){ }
-    }catch(err){
-      console.error('MG number allocation:',err);
-      toast('Не удалось получить номер сметы. Проверьте синхронизацию и интернет.');
-      return;
+  if(!state.id){
+    let cloudNumber=null;
+    if(typeof window.__mgAllocateEstimateNumber==='function'){
+      try{cloudNumber=await window.__mgAllocateEstimateNumber()}catch(err){console.warn('MG cloud number allocation failed; using temporary local number:',err)}
+    }
+    if(cloudNumber){
+      e.number=cloudNumber;
+      delete e._localNumberPending;
+      try{localStorage.setItem('mg_counter',String(Number(String(cloudNumber).replace(/^MG-/i,''))||0))}catch(_){ }
+    }else{
+      // The estimate is saved locally now. Its visible number is temporary until
+      // the next successful sync reserves a collision-safe number in Firebase.
+      e.number=allocateLocalEstimateNumber();
+      e._localNumberPending=true;
     }
   }
   const a=saved(),i=a.findIndex(x=>String(x.id)===String(e.id));
