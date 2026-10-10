@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#191c22"><meta name="app-version" content="v455"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group"><script>(()=>{try{const t=localStorage.getItem('mg_app_theme_v1')==='dark'?'dark':'light';document.documentElement.dataset.mgTheme=t;document.documentElement.style.colorScheme=t}catch(e){}})();</script>
-<meta name="application-name" content="Master Group v455"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v456</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#f3f6fa"><meta name="app-version" content="v457"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Master Group"><script>(()=>{try{document.documentElement.dataset.mgTheme='light';document.documentElement.style.colorScheme='light';localStorage.setItem('mg_app_theme_v1','light')}catch(e){document.documentElement.dataset.mgTheme='light';document.documentElement.style.colorScheme='light'}})();</script>
+<meta name="application-name" content="Master Group v457"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v457</title>
 
 
 
@@ -17,9 +17,9 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css?v=456">
+<link rel="stylesheet" href="css/styles.css?v=457">
 <link rel="stylesheet" href="css/contact-card-final.css?v=409-ui2">
-<link rel="stylesheet" href="css/soft-graphite-theme-v451.css?v=456">
+
 
 <style id="mg-home-render-gate-v434">
 /* Keep the legacy first dashboard render out of view until the current one is ready. */
@@ -884,16 +884,13 @@
 @media(max-width:600px){#settingsScreen .settings-hub-grid{grid-template-columns:1fr!important;gap:9px!important}#settingsScreen .settings-hub-card{height:66px!important;min-height:66px!important;border-radius:15px!important}}
 @media(max-width:360px){#settingsScreen .settings-topbar-title{font-size:19px!important}#settingsScreen .settings-hub-card{grid-template-columns:38px minmax(0,1fr) 12px!important;gap:9px!important;padding:0 10px!important}#settingsScreen .settings-hub-copy small{font-size:10px!important}}
 </style>
-<style id="mg-settings-preferences-v450">
+<style id="mg-settings-preferences-v457">
 #settingsPanelPreferences .settings-group-v2{padding:14px 0;border-bottom:1px solid #ececef}#settingsPanelPreferences .settings-group-v2:last-of-type{border-bottom:0}
 #settingsPanelPreferences .settings-group-v2>label{display:block;margin:8px 0 6px;font-size:13px;font-weight:600}
 #settingsPanelPreferences .settings-input{width:100%;min-height:44px;padding:0 12px;border:1px solid #dedfe2;border-radius:12px;background:#fff;color:#222;font:inherit}
 #settingsPanelPreferences .muted{font-size:12px;line-height:1.45;margin-top:7px}
-#settingsPanelPreferences .mg-theme-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-#settingsPanelPreferences .mg-theme-option{display:flex;align-items:center;gap:9px;min-height:48px;padding:0 12px;border:1px solid #dedfe2;border-radius:12px;background:#fff;font-size:14px;font-weight:600}
-#settingsPanelPreferences .mg-theme-option input{accent-color:#34363a}
 </style>
-<link rel="stylesheet" href="css/borderless-theme-v456.css?v=456">
+<link rel="stylesheet" href="css/borderless-theme-v457.css?v=457">
 </head><body><!-- v296 slim fixed edge-to-edge top navigation -->
 <div id="mgFixedTopNav" class="mg-fixed-top-nav" aria-label="Верхняя навигация">
   <button type="button" class="mg-fixed-nav-btn" data-menu="open" aria-label="Открыть меню" title="Меню"><span class="mg-menu-icon" aria-hidden="true">☰</span></button>
@@ -1038,7 +1035,7 @@
     <div class="settings-card-head-v2"><div class="settings-symbol-v2">文</div><div><span class="settings-overline">ПЕРСОНАЛИЗАЦИЯ</span><h2>Язык и оформление</h2><p>Выбери язык интерфейса и документов, а также тему приложения.</p></div></div>
     <div class="settings-group-v2"><div class="settings-group-title">Язык интерфейса</div><label for="mgAppLanguage">Язык меню и экранов</label><select id="mgAppLanguage" class="settings-input"><option value="ru">Русский</option><option value="ro">Română</option></select><p class="muted">Выбор сохраняется на этом устройстве и применяется к поддерживаемым элементам интерфейса.</p></div>
     <div class="settings-group-v2"><div class="settings-group-title">Язык документов</div><label for="mgDocumentLanguage">Язык стандартных подписей в сметах</label><select id="mgDocumentLanguage" class="settings-input"><option value="ru">Русский</option><option value="ro">Română</option></select><p class="muted">Не меняет имена клиентов и введённые вручную названия услуг.</p></div>
-    <div class="settings-group-v2"><div class="settings-group-title">Тема приложения</div><div class="mg-theme-options"><label class="mg-theme-option"><input type="radio" name="mgAppTheme" value="light"><span>☀️ Светлая</span></label><label class="mg-theme-option"><input type="radio" name="mgAppTheme" value="dark"><span>🌙 Тёмная</span></label></div><p class="muted">Тема применяется сразу и сохраняется после перезапуска.</p></div>
+
     <div id="mgPreferencesStatus" class="muted" role="status" aria-live="polite"></div>
   </section>
 </div>
@@ -1294,6 +1291,6 @@
 
 <script src="js/v284-settings-cleanup.js"></script>
 <script src="js/settings-hub-v357.js"></script>
-<script src="js/settings-preferences-v450.js?v=456"></script>
+<script src="js/settings-preferences-v457.js?v=457"></script>
 <script src="js/document-actions-v419.js?v=431"></script>
 </body></html>

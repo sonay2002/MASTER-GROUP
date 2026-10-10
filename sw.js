@@ -1,11 +1,11 @@
-/* Master Group v456 — borderless soft interface */
-const CACHE = 'master-group-v456';
+/* Master Group v457 — light-only, soft typography */
+const CACHE = 'master-group-v457';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=456",
+  "./css/styles.css?v=457",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -19,9 +19,8 @@ const CORE = [
   "./js/estimate-core.js",
   "./js/finance-ui.js?v=434",
   "./js/document-actions-v419.js?v=431",
-  "./js/settings-preferences-v450.js?v=456",
-  "./css/soft-graphite-theme-v451.css?v=456",
-  "./css/borderless-theme-v456.css?v=456",
+  "./js/settings-preferences-v457.js?v=457",
+  "./css/borderless-theme-v457.css?v=457",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",
