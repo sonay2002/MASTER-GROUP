@@ -1,0 +1,68 @@
+/* Master Group v458 — soften typography app-wide without changing layout, controls, languages, or behavior.
+   Loaded last. High selector specificity overrides legacy !important text rules across every screen.
+   SVG artwork is deliberately excluded so icons keep their current appearance. */
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+*:not(svg):not(svg *):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #6d7682 !important;
+  font-weight: 400 !important;
+  text-shadow: none !important;
+  -webkit-text-stroke-width: 0 !important;
+}
+
+/* Gentle hierarchy: headings and key numbers remain distinct, but never heavy or near-black. */
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(h1,h2,h3,h4,h5,h6,strong,b,.title,.card-title,.section-title,.settings-group-title,
+.settings-section-title,.home-summary-value,.home-estimate-title,.home-estimate-total,
+.amount,.value,.metric,.stat-number,.total-value,.price,.finance-number):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #606a76 !important;
+  font-weight: 500 !important;
+  text-shadow: none !important;
+  -webkit-text-stroke-width: 0 !important;
+}
+
+/* Secondary copy is quieter without becoming faint or changing its size. */
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(small,figcaption,.muted,.hint,.description,.subtitle,.secondary,.text-secondary,
+.home-summary-label,.home-summary-note,.home-estimate-meta,.settings-hub-copy small,
+.drawer-item small,.drawer-cloud-row small,.drawer-account-email):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #7c8590 !important;
+  font-weight: 400 !important;
+  text-shadow: none !important;
+}
+
+/* Buttons and editable fields should not appear heavier than the page content. */
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(button,.btn,[role="button"],input,textarea,select,option,label,a,.tab,.nav-link,.menu-item):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  font-weight: 400 !important;
+  text-shadow: none !important;
+  -webkit-text-stroke-width: 0 !important;
+}
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(input,textarea,select,option):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #626c78 !important;
+}
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+input::placeholder,
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+textarea::placeholder {
+  color: #929aa4 !important;
+  opacity: 1 !important;
+  font-weight: 400 !important;
+}
+
+/* Keep feedback meanings, using restrained rather than vivid shades. */
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(.text-danger,.text-error,.danger,.error-message,.validation-error,.is-invalid,[aria-invalid="true"]):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #a96f73 !important;
+  font-weight: 400 !important;
+}
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(.text-success,.success,.success-message,.is-valid):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #6c8975 !important;
+  font-weight: 400 !important;
+}
+html[data-mg-theme="light"][data-mg-theme="light"][data-mg-theme="light"] body
+:is(.text-warning,.warning,.warning-message):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity):not(#mg-soft-type-specificity) {
+  color: #927b57 !important;
+  font-weight: 400 !important;
+}

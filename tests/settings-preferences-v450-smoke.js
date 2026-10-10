@@ -16,6 +16,8 @@ assert(!html.includes('name="mgAppTheme"') && prefs.includes("set(keys.theme,'li
 assert(prefs.includes('getDocumentLanguage') && prefs.includes('tDoc'), 'document language API must be exported');
 assert(docs.includes("dt('КЛИЕНТ')") && docs.includes("dt('ИТОГО:')") && docs.includes('getDocumentLanguage'), 'image/PDF export labels must use document language');
 assert(core.includes("dt('Клиент')") && core.includes("dt('Телефон')") && core.includes("dt('ИТОГО:')"), 'shared estimate text must use document language');
-assert(sw.includes('master-group-v457') && sw.includes('settings-preferences-v457.js?v=457') && sw.includes('borderless-theme-v457.css?v=457'), 'service worker must cache current preferences runtime and graphite theme');
-assert(html.includes('borderless-theme-v457.css?v=457'), 'graphite theme stylesheet must be loaded');
-console.log('Settings language/light-only v457 smoke test passed');
+assert(sw.includes('master-group-v458') && sw.includes('settings-preferences-v457.js?v=457') && sw.includes('borderless-theme-v457.css?v=457') && sw.includes('soft-type-v458.css?v=458'), 'service worker must cache current preferences runtime and graphite theme');
+assert(html.includes('borderless-theme-v457.css?v=457'), 'legacy borderless stylesheet must remain loaded');
+assert(html.includes('soft-type-v458.css?v=458'), 'latest app-wide soft typography stylesheet must be loaded last');
+assert(html.indexOf('soft-type-v458.css?v=458') > html.indexOf('borderless-theme-v457.css?v=457'), 'soft typography must override earlier legacy styles');
+console.log('Settings language/light-only v458 smoke test passed');

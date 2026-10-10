@@ -1,0 +1,11 @@
+MASTER GROUP v458 — SOFTER TYPOGRAPHY ACROSS ALL SCREENS
+
+Changes are limited to typography and the app cache version:
+- softened default text color across all app tabs and dynamically-rendered controls;
+- reduced heavy font weights throughout the interface, retaining a subtle 500-weight hierarchy for headings and key values;
+- muted secondary labels and placeholders without changing font sizes or layout;
+- removed text shadows and text stroke from application text;
+- kept SVG icons, backgrounds, borders, layout, Russian/Romanian language preferences, light-theme setting, Firebase, estimates, and calculation logic unchanged;
+- loaded the new typography stylesheet after existing styles and bumped the service worker cache to v458.
+
+No on-device visual verification was performed. Automated source and archive checks should be run before publishing.

@@ -1,0 +1,10 @@
+Master Group v457 — Light theme only, softer text
+
+- Removed the dark-theme option from Settings.
+- The app now always opens in the light theme and resets any previously saved dark-theme preference to light.
+- Preserved Russian/Romanian interface and document language settings.
+- Softened typography contrast and font weight across the app for a calmer visual hierarchy.
+- Preserved estimate, calculation, finance, Firebase, and dictionary code.
+- Updated service-worker cache version and asset paths.
+
+Automated validation is required before deployment; this build has not been visually verified on a physical iPhone.

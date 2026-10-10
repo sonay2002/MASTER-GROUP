@@ -1,5 +1,5 @@
-/* Master Group v457 — light-only, soft typography */
-const CACHE = 'master-group-v457';
+/* Master Group v458 — light-only, softer typography */
+const CACHE = 'master-group-v458';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -21,6 +21,7 @@ const CORE = [
   "./js/document-actions-v419.js?v=431",
   "./js/settings-preferences-v457.js?v=457",
   "./css/borderless-theme-v457.css?v=457",
+  "./css/soft-type-v458.css?v=458",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",

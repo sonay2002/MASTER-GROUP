@@ -1,0 +1,8 @@
+Master Group v453 — Soft Graphite 2.0
+- Reduced brightness of primary text and icons in dark theme.
+- Made secondary text more muted but still legible.
+- Reduced border contrast on cards, buttons, fields, navigation, and separators.
+- Removed heavy shadows from common UI surfaces.
+- Kept soft graphite theme scoped to dark mode; light theme and printed documents are not intentionally restyled.
+- Bumped Service Worker cache to v453 to ensure the stylesheet update is fetched.
+Validation: JavaScript syntax and archive integrity checked. This environment does not provide a full visual browser/device test across every app screen; verify after deployment.

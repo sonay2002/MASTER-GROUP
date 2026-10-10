@@ -122,3 +122,9 @@ If OpenRouter is unavailable, the existing deterministic Master Group fallback r
 В этой версии отключены языковые модели, сетевые AI-провайдеры и загрузка моделей. Проверка названий использует встроенный профессиональный словарь/правила Master Group и личные исправления в браузере. Базовая проверка не требует API-ключа или интернета.
 
 **Ограничение:** исходный архив не содержал отдельного словаря на миллионы слов. Поэтому эта версия не заявляет наличие многомиллионной общеязыковой базы: для неё необходимо отдельно добавить и лицензированно распространять реальные словарные данные русского и румынского языков.
+
+## v458 — Softer text across the application
+- The new `css/soft-type-v458.css` loads after legacy styles to soften typography on every screen.
+- Text colors are muted and heavy weights reduced; headings retain a subtle hierarchy.
+- Font sizes, layouts, controls, language preferences, Firebase, estimates, and calculation logic remain unchanged.
+- SVG artwork is excluded from typography overrides.

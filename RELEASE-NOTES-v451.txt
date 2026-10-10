@@ -1,0 +1,8 @@
+Master Group v451 — Soft Graphite theme follow-up
+
+- Fixed service worker precache path: it referenced a nonexistent settings-preferences-v451.js file.
+- Added the new Soft Graphite stylesheet to the service-worker core cache.
+- Strengthened dark-theme contrast rules for legacy inline backgrounds, text, navigation, buttons, cards, and form controls.
+- Existing light-theme rules are only activated when data-mg-theme="dark".
+
+Validation: syntax checks and archive integrity checks run. Full visual testing on a physical iPhone still requires deployment/device verification.

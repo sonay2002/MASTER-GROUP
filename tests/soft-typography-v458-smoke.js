@@ -1,0 +1,14 @@
+const fs = require('fs');
+const html = fs.readFileSync('index.html', 'utf8');
+const sw = fs.readFileSync('sw.js', 'utf8');
+const css = fs.readFileSync('css/soft-type-v458.css', 'utf8');
+const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
+assert(html.includes('soft-type-v458.css?v=458'), 'latest typography override must be linked');
+assert(html.indexOf('soft-type-v458.css?v=458') > html.indexOf('borderless-theme-v457.css?v=457'), 'typography override must load after legacy UI stylesheet');
+assert(sw.includes("const CACHE = 'master-group-v458'"), 'service worker cache must be bumped');
+assert(sw.includes('./css/soft-type-v458.css?v=458'), 'service worker must precache new typography stylesheet');
+assert(css.includes('font-weight: 400 !important'), 'global typography weight should be softened');
+assert(css.includes('color: #6d7682 !important'), 'global text color should be softened');
+assert(css.includes('font-weight: 500 !important'), 'headings should retain subtle hierarchy');
+assert(css.includes(':not(svg * )') || css.includes(':not(svg *)'), 'SVG artwork should be excluded from global typography rule');
+console.log('Soft typography v458 smoke test passed');
