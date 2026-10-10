@@ -1,0 +1,72 @@
+/* Master Group Soft Graphite theme v451. Centralized palette override. */
+html[data-mg-theme="dark"] {
+ color-scheme: dark;
+ --mg-bg: #171a20;
+ --mg-surface: #20242c;
+ --mg-surface-raised: #262b35;
+ --mg-surface-hover: #2d3340;
+ --mg-border: #363d49;
+ --mg-text: #e3e7ee;
+ --mg-text-secondary: #a5aebb;
+ --mg-muted: #8993a3;
+ --mg-accent: #9aaec8;
+ --mg-accent-bg: #303c4d;
+ --mg-input: #1d222a;
+}
+html[data-mg-theme="dark"] body {
+ background: var(--mg-bg) !important;
+ color: var(--mg-text) !important;
+}
+html[data-mg-theme="dark"] body :is(main, aside, nav, header, footer, section, article, .card, .panel, .modal, .modal-content, .sidebar, .side-menu, .drawer, .tab-content, .settings-panel-v2, .settings-card-v2, .settings-hub-card, .settings-section, .content, .page, .screen, .sheet, .list-item, .estimate-card, .client-card, .finance-card, .dashboard-card, .form-card, .form-section, .dropdown-menu, .popover, .toast, .empty-state) {
+ background-color: var(--mg-surface) !important;
+ color: var(--mg-text);
+ border-color: var(--mg-border) !important;
+}
+html[data-mg-theme="dark"] body :is(button, .btn, [role="button"], .tab, .nav-link, .menu-item, .settings-hub-icon, .settings-symbol-v2) {
+ background-color: var(--mg-surface-raised);
+ color: var(--mg-text);
+ border-color: var(--mg-border);
+ box-shadow: none;
+}
+html[data-mg-theme="dark"] body :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select, .input, .form-control, .settings-input, [contenteditable="true"]) {
+ background-color: var(--mg-input) !important;
+ color: var(--mg-text) !important;
+ border-color: var(--mg-border) !important;
+ box-shadow: none;
+}
+html[data-mg-theme="dark"] body :is(input, textarea, select)::placeholder { color: #929cab !important; opacity: 1; }
+html[data-mg-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,legend,dt,dd,li,td,th,a,.title,.subtitle,.muted,.hint,.description,.settings-overline,.settings-group-title) {
+ color: inherit;
+}
+html[data-mg-theme="dark"] body :is(.muted, .hint, .subtitle, .description, small, .secondary, .text-secondary, .settings-overline) { color: var(--mg-text-secondary) !important; }
+html[data-mg-theme="dark"] body a { color: #b5c7df; }
+html[data-mg-theme="dark"] body :is(hr, .divider, .separator, table, td, th) { border-color: var(--mg-border) !important; }
+html[data-mg-theme="dark"] body :is(.active, .selected, [aria-current="page"], [aria-selected="true"]) {
+ background-color: var(--mg-accent-bg) !important;
+ color: #e8edf5 !important;
+}
+html[data-mg-theme="dark"] body :is(.danger, .error, .delete, .btn-danger) { color: #f0a6a6 !important; }
+html[data-mg-theme="dark"] body :is(.success, .positive, .status-complete) { color: #a7d5c0; }
+html[data-mg-theme="dark"] body svg { color: inherit; }
+html[data-mg-theme="dark"] body .settings-hub-card,
+html[data-mg-theme="dark"] body .mg-theme-option { background: var(--mg-surface-raised) !important; color: var(--mg-text) !important; border-color: var(--mg-border) !important; }
+html[data-mg-theme="dark"] body :is(.gradient, [class*="gradient"], [style*="background: linear-gradient"], [style*="background-color: white"], [style*="background-color: #fff"], [style*="background: white"]) {
+ background-image: none !important;
+}
+html[data-mg-theme="dark"] body :is(.settings-hub-arrow, .chevron, .icon-muted) { color: var(--mg-muted) !important; }
+html[data-mg-theme="dark"] body ::selection { background: #3b4d63; color: #fff; }
+
+
+/* v451.1: force readable foregrounds even when legacy components use inline styles. */
+html[data-mg-theme="dark"] body,
+html[data-mg-theme="dark"] body * { scrollbar-color: #454d5a #20242c; }
+html[data-mg-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,legend,dt,dd,li,td,th,a,div,section,article,aside,nav,header,footer,main,button,[role="button"],.btn,.tab,.nav-link,.menu-item,.card-title,.card-text,.title,.subtitle) { color: var(--mg-text); }
+html[data-mg-theme="dark"] body :is(.muted,.hint,.subtitle,.description,small,.secondary,.text-secondary,.settings-overline,.settings-group-title,.settings-card-head-v2 p) { color: var(--mg-text-secondary) !important; }
+html[data-mg-theme="dark"] body [style*="background"],
+html[data-mg-theme="dark"] body [style*="background-color"] { background-color: var(--mg-surface) !important; background-image: none !important; }
+html[data-mg-theme="dark"] body :is(button,.btn,[role="button"],.tab,.nav-link,.menu-item) { background-color: var(--mg-surface-raised) !important; color: var(--mg-text) !important; border-color: var(--mg-border) !important; }
+html[data-mg-theme="dark"] body :is(input,textarea,select,[contenteditable="true"]) { background-color: var(--mg-input) !important; color: var(--mg-text) !important; border-color: var(--mg-border) !important; }
+html[data-mg-theme="dark"] body :is(.sidebar,.side-menu,.drawer,nav[aria-label],.bottom-nav,.top-nav,.main-nav) { background-color: #1d222a !important; color: var(--mg-text) !important; border-color: var(--mg-border) !important; }
+html[data-mg-theme="dark"] body :is(.danger,.error,.delete,.btn-danger) { color: #f0a6a6 !important; }
+html[data-mg-theme="dark"] body :is(.success,.positive,.status-complete) { color: #a7d5c0 !important; }
+html[data-mg-theme="dark"] body img { color: inherit; }
