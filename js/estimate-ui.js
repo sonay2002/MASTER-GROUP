@@ -56,7 +56,7 @@
     const icon=ctx.$('directionServiceIcon');
     const d=ctx.state.directions?.[ctx.state.activeDirection] || (ctx.state.pendingDirectionName ? {name:ctx.state.pendingDirectionName,items:[]} : null);
     if(!overlay||!list||!d)return;
-    try{window.__mgResetServiceDictionary?.()}catch(_){}
+    try{window.__mgResetServiceAi?.()}catch(_){}
     const cd=ctx.catalog.find(x=>x.name===d.name);
     const services=cd?.services||[];
     if(title)title.textContent=d.name;
@@ -71,12 +71,12 @@
     }).join(''):'<div class="direction-service-empty">Для этого направления пока нет услуг в каталоге.</div>';
     const quick=ctx.$('directionServiceQuickInput');
     if(quick)quick.value='';
-    const dictionaryCard=ctx.$('directionServiceDictionarySuggestion');
-    if(dictionaryCard)dictionaryCard.hidden=false;
-    const dictionaryStatus=ctx.$('directionServiceDictionaryStatus');
-    if(dictionaryStatus)dictionaryStatus.textContent='Подсказки будут обновляться прямо во время набора.';
-    const dictionaryMain=dictionaryCard?.querySelector('[data-dictionary-apply]');
-    if(dictionaryMain){dictionaryMain.textContent='Начните вводить название услуги';dictionaryMain.disabled=true;dictionaryMain.dataset.dictionaryApply='';}
+    const ai=ctx.$('directionServiceAiSuggestion');
+    if(ai)ai.hidden=false;
+    const aiStatus=ctx.$('directionServiceAiStatus');
+    if(aiStatus)aiStatus.textContent='AI готов к работе';
+    const aiMain=ai?.querySelector('[data-ai-apply]');
+    if(aiMain){aiMain.textContent='Введите название услуги — AI поможет исправить';aiMain.disabled=true;aiMain.dataset.aiApply='';}
   }
   function openDirectionServiceModal(){
     const overlay=ctx.$('directionServiceOverlay');
@@ -86,7 +86,7 @@
     requestAnimationFrame(()=>overlay.classList.add('open'));
   }
   function closeDirectionServiceModal(){
-    try{window.__mgResetServiceDictionary?.()}catch(_){}
+    try{window.__mgResetServiceAi?.()}catch(_){}
     const overlay=ctx.$('directionServiceOverlay');
     if(!overlay)return;
     // A direction is considered selected only after at least one service is chosen.

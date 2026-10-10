@@ -1,10 +1,4 @@
-# Master Group v442 — dictionary-only correction
-
-The active service is `js/mg-dictionary-service.js`; it is wired to the service-name input in `js/estimate-core.js`. It does not call an AI model or require an API key. The built-in professional rules work offline. On first use, the service optionally attempts to fetch a public Russian spell-check corpus, then caches it in IndexedDB for later use on the same browser/device. The external download may fail due to connectivity or browser restrictions; the built-in dictionary remains available in that case. The downloaded Russian corpus is not bundled in the ZIP and therefore is not guaranteed to be present before the first successful online load.
-
-The Russian public source is RusSpell by Goudron (MPL-2.0): https://github.com/Goudron/ru-spelling-dictionary. The loader first attempts the 2M+ generated-form release asset and falls back to the Hunspell source dictionary. Do not describe this as a bundled multi-million-word database: it is a lazy-loaded optional resource.
-
-# Master Group v442 — dictionary-only correction
+# Master Group v430 — manual local model download
 
 The 570 MB Qwen3 model is never downloaded automatically. Text checks use the configured OpenRouter route until the user explicitly taps “Загрузить локальный ИИ”. The app then shows download progress and runs the model on-device if WebGPU is available. The app records an unfinished local-model attempt before loading or inference and clears that marker only after a successful inference. If the page reloads or the browser runs out of memory, a pending marker blocks automatic retries; another attempt requires a deliberate tap. The remote request is bounded by a 30-second timeout.
 
@@ -115,16 +109,3 @@ OpenRouter endpoint: https://openrouter.ai/api/v1/chat/completions
 Model: openrouter/free
 
 If OpenRouter is unavailable, the existing deterministic Master Group fallback remains available. The old on-device Qwen3 deep-inference path is disabled to avoid the iPhone memory/reload problem.
-
-
-## Локальный словарь (v441)
-
-В этой версии отключены языковые модели, сетевые AI-провайдеры и загрузка моделей. Проверка названий использует встроенный профессиональный словарь/правила Master Group и личные исправления в браузере. Базовая проверка не требует API-ключа или интернета.
-
-**Ограничение:** исходный архив не содержал отдельного словаря на миллионы слов. Поэтому эта версия не заявляет наличие многомиллионной общеязыковой базы: для неё необходимо отдельно добавить и лицензированно распространять реальные словарные данные русского и румынского языков.
-
-## v458 — Softer text across the application
-- The new `css/soft-type-v458.css` loads after legacy styles to soften typography on every screen.
-- Text colors are muted and heavy weights reduced; headings retain a subtle hierarchy.
-- Font sizes, layouts, controls, language preferences, Firebase, estimates, and calculation logic remain unchanged.
-- SVG artwork is excluded from typography overrides.

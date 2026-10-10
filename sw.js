@@ -1,11 +1,11 @@
-/* Master Group v458 — light-only, softer typography */
-const CACHE = 'master-group-v458';
+/* Master Group v439 — GitHub Pages safe Service Worker */
+const CACHE = 'master-group-v439';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=457",
+  "./css/styles.css?v=439",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -15,13 +15,10 @@ const CORE = [
   "./js/calculations.js",
   "./js/finance-service.js",
   "./js/estimate-ui.js",
-  "./js/mg-dictionary-service.js",
+  "./js/mg-ai-service.js",
   "./js/estimate-core.js",
   "./js/finance-ui.js?v=434",
   "./js/document-actions-v419.js?v=431",
-  "./js/settings-preferences-v457.js?v=457",
-  "./css/borderless-theme-v457.css?v=457",
-  "./css/soft-type-v458.css?v=458",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",

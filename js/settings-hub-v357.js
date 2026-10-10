@@ -2,12 +2,12 @@
 (()=>{
   'use strict';
   const $=id=>document.getElementById(id);
-  const titles={catalog:'Каталог',company:'Компания',trash:'Корзина',updates:'Обновления',estimates:'Сметы',preferences:'Язык и тема'};
+  const titles={catalog:'Каталог',company:'Компания',trash:'Корзина',updates:'Обновления',estimates:'Сметы'};
   const tabs=()=>document.querySelector('.settings-tabs-v2');
   const hero=()=>document.querySelector('.settings-hero-v2');
   const hub=()=>$('settingsHub');
   const nav=()=>$('settingsSectionNav');
-  const panels={catalog:'settingsPanelCatalog',company:'settingsPanelCompany',trash:'settingsPanelTrash',updates:'settingsPanelUpdates',estimates:'settingsPanelEstimates',preferences:'settingsPanelPreferences'};
+  const panels={catalog:'settingsPanelCatalog',company:'settingsPanelCompany',trash:'settingsPanelTrash',updates:'settingsPanelUpdates',estimates:'settingsPanelEstimates'};
   function hidePanels(){Object.values(panels).forEach(id=>{const el=$(id);if(el)el.hidden=true;});}
   function placeBackButton(){
     const back=document.querySelector('[data-settings-back]');

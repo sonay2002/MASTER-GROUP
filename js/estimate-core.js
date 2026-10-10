@@ -17,7 +17,7 @@ const allItems=window.MGEstimate.allItems;
 const total=window.MGEstimate.total;
 const normalizeDirections=window.MGEstimate.normalizeDirections;
 const allItemsFromEstimate=window.MGEstimate.allItemsFromEstimate;
-document.addEventListener('input',e=>{scheduleRecoverySave();if(e.target?.id==='directionServiceQuickInput'){try{serviceWordSuggestions();warmExpandedDictionary()}catch(err){console.warn('MG dictionary lookup failed',err)}}});window.addEventListener?.('beforeunload',saveRecoveryNow);window.addEventListener?.('pagehide',saveRecoveryNow);
+document.addEventListener('input',e=>{scheduleRecoverySave();if(e.target?.id==='directionServiceQuickInput'){try{serviceWordSuggestions()}catch(err){console.warn('MG AI suggestions failed',err)}}});window.addEventListener?.('beforeunload',saveRecoveryNow);window.addEventListener?.('pagehide',saveRecoveryNow);
 window.MGEstimateUI.init({state,catalog,cats,allItems,total,activeDir:()=>state.directions[state.activeDirection]||null,contactData,money,esc,$});
 function hasDraft(){return state.screen==='editor' && (state.directions.length||contactData().client||contactData().phone||contactData().address)}
 function draftBuild(){return {id:state.id||uid(),step:state.step,directions:JSON.parse(JSON.stringify(state.directions)),activeDirection:state.activeDirection,client:contactData().client,phone:contactData().phone,address:contactData().address,object:contactData().address,savedAt:new Date().toLocaleString('ru-RU')}}
@@ -116,85 +116,283 @@ function selectCategory(n){
  window.MGEstimateUI.renderDirectionServiceModal();
  window.MGEstimateUI.openDirectionServiceModal();
 }
-// Master Group — локальный профессиональный словарь. Без ИИ-моделей и сетевых запросов.
-function dictionaryContext(){
+// ─────────────────────────────────────────────────────────────────────────────
+// Master Group — AI-помощник для названий услуг.
+// Пользователь может писать с ошибками, на слух или неполной фразой.
+// AI получает весь текст + контекст направления и предлагает нормальную
+// профессиональную формулировку. Фиксированный словарь здесь больше не используется.
+// ─────────────────────────────────────────────────────────────────────────────
+function aiDirectionContext(){
   const d=activeDir() || (state.pendingDirectionName?{name:state.pendingDirectionName,items:[]}:null);
-  return {direction:d?.name||'',selectedServices:Array.isArray(d?.items)?d.items.map(x=>x?.name).filter(Boolean):[]};
+  return {
+    direction:d?.name||'',
+    selectedServices:Array.isArray(d?.items)?d.items.map(x=>x?.name).filter(Boolean):[]
+  };
 }
-let dictionarySuggestTimer=null;
-let dictionaryRequestSeq=0;
-let dictionaryActiveValue='';
-function resetServiceDictionaryState(){
-  dictionaryRequestSeq++;clearTimeout(dictionarySuggestTimer);dictionarySuggestTimer=null;dictionaryActiveValue='';
-  const card=$('directionServiceDictionarySuggestion'),main=card?.querySelector('[data-dictionary-apply]'),alts=$('directionServiceDictionaryAlternatives'),status=$('directionServiceDictionaryStatus');
-  if(card)card.hidden=false;if(main){main.textContent='Начните вводить название услуги';main.disabled=true;main.dataset.dictionaryApply='';}if(alts){alts.innerHTML='';alts.hidden=true;}if(status)status.textContent='Подсказки будут обновляться прямо во время набора.';
+
+let aiSuggestTimer=null;
+let aiRequestSeq=0;
+let aiLastResult=null;
+let aiActiveValue='';
+
+function resetServiceAiState(){
+  aiRequestSeq++;
+  clearTimeout(aiSuggestTimer);
+  aiSuggestTimer=null;
+  aiLastResult=null;
+  aiActiveValue='';
+  const card=$('directionServiceAiSuggestion');
+  const main=card?.querySelector('[data-ai-apply]');
+  const alts=$('directionServiceAiAlternatives');
+  const status=$('directionServiceAiStatus');
+  if(card)card.hidden=false;
+  if(main){main.textContent='Введите название услуги — AI поможет исправить';main.disabled=true;main.dataset.aiApply='';}
+  if(alts){alts.innerHTML='';alts.hidden=true;}
+  if(status)status.textContent='AI готов к работе';
 }
-window.__mgResetServiceDictionary=resetServiceDictionaryState;
-function setDictionaryStatus(text){const status=$('directionServiceDictionaryStatus');if(status)status.textContent=text||'';}
-function dictionarySetSuggestion(result,inputValue){
-  const card=$('directionServiceDictionarySuggestion'),main=card?.querySelector('[data-dictionary-apply]'),alts=$('directionServiceDictionaryAlternatives'),status=$('directionServiceDictionaryStatus');
+window.__mgResetServiceAi=resetServiceAiState;
+
+function aiSetSuggestion(result,inputValue){
+  const card=$('directionServiceAiSuggestion'),main=$('directionServiceAiSuggestion')?.querySelector('[data-ai-apply]'),alts=$('directionServiceAiAlternatives'),status=$('directionServiceAiStatus');
   if(!card||!main||!alts)return;
-  const suggestions=Array.isArray(result?.suggestions)?result.suggestions.filter(x=>x?.text&&String(x.text).trim()):[];
+  aiLastResult=result||null;
+  const suggestions=Array.isArray(result?.suggestions)?result.suggestions.filter(x=>x?.text):[];
   const corrected=String(result?.corrected||suggestions[0]?.text||'').trim();
-  if(!corrected||corrected===String(inputValue||'').trim()){
-    main.dataset.dictionaryApply='';main.textContent=corrected?'Надёжное исправление не найдено':'Подходящий вариант не найден';main.disabled=true;alts.innerHTML='';alts.hidden=true;
-    status.textContent='Важно: это НЕ подтверждение правильности текста. Встроенный словарь не распознал опечатку; расширенный словарь может быть недоступен.';card.hidden=false;return;
+  if(!corrected){
+    main.dataset.aiApply='';
+    main.textContent='AI не нашёл готовую формулировку';
+    main.disabled=true;
+    alts.innerHTML='';
+    alts.hidden=true;
+    status.textContent='Можно продолжить ввод или добавить исходный текст';
+    card.hidden=false;
+    return;
   }
-  main.dataset.dictionaryApply=corrected;main.textContent=corrected;main.disabled=false;
-  alts.innerHTML=suggestions.slice(1,3).map(x=>`<button type="button" class="direction-service-dictionary-alt" data-dictionary-apply="${esc(x.text)}">${esc(x.text)}</button>`).join('');
-  alts.hidden=!alts.innerHTML;status.textContent=suggestions[0]?.note||'Вариант найден в локальном словаре';card.hidden=false;
+  if(corrected===String(inputValue||'').trim()){
+    main.dataset.aiApply='';
+    main.textContent=result?.aiUnavailable?'AI сейчас недоступен — исходный текст сохранён':(result?.uncertain?'AI не смог уверенно проверить это написание':'Текст уже выглядит корректно');
+    main.disabled=true;
+    alts.innerHTML='';
+    alts.hidden=true;
+    status.textContent=result?.aiUnavailable?(result.aiError||'Проверьте интернет и настройки AI'): (result?.uncertain?'Попробуйте изменить слово или уточнить услугу':'AI проверил введённый текст');
+    card.hidden=false;
+    return;
+  }
+  main.dataset.aiApply=corrected;
+  main.textContent=corrected;
+  main.disabled=false;
+  const altSuggestions=suggestions.slice(1,3);
+  alts.innerHTML=altSuggestions.map(x=>`<button type="button" class="direction-service-ai-alt" data-ai-apply="${esc(x.text)}">${esc(x.text)}</button>`).join('');
+  alts.hidden=!altSuggestions.length;
+  status.textContent=suggestions[0]?.note||'AI предлагает более правильную формулировку';
+  card.hidden=false;
 }
-function hideServiceWordSuggestions(){resetServiceDictionaryState();}
-let expandedDictionaryWarmupStarted=false;
-function warmExpandedDictionary(){
-  if(expandedDictionaryWarmupStarted||!window.MG_DICTIONARY?.prepare)return;
-  expandedDictionaryWarmupStarted=true;
-  setDictionaryStatus('Встроенный словарь работает. Подключаю расширенный бесплатный словарь при наличии интернета…');
-  window.MG_DICTIONARY.prepare().then(status=>{
-    const input=$('directionServiceQuickInput');
-    if(status?.expandedDictionaryState==='ready'){
-      setDictionaryStatus(`Расширенный словарь загружен (${Number(status.expandedDictionaryWords||0).toLocaleString('ru-RU')} словоформ). Сохранён на этом устройстве.`);
-      if(input&&String(input.value||'').trim().length>=2)serviceWordSuggestions();
-    }else{
-      setDictionaryStatus('Расширенный словарь не загрузился. Доступны только встроенные правила; неизвестные опечатки могут остаться незамеченными.');
+
+function hideServiceWordSuggestions(){resetServiceAiState();}
+
+function setAiStatus(text){
+  const status=$('directionServiceAiStatus');
+  if(status)status.textContent=text||'';
+}
+
+function syncAiLocalModelButton(){
+  const button=$('directionServiceAiSuggestion')?.querySelector('[data-ai-local-download]');
+  if(!button)return;
+  const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+  button.hidden=!current.localModelNeedsManualAction;
+  button.disabled=current.localLlm==='loading';
+  button.textContent=current.localLlm==='retry-required'?'Повторить загрузку локального ИИ (~570 МБ)':'Загрузить локальный ИИ (~570 МБ)';
+}
+
+async function serviceWordSuggestions(){
+  const input=$('directionServiceQuickInput');
+  if(!input)return;
+  const value=String(input.value||'').trim();
+  const seq=++aiRequestSeq;
+  clearTimeout(aiSuggestTimer);
+  aiActiveValue=value;
+  if(value.length<2){
+    resetServiceAiState();
+    aiActiveValue=value;
+    return;
+  }
+  const card=$('directionServiceAiSuggestion');
+  const main=card?.querySelector('[data-ai-apply]');
+  const alts=$('directionServiceAiAlternatives');
+  // Keep one stable card for the current input instead of letting previous
+  // results blink in and out while debounce/model stages are running.
+  if(card)card.hidden=false;
+  if(main){main.textContent='Анализирую…';main.disabled=true;main.dataset.aiApply='';}
+  if(alts){alts.innerHTML='';alts.hidden=true;}
+  syncAiLocalModelButton();
+  setAiStatus('AI анализирует…');
+  aiSuggestTimer=setTimeout(async()=>{
+    let localStatusTimer=null;
+    const showAiProgress=()=>{
+      if(seq!==aiRequestSeq || value!==String(input.value||'').trim() || value!==aiActiveValue){clearTimeout(localStatusTimer);return;}
+      const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      syncAiLocalModelButton();
+      if(current.localLlm==='loading'){
+        const p=current.localLlmProgress||{};
+        const progress=Number(p.progress);
+        setAiStatus(Number.isFinite(progress)&&progress>0
+          ?`Загружаю локальную модель: ${Math.round(progress)}% (около 570 МБ один раз)`
+          :'Загружаю локальную модель (около 570 МБ при первом запуске)');
+      }else if(current.localLlm==='ready-webgpu')setAiStatus('Проверяю текст на этом устройстве…');
+      else if(current.remoteBrainState==='loading')setAiStatus('Локальная проверка недоступна — проверяю через интернет…');
+      else if(current.localLlm==='webgpu-unavailable')setAiStatus('На устройстве нет WebGPU — использую интернет-проверку…');
+      else if(current.localModelOptInRequired)setAiStatus('Загрузка модели (~570 МБ) отключена до вашего нажатия.');
+      localStatusTimer=setTimeout(showAiProgress,350);
+    };
+    localStatusTimer=setTimeout(showAiProgress,350);
+    try{
+      const ctx=aiDirectionContext();
+      const result=await window.MG_AI_SERVICE.suggestServiceName({text:value,direction:ctx.direction,selectedServices:ctx.selectedServices});
+      if(seq!==aiRequestSeq || value!==String(input.value||'').trim() || value!==aiActiveValue)return;
+      aiSetSuggestion(result,value);
+    }catch(err){
+      if(seq!==aiRequestSeq || value!==aiActiveValue)return;
+      const card=$('directionServiceAiSuggestion');
+      const main=card?.querySelector('[data-ai-apply]');
+      const alts=$('directionServiceAiAlternatives');
+      if(card)card.hidden=false;
+      if(main){main.textContent='AI временно не дал результат';main.disabled=true;main.dataset.aiApply='';}
+      if(alts){alts.innerHTML='';alts.hidden=true;}
+      const code=String(err?.code||'').toLowerCase();
+      let message='Можно добавить исходный текст вручную.';
+      if(code.includes('unauthenticated')) message='Войдите в аккаунт Master Group, чтобы использовать AI.';
+      else if(code.includes('failed-precondition')) message='AI ещё не настроен на сервере.';
+      else if(code.includes('not-found')) message='AI-сервис не опубликован на сервере.';
+      else if(code.includes('permission-denied')) message='Нет доступа к AI-сервису.';
+      else if(code.includes('network')||code.includes('unavailable')) message='Нет связи с AI-сервисом. Проверьте интернет.';
+      setAiStatus(message);
+      console.warn('MG AI suggestions failed',err);
+    }finally{
+      clearTimeout(localStatusTimer);
     }
-  }).catch(err=>{
-    console.warn('Expanded dictionary unavailable:',err);
-    setDictionaryStatus('Расширенный словарь недоступен. Работают только встроенные правила; отсутствие подсказки не означает, что текст написан правильно.');
-  });
+  },600);
 }
-function serviceWordSuggestions(){
-  const input=$('directionServiceQuickInput');if(!input)return;const value=String(input.value||'').trim();const seq=++dictionaryRequestSeq;clearTimeout(dictionarySuggestTimer);dictionaryActiveValue=value;
-  const card=$('directionServiceDictionarySuggestion'),main=card?.querySelector('[data-dictionary-apply]'),alts=$('directionServiceDictionaryAlternatives');
-  if(value.length<2){resetServiceDictionaryState();dictionaryActiveValue=value;return;}
-  if(card)card.hidden=false;if(main){main.textContent='Проверяю словарь…';main.disabled=true;main.dataset.dictionaryApply='';}if(alts){alts.innerHTML='';alts.hidden=true;}setDictionaryStatus('Локальная проверка — без интернета и ИИ-модели.');
-  dictionarySuggestTimer=setTimeout(()=>{
-    if(seq!==dictionaryRequestSeq||value!==String(input.value||'').trim()||value!==dictionaryActiveValue)return;
-    try{const ctx=dictionaryContext();const result=window.MG_DICTIONARY?.suggestServiceName({text:value,direction:ctx.direction,selectedServices:ctx.selectedServices});
-      if(seq!==dictionaryRequestSeq||value!==String(input.value||'').trim()||value!==dictionaryActiveValue)return;
-      dictionarySetSuggestion(result,value);
-    }catch(err){console.warn('Master Group dictionary failed:',err);setDictionaryStatus('Словарь временно недоступен. Исходный текст не потерян.');}
-  },120);
+
+function insertServiceWord(word){
+  const input=$('directionServiceQuickInput');if(!input)return;
+  input.value=String(word||'');
+  input.focus();
+  try{input.setSelectionRange(input.value.length,input.value.length)}catch(_){}
+  serviceWordSuggestions();
 }
-function insertServiceWord(word){const input=$('directionServiceQuickInput');if(!input)return;input.value=String(word||'');input.focus();try{input.setSelectionRange(input.value.length,input.value.length)}catch(_){}serviceWordSuggestions();}
-async function getServiceNameForSave(raw){return String(raw||'').trim();}
+
+async function getServiceNameForSave(raw){
+  // Suggestions are NEVER applied implicitly. The user must tap the AI suggestion.
+  // Saving therefore preserves exactly what is in the field.
+  return String(raw||'').trim();
+}
+
 async function addOneTimeDirectionService(){
- const el=$('directionServiceQuickInput');const raw=String(el?.value||'').trim();if(!raw)return toast('Введите название услуги');let d=activeDir();
- if(!d&&state.pendingDirectionName){d={name:state.pendingDirectionName,items:[]};state.directions.push(d);state.activeDirection=state.directions.length-1;state.pendingDirectionName=null;}
- if(!d)return toast('Сначала выберите направление');const button=document.querySelector('[data-direction-service-quick-add]');if(button)button.disabled=true;
- try{const n=raw;if(d.items.some(x=>x.name===n))return toast('Такая услуга уже добавлена');d.items.push({id:uid(),name:n,qty:1,unit:'шт',price:0});el.value='';hideServiceWordSuggestions();renderCats();window.MGEstimateUI.renderDirectionServiceModal();renderItems();scheduleRecoverySave();toast('Услуга добавлена');}finally{if(button)button.disabled=false;}
+ const el=$('directionServiceQuickInput');
+ const raw=String(el?.value||'').trim();
+ if(!raw)return toast('Введите название услуги');
+ let d=activeDir();
+ if(!d && state.pendingDirectionName){
+   d={name:state.pendingDirectionName,items:[]};
+   state.directions.push(d);
+   state.activeDirection=state.directions.length-1;
+   state.pendingDirectionName=null;
+ }
+ if(!d)return toast('Сначала выберите направление');
+ const button=document.querySelector('[data-direction-service-quick-add]');
+ if(button)button.disabled=true;
+ try{
+   const n=raw;
+   if(d.items.some(x=>x.name===n))return toast('Такая услуга уже добавлена');
+   d.items.push({id:uid(),name:n,qty:1,unit:'шт',price:0});
+   el.value='';
+   hideServiceWordSuggestions();
+   renderCats();
+   window.MGEstimateUI.renderDirectionServiceModal();
+   renderItems();
+   scheduleRecoverySave();
+   toast('Услуга добавлена');
+ }finally{
+   if(button)button.disabled=false;
+ }
 }
-function applyDictionarySuggestion(word){
- const input=$('directionServiceQuickInput');if(!input||!word)return;const original=dictionaryActiveValue;input.value=String(word);input.focus();try{input.setSelectionRange(input.value.length,input.value.length)}catch(_){}
- const remembered=window.MG_DICTIONARY?.rememberCorrection?.(original,word);setDictionaryStatus(remembered?'Исправление сохранено в личном словаре.':'Вариант выбран — можно добавить услугу.');
+
+function applyAiSuggestion(word){
+  const input=$('directionServiceQuickInput');
+  if(!input||!word)return;
+  input.value=String(word);
+  input.focus();
+  try{input.setSelectionRange(input.value.length,input.value.length)}catch(_){}
+  const card=$('directionServiceAiSuggestion');
+  if(card){
+    const status=$('directionServiceAiStatus');
+    const remembered=window.MG_AI_SERVICE?.rememberCorrection?.(aiActiveValue,word);
+    if(status)status.textContent=remembered?'Исправление сохранено. Для переноса скачайте копию слов.':'Готово — можно добавить';
+  }
 }
+
 document.addEventListener('click',e=>{
- const apply=e.target.closest('[data-dictionary-apply]');if(apply){e.preventDefault();applyDictionarySuggestion(apply.dataset.dictionaryApply||apply.textContent);return;}
- const exportButton=e.target.closest('[data-dictionary-export]');if(exportButton){try{const data=window.MG_DICTIONARY?.exportPersonalTerms?.();if(!data)throw new Error('Экспорт недоступен');const link=document.createElement('a'),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));link.href=url;link.download='master-group-dictionary-words.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setDictionaryStatus('Резервная копия личных исправлений скачана.');}catch(err){setDictionaryStatus('Не удалось скачать копию слов.');console.warn('Dictionary export failed',err)}return;}
- const importButton=e.target.closest('[data-dictionary-import]');if(importButton){e.preventDefault();$('directionServiceDictionaryTermsFile')?.click();}
+  const localDownload=e.target.closest('[data-ai-local-download]');
+  if(localDownload){
+    e.preventDefault();
+    const prepare=window.MG_AI_SERVICE?.prepareLocalModel;
+    if(typeof prepare!=='function'){setAiStatus('Локальная модель сейчас недоступна.');return;}
+    localDownload.disabled=true;
+    let progressTimer=null;
+    const showDownloadProgress=()=>{
+      const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      if(current.localLlm==='loading'){
+        const p=current.localLlmProgress||{},progress=Number(p.progress);
+        setAiStatus(Number.isFinite(progress)&&progress>0?`Загрузка локальной модели: ${Math.round(progress)}% (~570 МБ)`:'Загрузка локальной модели (~570 МБ). Страница не будет запускать её повторно автоматически.');
+      }
+      progressTimer=setTimeout(showDownloadProgress,350);
+    };
+    progressTimer=setTimeout(showDownloadProgress,100);
+    Promise.resolve(prepare()).then(model=>{
+      clearTimeout(progressTimer);
+      const current=window.MG_AI_SERVICE?.getStatus?.()||{};
+      syncAiLocalModelButton();
+      if(model){
+        window.MG_AI_SERVICE.clearCache?.();
+        setAiStatus('Модель загружена. Запускаю локальную проверку…');
+        if(String($('directionServiceQuickInput')?.value||'').trim().length>=2)serviceWordSuggestions();
+      }else if(current.localLlm==='webgpu-unavailable')setAiStatus('Этот браузер не поддерживает WebGPU. Загрузка не запускалась.');
+      else if(current.localLlm==='retry-required')setAiStatus('Загрузка остановлена. Автоповтора не будет; нажмите кнопку для новой попытки.');
+      else setAiStatus('Не удалось запустить локальную модель. Исходный текст не потерян.');
+    }).catch(err=>{
+      clearTimeout(progressTimer);
+      syncAiLocalModelButton();
+      setAiStatus('Загрузка остановлена. Автоповтора не будет; можно повторить вручную.');
+      console.warn('MG local model preparation failed',err);
+    });
+    return;
+  }
+  const exportButton=e.target.closest('[data-ai-terms-export]');
+  if(exportButton){
+    try{
+      const data=window.MG_AI_SERVICE?.exportPersonalTerms?.();
+      if(!data)throw new Error('Экспорт слов недоступен');
+      const link=document.createElement('a'),url=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+      link.href=url;link.download='master-group-ai-words.json';link.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      setAiStatus('Резервная копия ваших исправлений скачана.');
+    }catch(err){setAiStatus('Не удалось скачать копию слов.');console.warn('MG AI terms export failed',err)}
+    return;
+  }
+  const importButton=e.target.closest('[data-ai-terms-import]');
+  if(importButton){e.preventDefault();$('directionServiceAiTermsFile')?.click();}
 });
 document.addEventListener('change',e=>{
- if(e.target?.id!=='directionServiceDictionaryTermsFile')return;const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const result=window.MG_DICTIONARY?.importPersonalTerms?.(String(reader.result||''));setDictionaryStatus(result?.ok?`Исправления восстановлены (${result.count}).`:result?.error||'Не удалось прочитать копию слов.');e.target.value='';};reader.onerror=()=>setDictionaryStatus('Не удалось прочитать резервную копию слов.');reader.readAsText(file);
+  if(e.target?.id!=='directionServiceAiTermsFile')return;
+  const file=e.target.files?.[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const result=window.MG_AI_SERVICE?.importPersonalTerms?.(String(reader.result||''));
+    setAiStatus(result?.ok?`Слова восстановлены (${result.count}).`:result?.error||'Не удалось восстановить слова.');
+    e.target.value='';
+  };
+  reader.onerror=()=>setAiStatus('Не удалось прочитать резервную копию слов.');
+  reader.readAsText(file);
 });
 
 function toggleService(n,u){
@@ -272,13 +470,13 @@ function showArchives(){renderArchives();screen('archiveScreen')}
 function renderArchives(){const a=drafts(),el=$('archiveList');if(!a.length){el.innerHTML='<div class="empty"><b>Архив пуст</b><small>Здесь будут сохранённые черновики смет.</small></div>';return}el.innerHTML=a.map(x=>`<div class="archive-card"><div><b>${esc((x.directions||[]).map(z=>z.name).join(', ')||x.category||'Новая смета')}</b><div style="margin-top:5px">${esc(x.client||'Без клиента')} · ${esc(x.object||'Без объекта')}</div><small style="display:block;color:var(--muted);margin-top:5px">${allDraftItems(x).length} услуг · ${esc(x.savedAt||'')}</small></div><div class="archive-actions"><button type="button" class="primary" data-draft-open="${esc(String(x.id))}">Продолжить</button><button type="button" data-draft-delete="${esc(String(x.id))}">Удалить</button></div></div>`).join('')}
 function showStats(){renderStats();screen('statsScreen')}
 function edit(){screen('editor');step(state.directions.length?3:1)}
-function share(){const e=state.estimate;if(!e)return;const dt=v=>window.MGPreferences?.tDoc?.(v)??v;const title=`Master Group — ${dt('СМЕТА')}`;const s=`${title} ${e.number}\n${dt('Клиент')}: ${e.client||'—'}\n${dt('Объект')}: ${e.object||'—'}\n\n`+allItemsFromEstimate(e).map((x,i)=>`${i+1}. ${x.direction?x.direction+' — ':''}${x.name} — ${x.qty} ${x.unit} × ${money(x.price)} = ${money(x.qty*x.price)} MDL`).join('\n')+`\n\n${dt('ИТОГО:')} ${money(e.total)} MDL`;if(navigator.share)navigator.share({title,text:s}).catch(()=>{});else navigator.clipboard?.writeText(s).then(()=>toast('Текст скопирован'))}
-document.addEventListener('click',e=>{const openAdd=e.target.closest('[data-calc-open-add-menu]');if(openAdd){openCalcAddMenu();return}const closeAdd=e.target.closest('[data-calc-add-menu-close]');if(closeAdd){closeCalcAddMenu();return}const addOverlay=e.target.closest('#calcAddMenuOverlay');if(addOverlay&&e.target===addOverlay){closeCalcAddMenu();return}const cad=e.target.closest('[data-calc-add-direction]');if(cad){closeCalcAddMenu();openCalcDirectionPicker();return}const cnd=e.target.closest('[data-calc-new-direction]');if(cnd){addCalcDirection(cnd.dataset.calcNewDirection);return}const cdc=e.target.closest('[data-calc-direction-close]');if(cdc){closeCalcDirectionPicker();return}const cdo=e.target.closest('#calcDirectionOverlay');if(cdo&&e.target===cdo){closeCalcDirectionPicker();return}const cp=e.target.closest('[data-calc-picker-close]');if(cp){closeCalcPicker();return}const ca=e.target.closest('[data-calc-add]');if(ca){closeCalcAddMenu();openCalcPicker();return}const cc=e.target.closest('[data-calc-collapse]');if(cc){const i=Number(cc.dataset.calcCollapse);window.__mgCalcCollapsed=window.__mgCalcCollapsed||{};window.__mgCalcCollapsed[i]=!window.__mgCalcCollapsed[i];renderItems();return}const cd=e.target.closest('[data-calc-dir]');if(cd){state.activeDirection=Number(cd.dataset.calcDir)||0;renderCalcPicker();return}const cs=e.target.closest('[data-calc-service]');if(cs){toggleCalcService(cs.dataset.calcService,cs.dataset.calcUnit);return}const cm=e.target.closest('[data-calc-manual]');if(cm){addCalcManual();return}const co=e.target.closest('#calcPickerOverlay');if(co&&e.target===co){closeCalcPicker();return}const sAdd=e.target.closest('[data-settings-add-direction]');if(sAdd){settingsAddDirection();return}const sIcon=e.target.closest('[data-set-direction-icon]');if(sIcon){settingsSetIcon(Number(sIcon.dataset.setDirectionIcon),sIcon.dataset.icon);return}const sSave=e.target.closest('[data-save-direction]');if(sSave){settingsSyncServiceFields();settingsSaveDirection(Number(sSave.dataset.saveDirection));return}const sDel=e.target.closest('[data-delete-direction]');if(sDel){settingsDeleteDirection(Number(sDel.dataset.deleteDirection));return}const sAddSvc=e.target.closest('[data-add-service]');if(sAddSvc){settingsSyncServiceFields();settingsAddService(Number(sAddSvc.dataset.addService));return}const sDelSvc=e.target.closest('[data-delete-service]');if(sDelSvc){settingsDeleteService(...sDelSvc.dataset.deleteService.split(':').map(Number));return}const oa=e.target.closest('[data-open-archives]');if(oa){showArchives();return}const nr=e.target.closest('[data-notif-read]');if(nr){markAllNotificationsRead();return}const nc=e.target.closest('[data-notif-clear]');if(nc){clearNotifications();return}const ni=e.target.closest('[data-notification-id]');if(ni){openNotification(ni.dataset.notificationId);return}const ma=e.target.closest('[data-menu-action]');if(ma){e.preventDefault();e.stopPropagation();const action=ma.dataset.menuAction;$('drawerOverlay').classList.remove('open');if(action==='new')newEstimate();else if(action==='estimates')askArchive(window.MGAppCore?.showEstimates||showEstimates);else if(action==='stats')askArchive(window.MGAppCore?.showStats||showStats);else if(action==='notifications')window.openNotificationsScreen();else if(action==='settings'){const open=window.__mgOpenSettingsDirect||window.MGAppFinance?.showSettings||window.MGAppCore?.showSettings||showSettings;try{open();}catch(err){console.warn('MG settings open failed',err);showSettings();}return}else if(action==='home')askArchive(()=>{dashboard();screen('dashboard')});return}const m=e.target.closest('[data-menu]');if(m){const action=m.dataset.menu;if(action==='open')$('drawerOverlay').classList.add('open');else if(action==='close')$('drawerOverlay').classList.remove('open');return}const a=e.target.closest('[data-action]');if(a){e.preventDefault();const x=a.dataset.action;if(x==='new')newEstimate();else if(x==='home')askArchive(()=>{dashboard();screen('dashboard')});else if(x==='step1')(window.MGAppFinance?.step||step)(1);else if(x==='step2')(window.MGAppFinance?.step||step)(2);else if(x==='step3')(window.MGAppFinance?.step||step)(3);else if(x==='step4')(window.MGAppFinance?.step||step)(4);else if(x==='step5')(window.MGAppFinance?.step||step)(5);else if(x==='services')(window.MGAppFinance?.step||step)(2);else if(x==='create')(window.MGAppCore?.create||create)();else if(x==='edit')edit();else if(x==='share')(window.MGAppFinance?.share||share)();else if(x==='wa'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('wa');else if(x==='tg'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('tg');else if(x==='print'){try{const e=window.MGAppCore?.state?.estimate;if(e?.id&&window.MGAppCore?.documentBody)window.MGAppCore.documentBody({...e,template:(window.MGEstimateTemplates?.resolveForEstimate?.(e)||e.template||'classic')});}catch(err){console.warn('MG print template refresh failed',err)}document.documentElement.classList.add('printing');window.print();}return}const aa=e.target.closest('[data-archive-action]');if(aa){const ac=aa.dataset.archiveAction;if(ac==='save')archiveCurrent();else if(ac==='continue'){$('archiveModal').classList.remove('open');window.__archiveNext=null}else if(ac==='discard'){const n=window.__archiveNext||(()=>{});discardCurrent();window.__archiveNext=null;n()}return}const od=e.target.closest('[data-draft-open]');if(od){resumeDraft(od.dataset.draftOpen);return}const dd=e.target.closest('[data-draft-delete]');if(dd){removeDraft(dd.dataset.draftDelete);return}const dictionaryApply=e.target.closest('[data-dictionary-apply]');if(dictionaryApply){applyDictionarySuggestion(dictionaryApply.dataset.dictionaryApply||'');return}const dictionaryHide=e.target.closest('[data-dictionary-hide-suggestion]');if(dictionaryHide){hideServiceWordSuggestions();return}const quickAdd=e.target.closest('[data-direction-service-quick-add]');if(quickAdd){addOneTimeDirectionService();return}const closeDS=e.target.closest('[data-direction-service-close]');if(closeDS){window.MGEstimateUI.closeDirectionServiceModal();return}const okDS=e.target.closest('[data-direction-service-ok]');if(okDS){window.MGEstimateUI.closeDirectionServiceModal();return}const removeDS=e.target.closest('[data-direction-service-remove]');if(removeDS){window.MGEstimateUI.removeActiveDirection();return}const ds=e.target.closest('[data-direction-service]');if(ds){toggleService(ds.dataset.directionService,ds.dataset.directionUnit);return}const dso=e.target.closest('#directionServiceOverlay');if(dso&&e.target===dso){window.MGEstimateUI.closeDirectionServiceModal();return}const c=e.target.closest('[data-category]');if(c){selectCategory(c.dataset.category);return}const sd=e.target.closest('[data-dir]');if(sd){state.activeDirection=Number(sd.dataset.dir)||0;hideServiceWordSuggestions();renderServiceDirections();renderServices();return}const s=e.target.closest('[data-service]');if(s){toggleService(s.dataset.service,s.dataset.unit);return}const ee=e.target.closest('[data-estimate-edit]');if(ee){editSaved(ee.dataset.estimateEdit);return}const eo=e.target.closest('[data-estimate-open]');if(eo){openSaved(eo.dataset.estimateOpen);return}const ed=e.target.closest('[data-estimate-delete]');if(ed){deleteSaved(ed.dataset.estimateDelete);return}const o=e.target.closest('[data-open]');if(o){load(o.dataset.open);return}const d=e.target.closest('[data-delete]');if(d){for(const dir of state.directions){const i=dir.items.findIndex(x=>x.id===d.dataset.delete);if(i>=0){dir.items.splice(i,1);break}}renderItems();renderServices();return}const minus=e.target.closest('[data-minus]');if(minus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===minus.dataset.minus);if(x){x.qty=Math.max(0,(Number(x.qty)||0)-1);renderItems();break}}return}const plus=e.target.closest('[data-plus]');if(plus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===plus.dataset.plus);if(x){x.qty=(Number(x.qty)||0)+1;renderItems();break}}return}});
+function share(){const e=state.estimate;if(!e)return;const s=`Master Group — Смета ${e.number}\nКлиент: ${e.client||'—'}\nОбъект: ${e.object||'—'}\n\n`+allItemsFromEstimate(e).map((x,i)=>`${i+1}. ${x.direction?x.direction+' — ':''}${x.name} — ${x.qty} ${x.unit} × ${money(x.price)} = ${money(x.qty*x.price)} MDL`).join('\n')+`\n\nИТОГО: ${money(e.total)} MDL`;if(navigator.share)navigator.share({title:'Master Group — Смета',text:s}).catch(()=>{});else navigator.clipboard?.writeText(s).then(()=>toast('Текст скопирован'))}
+document.addEventListener('click',e=>{const openAdd=e.target.closest('[data-calc-open-add-menu]');if(openAdd){openCalcAddMenu();return}const closeAdd=e.target.closest('[data-calc-add-menu-close]');if(closeAdd){closeCalcAddMenu();return}const addOverlay=e.target.closest('#calcAddMenuOverlay');if(addOverlay&&e.target===addOverlay){closeCalcAddMenu();return}const cad=e.target.closest('[data-calc-add-direction]');if(cad){closeCalcAddMenu();openCalcDirectionPicker();return}const cnd=e.target.closest('[data-calc-new-direction]');if(cnd){addCalcDirection(cnd.dataset.calcNewDirection);return}const cdc=e.target.closest('[data-calc-direction-close]');if(cdc){closeCalcDirectionPicker();return}const cdo=e.target.closest('#calcDirectionOverlay');if(cdo&&e.target===cdo){closeCalcDirectionPicker();return}const cp=e.target.closest('[data-calc-picker-close]');if(cp){closeCalcPicker();return}const ca=e.target.closest('[data-calc-add]');if(ca){closeCalcAddMenu();openCalcPicker();return}const cc=e.target.closest('[data-calc-collapse]');if(cc){const i=Number(cc.dataset.calcCollapse);window.__mgCalcCollapsed=window.__mgCalcCollapsed||{};window.__mgCalcCollapsed[i]=!window.__mgCalcCollapsed[i];renderItems();return}const cd=e.target.closest('[data-calc-dir]');if(cd){state.activeDirection=Number(cd.dataset.calcDir)||0;renderCalcPicker();return}const cs=e.target.closest('[data-calc-service]');if(cs){toggleCalcService(cs.dataset.calcService,cs.dataset.calcUnit);return}const cm=e.target.closest('[data-calc-manual]');if(cm){addCalcManual();return}const co=e.target.closest('#calcPickerOverlay');if(co&&e.target===co){closeCalcPicker();return}const sAdd=e.target.closest('[data-settings-add-direction]');if(sAdd){settingsAddDirection();return}const sIcon=e.target.closest('[data-set-direction-icon]');if(sIcon){settingsSetIcon(Number(sIcon.dataset.setDirectionIcon),sIcon.dataset.icon);return}const sSave=e.target.closest('[data-save-direction]');if(sSave){settingsSyncServiceFields();settingsSaveDirection(Number(sSave.dataset.saveDirection));return}const sDel=e.target.closest('[data-delete-direction]');if(sDel){settingsDeleteDirection(Number(sDel.dataset.deleteDirection));return}const sAddSvc=e.target.closest('[data-add-service]');if(sAddSvc){settingsSyncServiceFields();settingsAddService(Number(sAddSvc.dataset.addService));return}const sDelSvc=e.target.closest('[data-delete-service]');if(sDelSvc){settingsDeleteService(...sDelSvc.dataset.deleteService.split(':').map(Number));return}const oa=e.target.closest('[data-open-archives]');if(oa){showArchives();return}const nr=e.target.closest('[data-notif-read]');if(nr){markAllNotificationsRead();return}const nc=e.target.closest('[data-notif-clear]');if(nc){clearNotifications();return}const ni=e.target.closest('[data-notification-id]');if(ni){openNotification(ni.dataset.notificationId);return}const ma=e.target.closest('[data-menu-action]');if(ma){e.preventDefault();e.stopPropagation();const action=ma.dataset.menuAction;$('drawerOverlay').classList.remove('open');if(action==='new')newEstimate();else if(action==='estimates')askArchive(window.MGAppCore?.showEstimates||showEstimates);else if(action==='stats')askArchive(window.MGAppCore?.showStats||showStats);else if(action==='notifications')window.openNotificationsScreen();else if(action==='settings'){const open=window.__mgOpenSettingsDirect||window.MGAppFinance?.showSettings||window.MGAppCore?.showSettings||showSettings;try{open();}catch(err){console.warn('MG settings open failed',err);showSettings();}return}else if(action==='home')askArchive(()=>{dashboard();screen('dashboard')});return}const m=e.target.closest('[data-menu]');if(m){const action=m.dataset.menu;if(action==='open')$('drawerOverlay').classList.add('open');else if(action==='close')$('drawerOverlay').classList.remove('open');return}const a=e.target.closest('[data-action]');if(a){e.preventDefault();const x=a.dataset.action;if(x==='new')newEstimate();else if(x==='home')askArchive(()=>{dashboard();screen('dashboard')});else if(x==='step1')(window.MGAppFinance?.step||step)(1);else if(x==='step2')(window.MGAppFinance?.step||step)(2);else if(x==='step3')(window.MGAppFinance?.step||step)(3);else if(x==='step4')(window.MGAppFinance?.step||step)(4);else if(x==='step5')(window.MGAppFinance?.step||step)(5);else if(x==='services')(window.MGAppFinance?.step||step)(2);else if(x==='create')(window.MGAppCore?.create||create)();else if(x==='edit')edit();else if(x==='share')(window.MGAppFinance?.share||share)();else if(x==='wa'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('wa');else if(x==='tg'&&state.estimate)(window.MGAppFinance?.shareTo||shareTo)('tg');else if(x==='print'){try{const e=window.MGAppCore?.state?.estimate;if(e?.id&&window.MGAppCore?.documentBody)window.MGAppCore.documentBody({...e,template:(window.MGEstimateTemplates?.resolveForEstimate?.(e)||e.template||'classic')});}catch(err){console.warn('MG print template refresh failed',err)}document.documentElement.classList.add('printing');window.print();}return}const aa=e.target.closest('[data-archive-action]');if(aa){const ac=aa.dataset.archiveAction;if(ac==='save')archiveCurrent();else if(ac==='continue'){$('archiveModal').classList.remove('open');window.__archiveNext=null}else if(ac==='discard'){const n=window.__archiveNext||(()=>{});discardCurrent();window.__archiveNext=null;n()}return}const od=e.target.closest('[data-draft-open]');if(od){resumeDraft(od.dataset.draftOpen);return}const dd=e.target.closest('[data-draft-delete]');if(dd){removeDraft(dd.dataset.draftDelete);return}const aiApply=e.target.closest('[data-ai-apply]');if(aiApply){applyAiSuggestion(aiApply.dataset.aiApply||'');return}const aiHide=e.target.closest('[data-ai-hide-suggestion]');if(aiHide){hideServiceWordSuggestions();return}const quickAdd=e.target.closest('[data-direction-service-quick-add]');if(quickAdd){addOneTimeDirectionService();return}const closeDS=e.target.closest('[data-direction-service-close]');if(closeDS){window.MGEstimateUI.closeDirectionServiceModal();return}const okDS=e.target.closest('[data-direction-service-ok]');if(okDS){window.MGEstimateUI.closeDirectionServiceModal();return}const removeDS=e.target.closest('[data-direction-service-remove]');if(removeDS){window.MGEstimateUI.removeActiveDirection();return}const ds=e.target.closest('[data-direction-service]');if(ds){toggleService(ds.dataset.directionService,ds.dataset.directionUnit);return}const dso=e.target.closest('#directionServiceOverlay');if(dso&&e.target===dso){window.MGEstimateUI.closeDirectionServiceModal();return}const c=e.target.closest('[data-category]');if(c){selectCategory(c.dataset.category);return}const sd=e.target.closest('[data-dir]');if(sd){state.activeDirection=Number(sd.dataset.dir)||0;hideServiceWordSuggestions();renderServiceDirections();renderServices();return}const s=e.target.closest('[data-service]');if(s){toggleService(s.dataset.service,s.dataset.unit);return}const ee=e.target.closest('[data-estimate-edit]');if(ee){editSaved(ee.dataset.estimateEdit);return}const eo=e.target.closest('[data-estimate-open]');if(eo){openSaved(eo.dataset.estimateOpen);return}const ed=e.target.closest('[data-estimate-delete]');if(ed){deleteSaved(ed.dataset.estimateDelete);return}const o=e.target.closest('[data-open]');if(o){load(o.dataset.open);return}const d=e.target.closest('[data-delete]');if(d){for(const dir of state.directions){const i=dir.items.findIndex(x=>x.id===d.dataset.delete);if(i>=0){dir.items.splice(i,1);break}}renderItems();renderServices();return}const minus=e.target.closest('[data-minus]');if(minus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===minus.dataset.minus);if(x){x.qty=Math.max(0,(Number(x.qty)||0)-1);renderItems();break}}return}const plus=e.target.closest('[data-plus]');if(plus){for(const dir of state.directions){const x=dir.items.find(x=>x.id===plus.dataset.plus);if(x){x.qty=(Number(x.qty)||0)+1;renderItems();break}}return}});
 document.addEventListener('input',e=>{const el=e.target;if(el.dataset.qty){for(const dir of state.directions){const x=dir.items.find(x=>x.id===el.dataset.qty);if(x){x.qty=Math.max(0,Number(el.value)||0);el.value=x.qty;$('total').textContent=money(total())+' MDL';const sum=document.querySelector(`[data-line-total="${x.id}"]`);if(sum)sum.textContent=money(x.qty*x.price)+' MDL';break}}}if(el.dataset.price){for(const dir of state.directions){const x=dir.items.find(x=>x.id===el.dataset.price);if(x){x.price=el.value===''?0:Math.max(0,Number(el.value)||0);$('total').textContent=money(total())+' MDL';const sum=document.querySelector(`[data-line-total="${x.id}"]`);if(sum)sum.textContent=money(x.qty*x.price)+' MDL';break}}}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCalcAddMenu();closeCalcPicker();closeCalcDirectionPicker();window.MGEstimateUI.closeDirectionServiceModal();scheduleRecoverySave()}});window.newEstimate=newEstimate;renderCats();renderServiceDirections();renderItems();dashboard();if(!restoreRecovery())screen('dashboard');
 
 async function v60AskSent(id){const e=saved().find(x=>String(x.id)===String(id));if(!e)return false;if(v58st(e)!=='Черновик')return true;const yes=await MG71.confirm('Смета отправлена клиенту?','После подтверждения статус будет сохранён как «Отправлена».','Да, отправлена','Нет');if(yes){v58SetStatus(id,'Отправлена');return true}return false}
-function shareTo(kind){const e=v59Normalize(state.estimate||{});if(!e.id){toast('Сначала сохраните смету');return}const dt=v=>window.MGPreferences?.tDoc?.(v)??v;const title=`Master Group — ${dt('СМЕТА')}`;const text=`${title} ${e.number}\n${dt('Клиент')}: ${e.client||'—'}\n${dt('Телефон')}: ${e.phone||'—'}\n${dt('Адрес')}: ${e.address||e.object||'—'}\n\n`+allItemsFromEstimate(e).map((x,i)=>`${i+1}. ${x.direction?x.direction+' — ':''}${x.name} — ${x.qty} ${x.unit} × ${money(x.price)} = ${money(x.qty*x.price)} MDL`).join('\n')+`\n\n${dt('ИТОГО:')} ${money(e.total)} MDL\n${e.paid>0?`${dt('Аванс')}: ${money(e.paid)} MDL\n${dt('Остаток')}: ${money(e.balance)} MDL`:''}`;if(kind==='wa'){v60AskSent(e.id);location.href='https://wa.me/?text='+encodeURIComponent(text);return}if(kind==='tg'){v60AskSent(e.id);location.href='https://t.me/share/url?url=&text='+encodeURIComponent(text);return}if(navigator.share){navigator.share({title:`Master Group — ${window.MGPreferences?.tDoc?.('СМЕТА')||'Смета'} ${e.number}`,text}).then(()=>v60AskSent(e.id)).catch(()=>{});return}if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>{toast('Текст скопирован');v60AskSent(e.id)}).catch(()=>toast('Не удалось скопировать текст'));return}v60AskSent(e.id)}
+function shareTo(kind){const e=v59Normalize(state.estimate||{});if(!e.id){toast('Сначала сохраните смету');return}const text=`Master Group — Смета ${e.number}\nКлиент: ${e.client||'—'}\nТелефон: ${e.phone||'—'}\nАдрес: ${e.address||e.object||'—'}\n\n`+allItemsFromEstimate(e).map((x,i)=>`${i+1}. ${x.direction?x.direction+' — ':''}${x.name} — ${x.qty} ${x.unit} × ${money(x.price)} = ${money(x.qty*x.price)} MDL`).join('\n')+`\n\nИТОГО: ${money(e.total)} MDL\n${e.paid>0?`Аванс: ${money(e.paid)} MDL\nОстаток: ${money(e.balance)} MDL`:''}`;if(kind==='wa'){v60AskSent(e.id);location.href='https://wa.me/?text='+encodeURIComponent(text);return}if(kind==='tg'){v60AskSent(e.id);location.href='https://t.me/share/url?url=&text='+encodeURIComponent(text);return}if(navigator.share){navigator.share({title:'Master Group — Смета '+e.number,text}).then(()=>v60AskSent(e.id)).catch(()=>{});return}if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>{toast('Текст скопирован');v60AskSent(e.id)}).catch(()=>toast('Не удалось скопировать текст'));return}v60AskSent(e.id)}
 window.MGAppCore={state,catalog,cats,svc,saveCatalog,$,esc,money,uid,contactData,setContact,toast,saved,persist,drafts,persistDrafts,allItems,total,normalizeDirections,allItemsFromEstimate,screen,saveRecoveryNow,restoreRecovery,clearRecovery,renderCats,renderServiceDirections,renderServices,renderItems,renderReview,step,activeDir,showArchives,showStats,showSettings,showEstimates,renderEstimates,dashboard,load,editSaved,openSaved,deleteSaved,archiveCurrent,discardCurrent,askArchive,resumeDraft,removeDraft,newEstimate,create,documentBody,share,shareTo,renderStats,renderSettings};
 
 })();
