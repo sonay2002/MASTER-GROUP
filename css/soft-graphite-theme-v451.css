@@ -70,3 +70,137 @@ html[data-mg-theme="dark"] body :is(.sidebar,.side-menu,.drawer,nav[aria-label],
 html[data-mg-theme="dark"] body :is(.danger,.error,.delete,.btn-danger) { color: #f0a6a6 !important; }
 html[data-mg-theme="dark"] body :is(.success,.positive,.status-complete) { color: #a7d5c0 !important; }
 html[data-mg-theme="dark"] body img { color: inherit; }
+
+
+/* Soft Graphite 2.0 — softer typography, icons, surfaces and borders. */
+html[data-mg-theme="dark"] {
+ --mg-bg: #191c22;
+ --mg-surface: #22262e;
+ --mg-surface-raised: #272c35;
+ --mg-surface-hover: #2b3039;
+ --mg-border: #303640;
+ --mg-text: #c3c8d1;
+ --mg-text-secondary: #929aa7;
+ --mg-muted: #818a98;
+ --mg-accent: #9aa8ba;
+ --mg-accent-bg: #2a313c;
+ --mg-input: #20242b;
+}
+html[data-mg-theme="dark"] body {
+ background: var(--mg-bg) !important;
+ color: var(--mg-text) !important;
+}
+html[data-mg-theme="dark"] body :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,legend,dt,dd,li,td,th,a,div,section,article,aside,nav,header,footer,main,button,[role="button"],.btn,.tab,.nav-link,.menu-item,.card-title,.card-text,.title,.subtitle) {
+ color: var(--mg-text);
+}
+html[data-mg-theme="dark"] body :is(.muted,.hint,.subtitle,.description,small,.secondary,.text-secondary,.settings-overline,.settings-group-title,.settings-card-head-v2 p,.help-text,.field-hint) {
+ color: var(--mg-text-secondary) !important;
+}
+html[data-mg-theme="dark"] body :is(svg, svg *, .icon, [class*="icon"], i[class*="icon"]) {
+ color: #929baa !important;
+ stroke: currentColor;
+}
+html[data-mg-theme="dark"] body :is(button,.btn,[role="button"],.tab,.nav-link,.menu-item,.settings-hub-card,.mg-theme-option) {
+ background-color: var(--mg-surface-raised) !important;
+ color: var(--mg-text) !important;
+ border-color: var(--mg-border) !important;
+ box-shadow: none !important;
+}
+html[data-mg-theme="dark"] body :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select,[contenteditable="true"]) {
+ background-color: var(--mg-input) !important;
+ color: var(--mg-text) !important;
+ border-color: #303640 !important;
+ box-shadow: none !important;
+}
+html[data-mg-theme="dark"] body :is(main,aside,nav,header,footer,section,article,.card,.panel,.modal,.modal-content,.sidebar,.side-menu,.drawer,.tab-content,.settings-panel-v2,.settings-card-v2,.settings-section,.content,.page,.screen,.sheet,.list-item,.estimate-card,.client-card,.finance-card,.dashboard-card,.form-card,.form-section,.dropdown-menu,.popover,.empty-state) {
+ background-color: var(--mg-surface) !important;
+ color: var(--mg-text);
+ border-color: var(--mg-border) !important;
+ box-shadow: none;
+}
+html[data-mg-theme="dark"] body :is(hr,.divider,.separator,table,td,th) { border-color: #303640 !important; }
+html[data-mg-theme="dark"] body :is(.active,.selected,[aria-current="page"],[aria-selected="true"]) {
+ background-color: #2a313c !important;
+ color: #cbd1da !important;
+}
+html[data-mg-theme="dark"] body :is(.danger,.error,.delete,.btn-danger) { color: #d99b9b !important; }
+html[data-mg-theme="dark"] body :is(.success,.positive,.status-complete) { color: #9fc5b0 !important; }
+html[data-mg-theme="dark"] body :is(.settings-hub-icon,.settings-symbol-v2,.icon-button) {
+ background-color: #292e37 !important;
+ color: #929baa !important;
+ border-color: #303640 !important;
+}
+html[data-mg-theme="dark"] body [style*="background"],
+html[data-mg-theme="dark"] body [style*="background-color"] {
+ background-color: var(--mg-surface) !important;
+ background-image: none !important;
+}
+html[data-mg-theme="dark"] body ::selection { background: #394451; color: #d6dbe3; }
+
+
+/* v454 — remove remaining white surfaces in dark mode, including legacy inline CSS. */
+html[data-mg-theme="dark"],
+html[data-mg-theme="dark"] body {
+  background: #191c22 !important;
+  background-color: #191c22 !important;
+  color: #c3c8d1 !important;
+}
+html[data-mg-theme="dark"] body :is(#statsScreen .analytics-tabs-v3, .analytics-tabs-v3) {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+html[data-mg-theme="dark"] body :is(
+  .analytics-tab-v3, .settings-hub-card, .settings-card-v2, .settings-panel-v2,
+  .card, .card-body, .card-header, .card-footer, .panel, .panel-body,
+  .modal, .modal-content, .modal-header, .modal-body, .modal-footer,
+  .dropdown-menu, .popover, .sheet, .bottom-sheet, .drawer, .sidebar,
+  .side-menu, .side-menu-item, .list-group-item, .list-item, .table,
+  .table thead, .table tbody, .table tr, .table td, .table th,
+  .estimate-card, .client-card, .finance-card, .dashboard-card,
+  .form-card, .form-section, .empty-state, .tab-content, .tab-pane,
+  .settings-group-v2, .settings-input, .mg-theme-option
+) {
+  background: #22262e !important;
+  background-color: #22262e !important;
+  color: #c3c8d1 !important;
+  border-color: #303640 !important;
+  box-shadow: none !important;
+}
+html[data-mg-theme="dark"] body :is(
+  .analytics-tab-v3, button, .btn, [role="button"], input, textarea, select,
+  .settings-input, [contenteditable="true"]
+) {
+  background-color: #272c35 !important;
+  color: #c3c8d1 !important;
+  border-color: #303640 !important;
+  box-shadow: none !important;
+}
+html[data-mg-theme="dark"] body [style*="#fff"],
+html[data-mg-theme="dark"] body [style*="#FFF"],
+html[data-mg-theme="dark"] body [style*="#ffffff"],
+html[data-mg-theme="dark"] body [style*="#FFFFFF"],
+html[data-mg-theme="dark"] body [style*="white"],
+html[data-mg-theme="dark"] body [style*="White"],
+html[data-mg-theme="dark"] body [style*="rgb(255"],
+html[data-mg-theme="dark"] body [style*="rgb( 255"] {
+  background: #22262e !important;
+  background-color: #22262e !important;
+  color: #c3c8d1 !important;
+  border-color: #303640 !important;
+  box-shadow: none !important;
+}
+html[data-mg-theme="dark"] body :is(
+  .analytics-tab-v3, .settings-hub-card, .settings-card-v2, .settings-panel-v2,
+  .card, .panel, .modal-content, .dropdown-menu, .popover, .sheet, .drawer,
+  .sidebar, .side-menu, .estimate-card, .client-card, .finance-card, .dashboard-card
+) :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,b,div) {
+  color: inherit;
+}
+html[data-mg-theme="dark"] body :is(.muted,.hint,.subtitle,.description,small,.secondary,.text-secondary) {
+  color: #929aa7 !important;
+}
+html[data-mg-theme="dark"] body :is(.analytics-tab-v3,button,.btn,[role="button"]) svg,
+html[data-mg-theme="dark"] body :is(.analytics-tab-v3,button,.btn,[role="button"]) i {
+  color: #929baa !important;
+}

@@ -1,0 +1,7 @@
+Master Group v454 — White surfaces fix
+- Ensures the saved theme is applied in the head before first paint (existing early script retained).
+- Sets theme-color and root/body background to graphite in dark mode.
+- Adds late-loaded override stylesheet to defeat legacy inline white backgrounds and hardcoded light card/tab styles.
+- Adds explicit dark styles for analytics tabs, cards, panels, modal windows, inputs, side menu, and legacy inline backgrounds.
+- Service Worker cache bumped to v454 and new stylesheet URL added.
+Validation: JS syntax, precache paths, and ZIP integrity checked. Physical iPhone visual validation still required.

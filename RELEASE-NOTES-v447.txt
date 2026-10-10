@@ -1,0 +1,7 @@
+Master Group v447 — phrase spellcheck + compact correction panel
+
+- Expanded dictionary correction now runs after phrase-level professional rules too, so a phrase correction does not prevent checking later words.
+- Expanded dictionary pass can correct up to 12 misspelled tokens in a phrase instead of stopping after two.
+- Removed visible dictionary heading/labels, import/export buttons and status copy from the correction panel. The panel now keeps only the correction suggestion and alternatives; input and Add button remain unchanged.
+- Preserved Firebase, estimates, calculation flows, settings and other screens.
+- The public expanded dictionary remains downloaded/cached on first use; this package does not bundle the multi-million-form corpus. Without a successful download, typo coverage remains limited.

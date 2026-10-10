@@ -1,0 +1,8 @@
+Master Group v444 — persistent live word suggestions
+
+- The professional dictionary suggestion panel now stays visible in the service modal, including before typing.
+- While the user types, the panel updates with a suggested correction; for an empty/one-character input it shows a helpful prompt instead of disappearing.
+- Kept the existing estimate layout and dictionary-only approach; no paid API or AI model added.
+- Bumped app and service-worker cache version to v444.
+
+Note: browser/device behavior should still be checked on the published GitHub Pages build, especially on iPhone Safari.
