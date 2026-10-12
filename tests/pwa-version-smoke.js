@@ -5,7 +5,7 @@ const workflow = fs.readFileSync('.github/workflows/main.yml', 'utf8');
 if (!pwa.includes('function renderCurrentVersion()')) throw new Error('Current app version renderer missing');
 if (!pwa.includes('renderCurrentVersion();')) throw new Error('Current app version is not rendered on startup');
 if (!pwa.includes('status.textContent=`Версия ${APP_VERSION} · актуально`')) throw new Error('Version status does not use runtime app version');
-if (!html.includes('name="app-version" content="v462"')) throw new Error('Source fallback app version missing');
+if (!html.includes('name="app-version" content="v463"')) throw new Error('Source fallback app version missing');
 if (!workflow.includes('version = f"v444.{run_number}"')) throw new Error('Deployment version is not auto-incremented');
 if (!workflow.includes('cache_name = f"master-group-v444-{run_number}-{commit_sha[:8]}"')) throw new Error('Service Worker cache is not versioned per deployment');
 if (!workflow.includes("'runNumber': int(run_number)")) throw new Error('Build metadata is missing deployment run number');
