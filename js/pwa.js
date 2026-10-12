@@ -6,6 +6,13 @@ let registration=null,waitingWorker=null,applyingUpdate=false,reloadTimer=null;
 const SNOOZE_KEY='mg_update_snooze_until_v1';
 const $=id=>document.getElementById(id);
 const notice=$('mgUpdateNotice'),noticeText=$('mgUpdateNoticeText'),later=$('mgUpdateLaterBtn'),now=$('mgUpdateNowBtn'),check=$('mgCheckUpdateBtn'),status=$('mgUpdateSettingsStatus'),settingsText=$('mgUpdateSettingsText');
+function renderCurrentVersion(){
+  // Always show the version of this deployed build immediately; never leave stale HTML fallback text.
+  if(waitingWorker||registration?.waiting)return;
+  if(status)status.textContent=`Версия ${APP_VERSION} · актуально`;
+  if(settingsText)settingsText.textContent=`Master Group ${APP_VERSION} · приложение автоматически проверяет новые версии.`;
+}
+renderCurrentVersion();
 function snoozed(){try{return Number(localStorage.getItem(SNOOZE_KEY)||0)>Date.now()}catch{return false}}
 function showUpdate(w,force=false){
   if(!w)return;
@@ -62,7 +69,7 @@ function apply(){
 }
 function bind(reg){
   registration=reg;
-  if(reg.waiting)showUpdate(reg.waiting);
+  if(reg.waiting)showUpdate(reg.waiting);else renderCurrentVersion();
   reg.addEventListener('updatefound',()=>{
     const w=reg.installing;if(!w)return;
     w.addEventListener('statechange',()=>{
@@ -80,8 +87,8 @@ async function checkUpdate(manual=false){
     await registration.update();
     if(registration.waiting){
       showUpdate(registration.waiting,true);
-    }else if(manual&&status){
-      status.textContent=`Версия ${APP_VERSION} · актуально`;
+    }else{
+      renderCurrentVersion();
     }
   }catch(err){
     console.warn('MG update check failed',err);

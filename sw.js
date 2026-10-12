@@ -1,5 +1,6 @@
-/* Master Group v440 — GitHub Pages safe Service Worker */
-const CACHE = 'master-group-v441';
+/* Master Group v450 — GitHub Pages safe Service Worker */
+// Supersedes master-group-v458-estimate-list-compact.
+const CACHE = 'master-group-v461-desktop-workspace';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -7,19 +8,24 @@ const CORE = [
   "./js/zoom-lock.js",
   "./css/styles.css?v=440",
   "./css/contact-card-final.css?v=440",
-  "./css/soft-ui.css?v=441",
+  "./css/soft-ui.css?v=443",
+  "./css/estimates-editor-v456.css?v=456",
+  "./css/estimates-list-compact-v458.css?v=458",
+  "./css/estimates-status-palette-v460.css?v=460",
+  "./css/desktop-layout-v461.css?v=461",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
   "./js/responsive-runtime-v351.js",
-  "./js/catalog.js",
+  "./js/catalog.js?v=447",
   "./js/estimate-engine.js",
   "./js/calculations.js",
   "./js/finance-service.js",
   "./js/estimate-ui.js",
   "./js/mg-ai-service.js",
-  "./js/estimate-core.js",
-  "./js/finance-ui.js?v=434",
+  "./js/estimate-core.js?v=447",
+  "./js/finance-ui.js?v=460",
+  "./js/estimates-redesign-v454.js?v=460",
   "./js/document-actions-v419.js?v=431",
   "./js/estimate-templates.js",
   "./js/app-core.js",
@@ -32,7 +38,7 @@ const CORE = [
   "./js/offline-engine.js",
   "./js/firebase-client.js",
   "./js/firebase-repository.js",
-  "./js/firebase-sync.js?v=440",
+  "./js/firebase-sync.js?v=447",
   "./js/direct-interaction-fix.js",
   "./js/settings-trash-fix.js",
   "./js/status-direct-fix.js",
@@ -48,6 +54,11 @@ const CORE = [
   "./js/settings-hub-v357.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./icons/direction-approved/landscape.png",
+  "./icons/direction-approved/camera.png",
+  "./icons/direction-approved/metal.png",
+  "./icons/direction-approved/plumbing.png",
+  "./icons/direction-approved/electrical.png",
 ];
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -72,6 +83,7 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
   const isNavigation = event.request.mode === 'navigate' || url.pathname.endsWith('/index.html');
   const isAppAsset = /\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
+  const isApprovedIcon = /\/icons\/direction-approved\/[^/]+\.png$/i.test(url.pathname);
   if (isNavigation) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
@@ -88,6 +100,17 @@ self.addEventListener('fetch', event => {
   }
   // JS/CSS/config files are network-first so GitHub Pages never gets stuck
   // on an old cached build after a new commit. Offline fallback remains available.
+  if (isApprovedIcon) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .then(response => {
+          if (response.ok) caches.open(CACHE).then(cache => cache.put(event.request, response.clone())).catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
   if (isAppAsset) {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })

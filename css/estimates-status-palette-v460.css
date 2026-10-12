@@ -1,0 +1,55 @@
+/* Master Group v460 — status colors only. The top estimate filter bar intentionally keeps its original v458 styling. */
+/* Work status chips: taupe, plum, sage, olive and muted terracotta. */
+#estimatesList .status-pill.draft,
+#estimatesList .status-pill.status-draft,
+#estimatesList .status-pill.status-Черновик,
+.finance-estimate .status-pill.draft,
+#saved .home-estimate-status.draft{
+  background:#f0eeeb!important;color:#51483f!important;border-color:#dad4cc!important;
+}
+#estimatesList .status-pill.sent,
+#estimatesList .status-pill.status-sent,
+#estimatesList .status-pill.status-Отправлена,
+.finance-estimate .status-pill.sent,
+#saved .home-estimate-status.sent{
+  background:#e8e4ef!important;color:#665477!important;border-color:#dcd3e7!important;
+}
+#estimatesList .status-pill.work,
+#estimatesList .status-pill.status-working,
+#estimatesList .status-pill.status-В-работе,
+.finance-estimate .status-pill.work,
+#saved .home-estimate-status.work{
+  background:#dde8e5!important;color:#365e54!important;border-color:#c5d9d3!important;
+}
+#estimatesList .status-pill.done,
+#estimatesList .status-pill.status-done,
+#estimatesList .status-pill.status-Выполнена,
+.finance-estimate .status-pill.done,
+#saved .home-estimate-status.done{
+  background:#e7e8d8!important;color:#5b6040!important;border-color:#d9dcc5!important;
+}
+#estimatesList .status-pill.cancel,
+#estimatesList .status-pill.status-cancelled,
+#estimatesList .status-pill.status-Отменена,
+.finance-estimate .status-pill.cancel,
+#saved .home-estimate-status.cancel{
+  background:#ece0dc!important;color:#785448!important;border-color:#e0cfc8!important;
+}
+
+/* Payment labels stay understated so the work status remains the visual anchor. */
+#estimatesList .status-pill.pay-none,
+#estimatesList .status-pill.pay-partial,
+#estimatesList .status-pill.pay-full{
+  border-color:#e5e1dc!important;
+  font-weight:600!important;
+}
+#estimatesList .status-pill.pay-none{background:#f4f2ef!important;color:#69635c!important}
+#estimatesList .status-pill.pay-partial{background:#f3e8d5!important;color:#785d30!important;border-color:#ead8b9!important}
+#estimatesList .status-pill.pay-full{background:#e4ece5!important;color:#47634c!important;border-color:#cfdfd1!important}
+
+/* The status selector follows the color of its currently selected status. */
+#estimatesList select[data-estimate-status].status-draft{background:#f0eeeb!important;color:#51483f!important;border-color:#dad4cc!important}
+#estimatesList select[data-estimate-status].status-sent{background:#e8e4ef!important;color:#665477!important;border-color:#dcd3e7!important}
+#estimatesList select[data-estimate-status].status-work{background:#dde8e5!important;color:#365e54!important;border-color:#c5d9d3!important}
+#estimatesList select[data-estimate-status].status-done{background:#e7e8d8!important;color:#5b6040!important;border-color:#d9dcc5!important}
+#estimatesList select[data-estimate-status].status-cancel{background:#ece0dc!important;color:#785448!important;border-color:#e0cfc8!important}

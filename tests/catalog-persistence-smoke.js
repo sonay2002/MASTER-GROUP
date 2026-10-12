@@ -1,0 +1,35 @@
+const fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync(__dirname+'/../js/catalog.js','utf8');
+const syncSource=fs.readFileSync(__dirname+'/../js/firebase-sync.js','utf8');
+const store=new Map();
+const localStorage={getItem(k){return store.has(k)?store.get(k):null},setItem(k,v){store.set(k,String(v))},removeItem(k){store.delete(k)}};
+const listeners={};
+class CustomEvent{constructor(type,opts={}){this.type=type;this.detail=opts.detail}}
+const window={localStorage,dispatchEvent(e){(listeners[e.type]||[]).forEach(fn=>fn(e));return true},addEventListener(type,fn){(listeners[type]||(listeners[type]=[])).push(fn)}};
+window.window=window;
+const context={window,localStorage,CustomEvent,console,setTimeout,Date,JSON,String,Number,Array,Object,Math};
+vm.createContext(context);vm.runInContext(source,context);
+const api=window.MGCatalog;
+if(!api||!Array.isArray(api.data)||!Array.isArray(api.cats)||!api.svc)throw new Error('Catalog API unavailable');
+if(store.has('master_group_catalog_local_updated_at'))throw new Error('Default catalog was incorrectly marked as a user edit');
+const dataRef=api.data,catsRef=api.cats,svcRef=api.svc;
+let updates=0;window.addEventListener('mg:catalog-updated',()=>updates++);
+api.data.push({name:'Электрика',icon:'electrical',services:[{name:'Монтаж розетки',unit:'шт'}]});
+window.__mgCloudMarkCatalogDirty=()=>localStorage.setItem('master_group_cloud_catalog_dirty_v2','true');
+if(!api.save())throw new Error('Catalog save failed');
+let saved=JSON.parse(localStorage.getItem('master_group_catalog_v1'));
+if(!saved.some(d=>d.name==='Электрика'))throw new Error('New direction missing from localStorage after save');
+if(!JSON.parse(localStorage.getItem('master_group_cloud_catalog_dirty_v2')))throw new Error('Catalog was not marked for cloud sync');
+if(api.data!==dataRef||api.cats!==catsRef||api.svc!==svcRef)throw new Error('Catalog references changed on save');
+// Simulate a remote authoritative update: it must refresh localStorage and all in-memory references.
+api.applyRemote([{name:'Электрика',icon:'electrical',services:[{name:'Монтаж розетки','unit':'шт'},{name:'Прокладка кабеля','unit':'м'}]},{name:'Новая категория',icon:'other',services:[]}],12345);
+if(api.data!==dataRef||api.cats!==catsRef||api.svc!==svcRef)throw new Error('Catalog references changed after remote update');
+if(!api.data.some(d=>d.name==='Новая категория'))throw new Error('Remote direction not applied in memory');
+if(!api.svc['Электрика'].some(x=>x[0]==='Прокладка кабеля'))throw new Error('Derived services map did not update');
+if(Number(localStorage.getItem('master_group_catalog_sync_at'))!==12345)throw new Error('Cloud sync timestamp not stored');
+if(updates!==1)throw new Error('Catalog update event not dispatched exactly once');
+if(!syncSource.includes('changedAtBefore===changedAtAfter&&payloadJson===latestJson'))throw new Error('Firebase catalog upload does not protect edits made during an in-flight write');
+if(!syncSource.includes('window.MGCatalog?.applyRemote'))throw new Error('Firebase remote catalog is not applied to the live in-memory catalog');
+if(typeof api.isSame!=='function'||!api.isSame(api.data))throw new Error('Catalog canonical comparison helper missing or incorrect');
+if(!syncSource.includes('if(busy){scheduleUpload(220);return;}'))throw new Error('Queued catalog upload can be dropped while another sync is running');
+console.log('Catalog persistence and stable-reference smoke: PASS');

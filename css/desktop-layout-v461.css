@@ -1,0 +1,431 @@
+/* Master Group v461 — desktop workspace layout.
+   Scoped to wide viewports only: phone and small-tablet layout/behavior stay unchanged. */
+@media screen and (min-width: 1100px) {
+  html, body {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    background: #f4f5f7 !important;
+    color: #202327 !important;
+  }
+
+  /* Permanent left navigation, reusing the real app menu/actions. */
+  html body #drawerOverlay {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: 258px !important;
+    height: 100vh !important;
+    min-width: 258px !important;
+    max-width: 258px !important;
+    display: block !important;
+    overflow: visible !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: none !important;
+    z-index: 99980 !important;
+  }
+  html body #drawerOverlay .drawer {
+    position: absolute !important;
+    inset: 0 auto 0 0 !important;
+    width: 258px !important;
+    min-width: 258px !important;
+    max-width: 258px !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-right: 1px solid #e3e6ea !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    color: #25282d !important;
+    box-shadow: 1px 0 0 rgba(25, 30, 38, .02) !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  html body #drawerOverlay .drawer-head {
+    min-height: 83px !important;
+    padding: 16px 15px !important;
+    margin: 0 !important;
+    border-bottom: 1px solid #eceef1 !important;
+    background: #fff !important;
+  }
+  html body #drawerOverlay .drawer-mg-logo {
+    width: 43px !important;
+    height: 43px !important;
+    border-radius: 13px !important;
+    background: #151719 !important;
+    color: #fff !important;
+    border: 0 !important;
+    font-size: 13px !important;
+  }
+  html body #drawerOverlay .drawer-brand-copy .drawer-title {
+    color: #202327 !important;
+    font-size: 16px !important;
+    font-weight: 750 !important;
+    letter-spacing: -.35px !important;
+  }
+  html body #drawerOverlay .drawer-brand-copy small {
+    color: #818791 !important;
+    font-size: 10px !important;
+  }
+  html body #drawerOverlay .drawer-close { display: none !important; }
+  html body #drawerOverlay .drawer-scroll {
+    padding: 17px 12px 12px !important;
+    overflow-y: auto !important;
+    background: #fff !important;
+  }
+  html body #drawerOverlay .drawer-create {
+    min-height: 53px !important;
+    height: 53px !important;
+    margin: 0 0 23px !important;
+    padding: 7px 9px !important;
+    gap: 10px !important;
+    border: 1px solid #202327 !important;
+    border-radius: 13px !important;
+    background: #202327 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+  }
+  html body #drawerOverlay .drawer-create-icon {
+    width: 34px !important;
+    height: 34px !important;
+    border: 1px solid rgba(255,255,255,.13) !important;
+    border-radius: 10px !important;
+    background: #34383d !important;
+    color: #fff !important;
+  }
+  html body #drawerOverlay .drawer-create-copy b { color: #fff !important; font-size: 12px !important; }
+  html body #drawerOverlay .drawer-create-copy small { color: #c4c7cc !important; font-size: 10px !important; }
+  html body #drawerOverlay .drawer-chevron { color: #d9dce0 !important; }
+  html body #drawerOverlay .drawer-section-title.drawer-main-title {
+    margin: 0 9px 8px !important;
+    color: #9a9fa7 !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    letter-spacing: .075em !important;
+    text-transform: uppercase !important;
+  }
+  html body #drawerOverlay .drawer-list { gap: 4px !important; }
+  html body #drawerOverlay .drawer-item {
+    min-height: 47px !important;
+    height: auto !important;
+    grid-template-columns: 34px minmax(0,1fr) 12px !important;
+    gap: 9px !important;
+    padding: 5px 9px !important;
+    border: 1px solid transparent !important;
+    border-radius: 11px !important;
+    background: transparent !important;
+    color: #464b53 !important;
+    box-shadow: none !important;
+  }
+  html body #drawerOverlay .drawer-item > span:nth-child(2) { display: flex !important; flex-direction: column !important; gap: 2px !important; }
+  html body #drawerOverlay .drawer-item b { color: inherit !important; font-size: 12px !important; font-weight: 600 !important; }
+  html body #drawerOverlay .drawer-item small { display: block !important; color: #9a9fa7 !important; font-size: 9px !important; font-weight: 450 !important; }
+  html body #drawerOverlay .drawer-item i { color: #a7abb2 !important; font-size: 17px !important; }
+  html body #drawerOverlay .drawer-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border: 1px solid #e9ebee !important;
+    border-radius: 10px !important;
+    background: #f6f7f8 !important;
+    color: #626872 !important;
+  }
+  html body #drawerOverlay .drawer-icon svg { width: 17px !important; height: 17px !important; }
+  html body #drawerOverlay .drawer-item-home { background: transparent !important; border-color: transparent !important; }
+  html body #drawerOverlay .drawer-item:active { background: #f2f3f5 !important; }
+  html body #drawerOverlay .drawer-menu-separator { margin: 12px 8px !important; background: #eceef1 !important; }
+  html body #drawerOverlay .drawer-account {
+    padding: 12px 13px 14px !important;
+    border-top: 1px solid #eceef1 !important;
+    background: #fafbfc !important;
+  }
+  html body #drawerOverlay .drawer-cloud-row { grid-template-columns: 34px minmax(0,1fr) 8px !important; gap: 9px !important; }
+  html body #drawerOverlay .drawer-cloud-icon { width: 34px !important; height: 34px !important; }
+  html body #drawerOverlay .drawer-cloud-row b { font-size: 11px !important; }
+  html body #drawerOverlay .drawer-cloud-row small { font-size: 9px !important; }
+
+  /* Highlight the screen that is actually open, without changing navigation logic. */
+  html body:has(#dashboard:not([hidden])) #drawerOverlay [data-menu-action="home"],
+  html body:has(#estimatesScreen:not([hidden])) #drawerOverlay [data-menu-action="estimates"],
+  html body:has(#statsScreen:not([hidden])) #drawerOverlay [data-menu-action="stats"],
+  html body:has(#settingsScreen:not([hidden])) #drawerOverlay [data-menu-action="settings"] {
+    background: #34383d !important;
+    color: #fff !important;
+    border-color: #34383d !important;
+  }
+  html body:has(#dashboard:not([hidden])) #drawerOverlay [data-menu-action="home"] .drawer-icon,
+  html body:has(#estimatesScreen:not([hidden])) #drawerOverlay [data-menu-action="estimates"] .drawer-icon,
+  html body:has(#statsScreen:not([hidden])) #drawerOverlay [data-menu-action="stats"] .drawer-icon,
+  html body:has(#settingsScreen:not([hidden])) #drawerOverlay [data-menu-action="settings"] .drawer-icon {
+    background: rgba(255,255,255,.12) !important;
+    border-color: rgba(255,255,255,.09) !important;
+    color: #fff !important;
+  }
+  html body:has(#dashboard:not([hidden])) #drawerOverlay [data-menu-action="home"] small,
+  html body:has(#estimatesScreen:not([hidden])) #drawerOverlay [data-menu-action="estimates"] small,
+  html body:has(#statsScreen:not([hidden])) #drawerOverlay [data-menu-action="stats"] small,
+  html body:has(#settingsScreen:not([hidden])) #drawerOverlay [data-menu-action="settings"] small {
+    color: #d0d3d8 !important;
+  }
+
+  /* Fixed workspace toolbar, kept separate from screen content. */
+  html body #mgFixedTopNav {
+    top: 13px !important;
+    left: 278px !important;
+    right: 24px !important;
+    width: auto !important;
+    height: 57px !important;
+    padding: 6px 10px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 15px !important;
+    background: rgba(255,255,255,.96) !important;
+    box-shadow: 0 3px 12px rgba(23,29,38,.045) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+  }
+  html body #mgFixedTopNav::before {
+    content: "Рабочее пространство";
+    display: block;
+    margin-right: auto;
+    padding-left: 8px;
+    color: #555b64;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -.1px;
+  }
+  html body #mgFixedTopNav > [data-menu="open"] { display: none !important; }
+  html body #mgFixedTopNav .mg-fixed-nav-btn {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    border: 1px solid #e7e9ec !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    color: #252a31 !important;
+  }
+  html body #mgFixedTopNav .mg-new-estimate-btn {
+    background: #202327 !important;
+    border-color: #202327 !important;
+    color: #fff !important;
+  }
+  html body #mgFixedTopNav .mg-archive-nav-btn svg { width: 21px !important; height: 21px !important; }
+  html body #mgFixedTopNav .mg-notification-btn svg { width: 21px !important; height: 21px !important; }
+
+  /* Give every real screen the available workspace width without affecting mobile. */
+  html body .app {
+    box-sizing: border-box !important;
+    width: calc(100% - 302px) !important;
+    max-width: none !important;
+    margin-left: 278px !important;
+    margin-right: 24px !important;
+    padding: 91px clamp(22px, 2.1vw, 34px) 42px !important;
+    min-height: calc(100vh - 91px) !important;
+  }
+  html body #dashboard.app,
+  html body #documentScreen.app,
+  html body #estimatesScreen.app,
+  html body #archiveScreen.app,
+  html body #statsScreen.app,
+  html body #notificationsScreen.app {
+    padding-top: 91px !important;
+  }
+  html body #dashboard.app,
+  html body #editor.app,
+  html body #documentScreen.app,
+  html body #estimatesScreen.app,
+  html body #archiveScreen.app,
+  html body #statsScreen.app,
+  html body #notificationsScreen.app,
+  html body #settingsScreen.app {
+    width: calc(100% - 302px) !important;
+    max-width: none !important;
+    margin-left: 278px !important;
+    margin-right: 24px !important;
+  }
+  html body #editor.app { padding-top: 91px !important; }
+  html body #editor > #stepbar { margin-top: 0 !important; }
+  html body #editor .editor-default-top,
+  html body #editor .calc-editor-top,
+  html body .app .menu-btn[data-menu="open"],
+  html body #dashboard .home-menu { display: none !important; }
+  html body #settingsScreen.app { padding-top: 24px !important; }
+  html body #settingsScreen .settings-topbar .mg-legacy-top-control { display: none !important; }
+  html body .top { min-height: 48px !important; }
+  html body .card { border-radius: 19px !important; }
+
+  /* Desktop home: clear hierarchy and a true two-column workspace. */
+  html body #dashboard:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: minmax(280px, .9fr) minmax(360px, 1.1fr) !important;
+    align-content: start !important;
+    column-gap: 22px !important;
+    row-gap: 0 !important;
+  }
+  html body #dashboard .home-head {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    min-height: 54px !important;
+    margin: 0 0 22px !important;
+    padding: 0 0 16px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  html body #dashboard .home-brand { gap: 12px !important; }
+  html body #dashboard .home-mark { width: 46px !important; height: 46px !important; border-radius: 13px !important; background: #202327 !important; color: #fff !important; }
+  html body #dashboard .home-brand b { color: #202327 !important; font-size: 21px !important; }
+  html body #dashboard .home-brand small { color: #858b94 !important; font-size: 11px !important; }
+  html body #dashboard .home-summary {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    gap: 14px !important;
+    margin: 0 0 22px !important;
+  }
+  html body #dashboard .home-summary-card { padding: 21px 23px !important; border-radius: 17px !important; border-color: #e4e7eb !important; }
+  html body #dashboard .home-summary-label { font-size: 12px !important; }
+  html body #dashboard .home-summary-value { font-size: clamp(22px, 2vw, 29px) !important; margin-top: 9px !important; }
+  html body #dashboard .home-summary-note { font-size: 11px !important; margin-top: 5px !important; }
+  html body #dashboard .home-quick {
+    grid-column: 1 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 11px !important;
+    align-content: start !important;
+    margin: 0 !important;
+  }
+  html body #dashboard .home-quick-card {
+    min-height: 82px !important;
+    grid-template-columns: 44px minmax(0,1fr) 16px !important;
+    gap: 12px !important;
+    padding: 14px 15px !important;
+    border-radius: 15px !important;
+  }
+  html body #dashboard .home-quick-icon { width: 42px !important; height: 42px !important; border-radius: 12px !important; }
+  html body #dashboard .home-quick-card b { font-size: 14px !important; }
+  html body #dashboard .home-quick-card small { font-size: 11px !important; }
+  html body #dashboard .home-recent {
+    grid-column: 2 !important;
+    grid-row: 3 / span 2 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    border: 1px solid #e4e7eb !important;
+    border-radius: 18px !important;
+    background: #fff !important;
+  }
+  html body #dashboard .home-section-head { margin-bottom: 14px !important; }
+  html body #dashboard .home-section-head h2 { font-size: 18px !important; }
+  html body #dashboard #saved { gap: 9px !important; }
+  html body #dashboard #saved .home-estimate-card { padding: 13px 14px !important; border-radius: 13px !important; }
+  html body #dashboard .home-estimate-title, html body #dashboard .home-estimate-total { font-size: 12px !important; }
+
+  /* Real desktop heading is hidden on mobile. The button uses the existing new-estimate action. */
+  html body #mgDesktopEstimatesHeading {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    margin: 0 0 20px !important;
+    padding: 0 0 16px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  html body #mgDesktopEstimatesHeading h1 { margin: 0 !important; color: #202327 !important; font-size: 28px !important; font-weight: 700 !important; letter-spacing: -.8px !important; }
+  html body #mgDesktopEstimatesHeading p { margin: 5px 0 0 !important; color: #858b94 !important; font-size: 12px !important; }
+  html body #mgDesktopEstimatesHeading button { min-height: 43px !important; padding: 0 17px !important; border: 1px solid #202327 !important; border-radius: 12px !important; background: #202327 !important; color: #fff !important; box-shadow: none !important; font-size: 12px !important; font-weight: 600 !important; white-space: nowrap !important; }
+  html body #estimatesScreen.mge-editing #mgDesktopEstimatesHeading { display: none !important; }
+  html body #estimatesScreen .status-filter-card {
+    margin: 0 0 17px !important;
+    padding: 10px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    background: #fff !important;
+    box-shadow: 0 2px 8px rgba(23,29,38,.025) !important;
+  }
+  html body #estimatesScreen .status-filters { flex-wrap: wrap !important; gap: 7px !important; overflow: visible !important; }
+  html body #estimatesScreen .status-filter { min-height: 39px !important; padding: 0 15px !important; border-radius: 11px !important; font-size: 12px !important; font-weight: 600 !important; }
+
+  /* Wide estimates table only at monitor widths; medium screens retain the card layout. */
+  html body #estimatesScreen #estimatesList { min-width: 0 !important; gap: 14px !important; }
+  html body #estimatesScreen .mge-compact-estimate { border-color: #e3e6ea !important; box-shadow: 0 3px 14px rgba(24,30,40,.035) !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-scroll {
+    overflow-x: auto !important;
+    border: 1px solid #e4e7eb !important;
+    border-radius: 17px !important;
+    background: #fff !important;
+    box-shadow: 0 3px 14px rgba(24,30,40,.03) !important;
+  }
+  html body #estimatesScreen .mge-estimates-desktop-table table {
+    width: 100% !important;
+    min-width: 760px !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: #fff !important;
+  }
+  html body #estimatesScreen .mge-estimates-desktop-table thead { background: #f6f7f8 !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table th {
+    padding: 14px 13px !important;
+    border: 0 !important;
+    border-bottom: 1px solid #e7e9ec !important;
+    background: #f6f7f8 !important;
+    color: #666d76 !important;
+    text-align: left !important;
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    white-space: nowrap !important;
+  }
+  html body #estimatesScreen .mge-estimates-desktop-table td {
+    padding: 12px 13px !important;
+    border: 0 !important;
+    border-bottom: 1px solid #eff0f2 !important;
+    color: #30343a !important;
+    font-size: 12px !important;
+    vertical-align: middle !important;
+  }
+  html body #estimatesScreen .mge-estimates-desktop-table tbody tr:last-child td { border-bottom: 0 !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table tbody tr:hover td { background: #fafbfc !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-number { gap: 9px !important; white-space: nowrap !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .estimate-badge { width: 34px !important; height: 34px !important; min-width: 34px !important; border-radius: 10px !important; font-size: 10px !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-amount { font-weight: 650 !important; white-space: nowrap !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-status { min-width: 118px !important; min-height: 34px !important; padding: 0 9px !important; border-radius: 10px !important; font-size: 11px !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .status-pill { padding: 6px 10px !important; font-size: 10px !important; white-space: nowrap !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-actions { display: flex !important; gap: 5px !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-actions button { width: 32px !important; height: 32px !important; min-height: 32px !important; border-radius: 9px !important; border: 1px solid #e6e8eb !important; background: #fff !important; color: #555c65 !important; }
+  html body #estimatesScreen .mge-estimates-desktop-table .mge-table-actions button:last-child { color: #94636a !important; }
+
+  /* Finance/analytics/settings/editors can use the extra width without stretching individual controls. */
+  html body #statsScreen .stats-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0,1fr)) !important; gap: 13px !important; }
+  html body #statsScreen .stats-big { min-width: 0 !important; }
+  html body #statsScreen #monthStats { max-width: none !important; }
+  html body #editor .direction-screen,
+  html body #editor .calc-summary-card,
+  html body #editor .mg-estimate-editor { width: 100% !important; max-width: none !important; }
+  html body #editor .calc-groups { grid-template-columns: repeat(auto-fit, minmax(min(480px,100%),1fr)) !important; gap: 17px !important; }
+  html body #editor .category-grid { grid-template-columns: repeat(4, minmax(0,1fr)) !important; }
+  html body #documentScreen .doc { max-width: 1060px !important; margin-left: auto !important; margin-right: auto !important; }
+  html body #documentScreen .actions { max-width: 1060px !important; margin-left: auto !important; margin-right: auto !important; }
+  html body #settingsScreen .settings-hub-v357,
+  html body #settingsScreen .settings-panel-v2,
+  html body #settingsScreen .settings-card-v2 { max-width: none !important; }
+  html body #notificationsScreen .notifications-list { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 12px !important; }
+}
+
+@media screen and (min-width: 1100px) and (max-width: 1299px) {
+  html body #dashboard:not([hidden]) { grid-template-columns: minmax(250px,.8fr) minmax(320px,1.2fr) !important; column-gap: 16px !important; }
+  html body #estimatesScreen .status-filter { padding-inline: 10px !important; font-size: 11px !important; }
+}
+@media screen and (min-width: 1300px) {
+  html body #estimatesScreen #estimatesList.list { display: block !important; }
+  html body #estimatesScreen #estimatesList .mge-compact-estimate { display: none !important; }
+  html body #estimatesScreen #estimatesList .mge-estimates-desktop-table { display: block !important; }
+}

@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v440"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v440"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v440</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v461"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v461"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v461</title>
 
 
 
@@ -20,10 +20,10 @@
 <link rel="stylesheet" href="css/styles.css?v=440">
 <link rel="stylesheet" href="css/contact-card-final.css?v=440">
 
-<style id="mg-home-render-gate-v434">
-/* Keep the legacy first dashboard render out of view until the current one is ready. */
-#dashboard.mg-home-render-pending #saved,
-#dashboard.mg-home-render-pending .home-summary-value{visibility:hidden!important}
+<style id="mg-home-render-gate-v446">
+/* Keep the dashboard entirely out of view until the current renderer has filled its content.
+   This prevents an initial flash of the legacy layout before finance-ui.js finishes loading. */
+#dashboard.mg-home-render-pending{visibility:hidden!important}
 </style>
 
 <style id="mg-analytics-tabs-v307">
@@ -349,7 +349,11 @@
 }
 </style>
 
-<link rel="stylesheet" href="css/soft-ui.css?v=441">
+<link rel="stylesheet" href="css/soft-ui.css?v=443">
+<link rel="stylesheet" href="css/estimates-editor-v456.css?v=456">
+<link rel="stylesheet" href="css/estimates-list-compact-v458.css?v=458">
+<link rel="stylesheet" href="css/estimates-status-palette-v460.css?v=460">
+<link rel="stylesheet" href="css/desktop-layout-v461.css?v=461">
 </head><body><!-- v296 slim fixed edge-to-edge top navigation -->
 <div id="mgFixedTopNav" class="mg-fixed-top-nav" aria-label="Верхняя навигация">
   <button type="button" class="mg-fixed-nav-btn" data-menu="open" aria-label="Открыть меню" title="Меню"><span class="mg-menu-icon" aria-hidden="true">☰</span></button>
@@ -359,6 +363,9 @@
   <div class="mg-fixed-nav-actions" aria-label="Быстрые действия">
     <button type="button" class="mg-fixed-nav-btn mg-new-estimate-btn" data-action="new" aria-label="Новая смета" title="Новая смета">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h8.2L19 7.8v12.7H6.5z"/><path d="M14.5 3.5v4.3H19M12.7 11.2v5.6M9.9 14h5.6"/></svg>
+    </button>
+    <button type="button" class="mg-fixed-nav-btn mg-archive-nav-btn" data-open-archives aria-label="Открыть архивы смет" title="Архивы">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16v12H4z"/><path d="M3 4.5h18v3H3zM9 11h6M10 11v3h4v-3"/></svg>
     </button>
     <button type="button" class="mg-fixed-nav-btn mg-notification-btn" aria-label="Открыть уведомления" title="Уведомления" onclick="return window.openNotificationsScreen ? window.openNotificationsScreen() : false;">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
@@ -443,7 +450,7 @@
 
 <div id="documentScreen" class="app screen" hidden><section class="card doc" id="document"></section><section class="actions no-print"><button type="button" class="btn primary" data-action="share" onclick="return window.__mgDirectShare ? window.__mgDirectShare() : false;">Поделиться</button><button class="btn secondary" data-action="wa">WhatsApp</button><button class="btn secondary" data-action="tg">Telegram</button><button class="btn secondary" data-action="print">Печать / PDF</button></section></div>
 
-<div id="estimatesScreen" class="app screen" hidden><section class="card estimates-intro"><div><div class="section-kicker">ДОКУМЕНТЫ</div><h2>Все сметы</h2><p>«Все» показывает все документы, остальные кнопки — фильтры.</p></div><div class="estimates-head-actions"><button class="btn secondary" type="button" data-open-archives>▣ Архивы</button><button class="btn primary" data-action="new">＋ Новая</button></div></section><section class="card status-filter-card"><div id="statusFilters" class="status-filters"></div></section><div id="estimatesList" class="list"></div></div>
+<div id="estimatesScreen" class="app screen" hidden><div id="mgDesktopEstimatesHeading" class="mg-desktop-estimates-heading"><div><h1>Сметы</h1><p>Управление сметами и оплатами</p></div><button type="button" data-action="new"><span aria-hidden="true">＋</span> Новая смета</button></div><div id="mgEstimateEditPanel" class="mg-estimate-editor" hidden></div><section class="card status-filter-card"><div id="statusFilters" class="status-filters"></div></section><div id="estimatesList" class="list"></div></div>
 <div id="archiveScreen" class="app screen" hidden><div class="archive-intro"><div class="archive-mark">▣</div><div><b>Сохранённые черновики</b><span>Незавершённые сметы, которые можно продолжить.</span></div></div><div id="archiveList" class="list"></div></div>
 
 
@@ -552,8 +559,8 @@
 
 <div id="settingsPanelUpdates" hidden class="settings-panel-v2">
   <section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
-    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v199 · приложение автоматически проверяет новые версии.</p></div></div>
-    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v199 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v444 · приложение автоматически проверяет новые версии.</p></div></div>
+    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v444 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
   </section>
 </div>
 
@@ -640,14 +647,15 @@
 <script src="js/data-model.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/responsive-runtime-v351.js"></script>
-<script src="js/catalog.js"></script>
+<script src="js/catalog.js?v=447"></script>
 <script src="js/estimate-engine.js"></script>
 <script src="js/calculations.js"></script>
 <script src="js/finance-service.js"></script>
+<script src="./js/mg-icons-v208.js"></script>
 <script src="js/estimate-ui.js"></script>
 <script src="js/mg-ai-service.js"></script>
-<script src="js/estimate-core.js"></script>
-<script src="js/finance-ui.js?v=434"></script>
+<script src="js/estimate-core.js?v=447"></script>
+<script src="js/finance-ui.js?v=460"></script>
 <script src="js/estimate-templates.js"></script>
 <script src="js/app-core.js"></script>
 
@@ -717,12 +725,13 @@
 <script src="js/offline-engine.js"></script>
 <script src="js/firebase-client.js"></script>
 <script src="js/firebase-repository.js"></script>
-<script src="js/firebase-sync.js?v=440"></script>
+<script src="js/firebase-sync.js?v=447"></script>
 <script src="js/direct-interaction-fix.js"></script>
 <script src="js/settings-trash-fix.js"></script>
 <script src="js/status-direct-fix.js"></script>
 <script src="js/filter-direct-fix.js"></script>
 <script src="js/finance-final-fix.js"></script>
+<script src="js/estimates-redesign-v454.js?v=460"></script>
 <script src="js/analytics-tabs-v310.js?v=311"></script>
 
 
@@ -733,7 +742,7 @@
 
 
 
-<script src="./js/mg-icons-v208.js"></script><script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=213"></script>
+<script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=213"></script>
 <script src="js/v280-fixed-top-nav.js"></script>
 <script src="js/v282-fixed-top-nav-visibility.js"></script>
 
@@ -741,6 +750,7 @@
 <script src="js/v284-settings-cleanup.js"></script>
 <script src="js/settings-hub-v357.js"></script>
 <script src="js/document-actions-v419.js?v=431"></script>
+<style id="mg-desktop-heading-default-v461">#mgDesktopEstimatesHeading{display:none!important}</style>
 </body></html>
 
 <style id="mg-analytics-layout-v311">

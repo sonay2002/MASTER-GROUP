@@ -468,7 +468,18 @@ async function create(){
 }
 function documentBody(e){try{if(typeof window.MGAppFinance?.documentBody==='function'){window.MGAppFinance.documentBody(e);return}}catch(err){console.warn('MG template document render fallback',err)}const dirs=Array.isArray(e.directions)&&e.directions.length?e.directions:(e.category?[{name:e.category,items:e.items||[]}]:[]);$('document').innerHTML=`<div class="doc-head"><h1>Master Group</h1><b>${esc(e.number||'')}</b></div>`;screen('documentScreen')}
 function load(id){const e=saved().find(x=>String(x.id)===String(id));if(!e)return;Object.assign(state,{screen:'documentScreen',step:3,id:e.id,directions:normalizeDirections(e),activeDirection:0,estimate:e});setContact(e);$('mode').textContent='Редактирование';renderCats();renderServices();renderItems();const renderer=window.MGAppCore?.documentBody||documentBody;renderer(e)}
-function dashboard(){const a=saved(),d=drafts();if($('count'))$('count').textContent=a.length;if($('sum'))$('sum').textContent=money(a.reduce((s,x)=>s+(Number(x.total)||0),0));const savedHtml=a.length?a.map(e=>`<div class="saved"><div><b>${esc(e.number||'Смета')}</b><small>${esc(e.client||'Без клиента')} · ${money(e.total)} MDL</small><small>${esc(e.address||e.object||'Без адреса')} · ${esc(e.date||'')}</small></div><button class="open" data-open="${e.id}">Открыть</button></div>`).join(''):'<div class="empty">Пока нет сохранённых смет.<br>Создайте первую через «Новая».</div>';const draftHtml=d.length?`<div class="card" style="margin-top:12px"><div class="section-title"><div><b>📦 Архив черновиков</b><small>Незавершённые сметы, к которым можно вернуться</small></div></div>${d.map(x=>`<div class="archive-card"><b>${esc((x.directions||[]).map(z=>z.name).join(', ')||x.category||'Новая смета')}</b><small style="display:block;color:var(--muted);margin-top:4px">${esc(x.client||'Без клиента')} · ${allDraftItems(x).length} услуг · ${esc(x.savedAt||'')}</small><div class="archive-actions"><button class="primary" data-draft-open="${x.id}">Продолжить</button><button data-draft-delete="${x.id}">Удалить</button></div></div>`).join('')}</div>`:'';$('saved').innerHTML=draftHtml+savedHtml}
+function dashboard(){
+  // A single canonical dashboard renderer owns the recent-estimate markup.
+  // Never fall back to this file's historical card template: this function can
+  // be captured by older handlers and called before finance-ui.js is ready.
+  const renderer = window.__MGRenderDashboard || window.MGAppFinance?.dashboard;
+  if(typeof renderer === 'function' && renderer !== dashboard){
+    renderer();
+  }
+  // If the canonical renderer has not loaded yet, do nothing. The dashboard
+  // remains behind mg-home-render-pending until finance-ui.js renders it.
+}
+
 function allDraftItems(x){return (x.directions||[]).flatMap(d=>d.items||[]).concat(x.directions?[]:(x.items||[]))}
 function renderStats(){const a=saved();const earned=a.reduce((s,x)=>s+(Number(x.total)||0),0),avg=a.length?earned/a.length:0,now=new Date();const monthEarned=a.filter(x=>{const d=(x.date||'').split('.');return d.length===3&&Number(d[1])-1===now.getMonth()&&Number(d[2])===now.getFullYear()}).reduce((s,x)=>s+(Number(x.total)||0),0);$('statCount').textContent=a.length;$('statEarned').textContent=money(earned)+' MDL';$('statAvg').textContent=money(avg)+' MDL';$('statMonth').textContent=money(monthEarned)+' MDL';const groups={};a.forEach(x=>{const d=(x.date||'').split('.');if(d.length===3){const k=d[1]+'.'+d[2];groups[k]=(groups[k]||0)+(Number(x.total)||0)}});const keys=Object.keys(groups).sort((a,b)=>{const [am,ay]=a.split('.').map(Number),[bm,by]=b.split('.').map(Number);return new Date(by,bm-1)-new Date(ay,am-1)}).slice(0,6);$('monthStats').innerHTML=keys.length?keys.map(k=>`<div class="month-row"><b>${k}</b><span>${money(groups[k])} MDL</span></div>`).join(''):'<div class="empty">Пока нет сохранённых смет.</div>'}
 function showEstimates(){state.estimate=null;renderEstimates();screen('estimatesScreen')}
@@ -489,6 +500,23 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCalcAddMenu();
 
 async function v60AskSent(id){const e=saved().find(x=>String(x.id)===String(id));if(!e)return false;if(v58st(e)!=='Черновик')return true;const yes=await MG71.confirm('Смета отправлена клиенту?','После подтверждения статус будет сохранён как «Отправлена».','Да, отправлена','Нет');if(yes){v58SetStatus(id,'Отправлена');return true}return false}
 function shareTo(kind){const e=v59Normalize(state.estimate||{});if(!e.id){toast('Сначала сохраните смету');return}const text=`Master Group — Смета ${e.number}\nКлиент: ${e.client||'—'}\nТелефон: ${e.phone||'—'}\nАдрес: ${e.address||e.object||'—'}\n\n`+allItemsFromEstimate(e).map((x,i)=>`${i+1}. ${x.direction?x.direction+' — ':''}${x.name} — ${x.qty} ${x.unit} × ${money(x.price)} = ${money(x.qty*x.price)} MDL`).join('\n')+`\n\nИТОГО: ${money(e.total)} MDL\n${e.paid>0?`Аванс: ${money(e.paid)} MDL\nОстаток: ${money(e.balance)} MDL`:''}`;if(kind==='wa'){v60AskSent(e.id);location.href='https://wa.me/?text='+encodeURIComponent(text);return}if(kind==='tg'){v60AskSent(e.id);location.href='https://t.me/share/url?url=&text='+encodeURIComponent(text);return}if(navigator.share){navigator.share({title:'Master Group — Смета '+e.number,text}).then(()=>v60AskSent(e.id)).catch(()=>{});return}if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>{toast('Текст скопирован');v60AskSent(e.id)}).catch(()=>toast('Не удалось скопировать текст'));return}v60AskSent(e.id)}
+window.addEventListener?.('mg:catalog-updated',()=>{
+  try{
+    // The catalog service mutates shared arrays/objects in place, so all modules
+    // keep the same references. Refresh visible catalog consumers immediately.
+    const focused=document.activeElement;
+    const editingExistingCatalog=!!focused?.closest?.('#settingsCatalog');
+    if(!editingExistingCatalog)renderSettings();
+    renderNewDirectionIconPicker();
+    renderCats();
+    renderServiceDirections();
+    renderServices();
+    renderItems();
+    window.MGEstimateUI?.renderCalcDirectionPicker?.();
+    window.MGEstimateUI?.renderCalcPicker?.();
+  }catch(err){console.warn('MG catalog UI refresh failed:',err)}
+});
+
 window.MGAppCore={state,catalog,cats,svc,saveCatalog,$,esc,money,uid,contactData,setContact,toast,saved,persist,drafts,persistDrafts,allItems,total,normalizeDirections,allItemsFromEstimate,screen,saveRecoveryNow,restoreRecovery,clearRecovery,renderCats,renderServiceDirections,renderServices,renderItems,renderReview,step,activeDir,showArchives,showStats,showSettings,showEstimates,renderEstimates,dashboard,load,editSaved,openSaved,deleteSaved,archiveCurrent,discardCurrent,askArchive,resumeDraft,removeDraft,newEstimate,create,documentBody,share,shareTo,renderStats,renderSettings};
 
 })();

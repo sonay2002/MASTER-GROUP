@@ -45,8 +45,58 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Write deployment version
-        run: echo '{"version":"${{ github.sha }}"}' > build-info.json
+      - name: Stamp a unique deployment version
+        shell: bash
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import datetime, json, os, re
+          from pathlib import Path
+
+          run_number = os.environ['RUN_NUMBER']
+          commit_sha = os.environ['COMMIT_SHA']
+          version = f"v444.{run_number}"
+          index = Path('index.html')
+          html = index.read_text(encoding='utf-8')
+          html, n = re.subn(
+              r'(<meta\s+name="app-version"\s+content=")[^"]*(")',
+              lambda m: m.group(1) + version + m.group(2), html, count=1
+          )
+          if n != 1:
+              raise SystemExit('Could not stamp app-version in index.html')
+          html = re.sub(
+              r'(<p id="mgUpdateSettingsText">).*?(</p>)',
+              lambda m: m.group(1) + f"Master Group {version} · приложение автоматически проверяет новые версии." + m.group(2),
+              html, count=1
+          )
+          html = re.sub(
+              r'(<span id="mgUpdateSettingsStatus"[^>]*>).*?(</span>)',
+              lambda m: m.group(1) + f"Версия {version} · актуально" + m.group(2),
+              html, count=1
+          )
+          index.write_text(html, encoding='utf-8')
+
+          # Changing the cache name forces a fresh offline asset cache on every deploy.
+          sw_path = Path('sw.js')
+          sw = sw_path.read_text(encoding='utf-8')
+          cache_name = f"master-group-v444-{run_number}-{commit_sha[:8]}"
+          sw, n = re.subn(r"^const CACHE = '[^']+';", f"const CACHE = '{cache_name}';", sw, count=1, flags=re.M)
+          if n != 1:
+              raise SystemExit('Could not stamp Service Worker cache version')
+          sw_path.write_text(sw, encoding='utf-8')
+
+          metadata = {
+              'version': version,
+              'runNumber': int(run_number),
+              'commit': commit_sha,
+              'deployedAt': datetime.datetime.now(datetime.timezone.utc).isoformat()
+          }
+          Path('build-info.json').write_text(json.dumps(metadata, ensure_ascii=False) + '\n', encoding='utf-8')
+          print(f"Deploying Master Group {version} ({commit_sha[:8]})")
+          PY
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

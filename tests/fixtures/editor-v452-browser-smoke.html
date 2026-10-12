@@ -1,0 +1,84 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/css/estimates-editor-v452.css?v=452"><style>body{font:14px Arial,sans-serif;background:#f5f6f8;margin:16px}#estimatesScreen{max-width:1200px;margin:auto}.status-filter-card{padding:10px}#estimatesList{min-height:50px}.mge-estimate-editor{display:block}</style></head><body>
+<script>try{window.localStorage.getItem('probe')}catch(e){const m=new Map();Object.defineProperty(window,'localStorage',{configurable:true,value:{getItem(k){return m.has(k)?m.get(k):null},setItem(k,v){m.set(k,String(v))},removeItem(k){m.delete(k)}}})}</script>
+<div id="estimatesScreen" class="app screen"><div id="mgEstimateEditPanel" class="mg-estimate-editor" hidden></div><section class="card status-filter-card"><div id="statusFilters" class="status-filters"><button type="button" data-status-filter="В работе" class="status-filter active">В работе</button></div></section><div id="estimatesList" class="list"><button type="button" data-estimate-edit="E-1">Редактировать смету</button></div></div>
+<pre id="testResult">RUNNING</pre>
+<script>
+(() => {
+  const key='master_group_estimates_v8';
+  const catalog=[
+    {name:'Сантехнические работы',icon:'🔧',services:[{name:'Монтаж труб',unit:'м'},{name:'Установка сантехники',unit:'шт'}]},
+    {name:'Клининг участка',icon:'🌿',services:[{name:'Покос травы',unit:'сотка'},{name:'Сбор мусора',unit:'загрузка'}]}
+  ];
+  window.MGCatalog={data:catalog,save(){return true}};
+  const initial=[{id:'E-1',number:'MG-0042',status:'В работе',date:'12.10.2026',client:'Клиент А',object:'Объект А',note:'Сохранить заметку',directions:[{name:'Сантехнические работы',items:[{id:'I-1',name:'Монтаж труб',unit:'м',qty:2,price:100}]}],items:[{id:'I-1',name:'Монтаж труб',unit:'м',qty:2,price:100,direction:'Сантехнические работы'}],total:200,paid:50,balance:150,expenseTotal:20,profit:180,payments:[{id:'P-1',amount:50,date:'01.10.2026',method:'Наличные'}],expenses:[{id:'X-1',amount:20,title:'Расход'}],expenseMaterial:20,expenseTransport:0,expenseSalary:0,expenseOther:0}];
+  let records=JSON.parse(JSON.stringify(initial));
+  window.MGStorage={saved(){return JSON.parse(JSON.stringify(records))},persist(a){records=JSON.parse(JSON.stringify(a));return true}};
+  window.__readRecords=()=>JSON.parse(JSON.stringify(records));
+  window.MGDataModel={normalizeEstimate(e){return e}};
+  window.MGCalculations={normalizeEstimate(e){const sum=(e.directions||[]).flatMap(d=>d.items||[]).reduce((n,i)=>n+(Number(i.qty)||0)*(Number(i.price)||0),0);const total=(e.items||[]).length||e.directions?.some(d=>(d.items||[]).length)?sum:Number(e.total)||0;return {...e,total,balance:Math.max(0,total-(Number(e.paid)||0)),profit:total-(Number(e.expenseTotal)||0)}}};
+  window.MGEstimate={normalizeDirections(e){return e.directions||[]}};
+  window.MGState={};window.__mgToast=(m)=>{document.body.dataset.toast=m};window.__mgCloudSaveEstimate=async()=>true;window.__MGRenderDashboard=()=>{};
+  window.MGAppFinance={v58RenderEstimates(){const filter=localStorage.getItem('master_group_status_filter_v1')||'Все';const list=document.getElementById('estimatesList');list.dataset.renderedFilter=filter;const visible=filter==='Все'?records:records.filter(e=>e.status===filter);list.innerHTML=visible.length?visible.map(e=>`<article><button data-estimate-edit="${e.id}">Редактировать ${e.number}</button></article>`).join(''):'<div class="empty">В этой категории пока нет смет.</div>'}};
+  localStorage.setItem('master_group_status_filter_v1','В работе');
+})();
+</script>
+<script src="/js/estimates-redesign-v452.js?v=452"></script>
+<script>
+(async()=>{
+  const out=document.getElementById('testResult');
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+  const assert=(ok,msg)=>{if(!ok)throw new Error(msg)};
+  try{
+    document.querySelector('[data-estimate-edit="E-1"]').click();
+    await wait(50);
+    const panel=document.getElementById('mgEstimateEditPanel');
+    assert(!panel.hidden,'Editor did not open');
+    assert(panel.querySelector('[data-mge-direction-choice]'),'Step 1 direction selector missing');
+    assert(panel.querySelector('[data-mge-apply-directions]'),'Step 1 continue control missing');
+    assert(!panel.querySelector('[data-mge-open-direction-picker]') && !panel.querySelector('[data-mge-add-item]'),'Direction/service add popovers are still exposed');
+    const cleaning=[...panel.querySelectorAll('[data-mge-direction-choice]')].find(x=>x.value==='Клининг участка');
+    assert(cleaning,'Catalog direction missing from step 1');
+    cleaning.click();
+    panel.querySelector('[data-mge-apply-directions]').click();
+    await wait(50);
+    assert(panel.querySelector('[data-mge-service-group]'),'Step 2 service editor did not open');
+    assert(panel.querySelector('[data-mge-catalog-service-choice]'),'Inline catalog service selection missing');
+    const service=[...panel.querySelectorAll('[data-mge-catalog-service-choice]')].find(x=>x.dataset.mgeServiceName==='Покос травы');
+    assert(service,'Catalog service missing on step 2');
+    service.click();
+    await wait(40);
+    const rows=[...panel.querySelectorAll('[data-mge-row]')];
+    const newRow=rows.find(row=>row.querySelector('[data-mge-prop="name"]')?.value==='Покос травы');
+    assert(newRow,'Selecting a catalog service did not add it inline');
+    newRow.querySelector('[data-mge-prop="price"]').value='125';newRow.querySelector('[data-mge-prop="price"]').dispatchEvent(new Event('input',{bubbles:true}));
+    newRow.querySelector('[data-mge-prop="qty"]').value='2';newRow.querySelector('[data-mge-prop="qty"]').dispatchEvent(new Event('input',{bubbles:true}));
+    const cleaningGroup=[...panel.querySelectorAll('[data-mge-service-group]')].find(group=>group.querySelector('.mge-direction-service-title h4')?.textContent==='Клининг участка');
+    assert(cleaningGroup,'Cleaning service group missing');
+    const newServiceForm=cleaningGroup.querySelector('[data-mge-inline-service-form]');
+    assert(newServiceForm,'Inline catalog service creation form missing');
+    newServiceForm.querySelector('[data-mge-inline-service-name]').value='Индивидуальная услуга';
+    newServiceForm.querySelector('[data-mge-inline-service-unit]').value='час';
+    newServiceForm.requestSubmit();
+    await wait(40);
+    assert(window.MGCatalog.data.find(d=>d.name==='Клининг участка').services.some(s=>s.name==='Индивидуальная услуга'&&s.unit==='час'),'New service was not persisted in the shared catalog');
+    assert([...panel.querySelectorAll('[data-mge-row]')].some(row=>row.querySelector('[data-mge-prop="name"]')?.value==='Индивидуальная услуга'),'New catalog service was not added to the current estimate');
+    const status=panel.querySelector('[data-mge-field="status"]');status.value='Выполнена';status.dispatchEvent(new Event('change',{bubbles:true}));
+    panel.querySelector('[data-mge-save]').click();
+    await wait(120);
+    const saved=window.__readRecords()[0];
+    assert(panel.hidden,'Editor did not close after save');
+    assert(saved.id==='E-1'&&saved.number==='MG-0042','Estimate ID or number changed');
+    assert(saved.status==='Выполнена','New status was not persisted');
+    assert(saved.directions.length===2,'Selected directions were not persisted');
+    assert(saved.directions.find(d=>d.name==='Сантехнические работы').items[0].price===100,'Existing service price was not preserved');
+    assert(saved.directions.find(d=>d.name==='Клининг участка').items.some(i=>i.name==='Покос травы'&&i.price===125&&i.qty===2),'Edited catalog service was not persisted');
+    assert(saved.total===450,'Estimate total was not recalculated (expected 450, got '+saved.total+')');
+    assert(saved.paid===50&&saved.payments.length===1&&saved.expenses.length===1&&saved.expenseTotal===20,'Payments or expenses were lost');
+    assert(localStorage.getItem('master_group_status_filter_v1')==='В работе','Original list filter changed after editing');
+    assert(document.getElementById('estimatesList').dataset.renderedFilter==='В работе','Editor did not return to its originating list filter');
+    assert(document.getElementById('estimatesList').querySelector('.empty'),'Estimate moved to another status but app did not retain original tab/empty state');
+    assert(!document.getElementById('estimatesScreen').classList.contains('mge-editing'),'Editor layout state was not cleaned up');
+    document.body.dataset.result='PASS';out.textContent='PASS';
+  }catch(e){document.body.dataset.result='FAIL';out.textContent='FAIL: '+e.stack;console.error(e)}
+})();
+</script></body></html>

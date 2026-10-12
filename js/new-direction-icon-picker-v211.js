@@ -13,7 +13,7 @@
     ['fence','Заборы'],['flooring','Напольные покрытия'],['tools','Ремонт техники'],['other','Другие работы']
   ];
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  const iconPath=ic=>`./icons/direction-approved/${ic}.png`;
+  const iconPath=ic=>`./icons/direction-approved/${ic==='drill'?'tools':ic}.png`;
 
   function build(){
     const wrap=document.querySelector('.new-direction-icon-picker');

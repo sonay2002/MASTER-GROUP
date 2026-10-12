@@ -1,0 +1,13 @@
+'use strict';
+const fs = require('fs');
+const html = fs.readFileSync('index.html', 'utf8');
+const sw = fs.readFileSync('sw.js', 'utf8');
+const css = fs.readFileSync('css/estimates-list-compact-v458.css', 'utf8');
+if (!html.includes('css/estimates-list-compact-v458.css?v=458')) throw new Error('Compact list stylesheet is not loaded');
+if (!sw.includes('master-group-v461-desktop-workspace')) throw new Error('Service Worker cache was not versioned for v458');
+if (!sw.includes('./css/estimates-list-compact-v458.css?v=458')) throw new Error('New stylesheet is not cached for offline operation');
+if (!css.includes('#estimatesList .mge-card-directions{display:none!important}')) throw new Error('Direction summary is not hidden in estimate cards');
+if (!css.includes('#estimatesList .mge-estimates-desktop-table th:nth-child(4)') || !css.includes('#estimatesList .mge-estimates-desktop-table td:nth-child(4)')) throw new Error('Directions column is not hidden in desktop overview');
+if (css.includes('#estimatesScreen') || css.includes('.mge-overview-directions') || css.includes('.mge-direction-service-group')) throw new Error('Style should not affect the editor or service direction group');
+if (css.split('\n').some(line => line.trim() && !line.trim().startsWith('/*') && !line.trim().startsWith('#estimatesList'))) throw new Error('New styles are not scoped to the estimates list');
+console.log('v458 estimate overview directions hidden; edit/document data and other screens remain untouched: PASS');

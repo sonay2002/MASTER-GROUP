@@ -10,24 +10,19 @@
    'Сантехнические работы':'Монтаж и ремонт сантехники, водопровода, канализации'
  };
  const iconSvg=(icon,name)=>{
-   if(window.MGIconSVG) return window.MGIconSVG(icon,name);
-   const key=String(icon||'').toLowerCase();
-   const map={
-     '🌿':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 36c8-1 15-7 18-15M13 32c-3-6-1-12 5-17 5 6 5 11 1 16M21 25c2-7 7-11 14-12 0 8-4 13-12 15"/></svg>`,
-     '📹':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 17h24v15H8zM32 21l9-5v17l-9-5zM14 17l3-5h8l3 5"/></svg>`,
-     '⚙️':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 8h12l2 6 5 3 5-2 4 9-5 4v6l5 4-4 9-5-2-5 3-2 6H18l-2-6-5-3-5 2-4-9 5-4v-6l-5-4 4-9 5 2 5-3z"/><circle cx="24" cy="27" r="6"/></svg>`,
-     '🔧':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M31 10a10 10 0 0 0 1 12L16 38a5 5 0 0 1-7-7l16-16a10 10 0 0 0 12-1l-5 5 5 5 5-5a10 10 0 0 0-11-9z"/><path d="M34 34l5 5M37 31l5 5"/></svg>`,
-     'clean':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 36c8-1 15-7 18-15M14 32c-3-6-1-12 5-17 5 6 5 11 1 16M22 25c2-7 7-11 14-12 0 8-4 13-12 15"/></svg>`,
-     'camera':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 18h25v15H7zM32 22l9-5v17l-9-5zM13 18l3-5h8l3 5"/></svg>`,
-     'metal':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 13h32v7H27v6h13v7H27v8H19V20H8z"/></svg>`,
-     'plumbing':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M31 9a10 10 0 0 0 1 12L16 37a5 5 0 0 1-7-7l16-16a10 10 0 0 0 12-1l-5 5 5 5 5-5a10 10 0 0 0-11-9z"/><path d="M35 34c0 4-5 6-5 10h10c0-4-5-6-5-10z"/></svg>`
-   };
-   if(map[key]) return map[key];
-   if(/клининг/i.test(name)) return map.clean;
-   if(/видеонаблюдение/i.test(name)) return map.camera;
-   if(/металлоконструкции|сварка/i.test(name)) return map.metal;
-   if(/сантех/i.test(name)) return map.plumbing;
-   return `<span class="icon-fallback">${ctx.esc(icon||'•')}</span>`;
+   if(typeof window.MGIconSVG==='function') return window.MGIconSVG(icon,name);
+   // Last-resort fallback still uses the approved PNG assets; never draw legacy SVGs or show emoji/text keys.
+   const aliases={"🌿":"landscape","📹":"camera","⚙️":"metal","🔧":"plumbing","bolt":"electrical","home":"construction","brick":"masonry","brush":"finishing","snow":"aircon","drain":"sewer","tree":"landscape","case":"other","car":"transport","drill":"tools","dril":"tools"};
+   const allowed=new Set(['clean','camera','plumbing','electrical','construction','masonry','welding','metal','paint','aircon','heating','ventilation','window','roof','finishing','landscape','excavator','transport','sewer','water','fence','flooring','tools','other']);
+   let key=String(icon||'').trim().toLowerCase();
+   if(aliases[key]) key=aliases[key];
+   if(!allowed.has(key)){
+     const n=String(name||'').toLowerCase();
+     const rules=[[/клининг|уборк/,'clean'],[/видео|камер/,'camera'],[/сантех|труб/,'plumbing'],[/электрик|кабел/,'electrical'],[/строитель|стройк/,'construction'],[/кладк|кирпич/,'masonry'],[/сварк/,'welding'],[/металл/,'metal'],[/покраск|маляр/,'paint'],[/кондиционер|климат/,'aircon'],[/отоплен|радиатор/,'heating'],[/вентиляц/,'ventilation'],[/окн|двер/,'window'],[/кровл|крыша/,'roof'],[/отделоч/,'finishing'],[/дрель|монтаж/,'tools'],[/ландшафт|газон|дерев/,'landscape'],[/землян|экскават/,'excavator'],[/перевоз|вывоз|транспорт/,'transport'],[/канализац/,'sewer'],[/водоснаб|вода/,'water'],[/забор|огражден/,'fence'],[/наполь|пол/,'flooring'],[/инструмент|ремонт/,'tools']];
+     key=(rules.find(([re])=>re.test(n))||[])[1]||'other';
+   }
+   const label=String(name||key).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+   return `<img src="./icons/direction-approved/${key}.png" class="mg-work-icon-image" alt="${label}" draggable="false" decoding="async">`;
  };
  ctx.$('categories').innerHTML=ctx.cats.map(([n,ic],i)=>{
    const d=ctx.state.directions.find(x=>x.name===n), selected=!!d;
@@ -161,11 +156,18 @@
     if(/сантех|тру|вод|кран|канализ/.test(n)) return '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M31 8a10 10 0 0 0 1 13L16 37a5 5 0 0 1-7-7l16-16a10 10 0 0 0 12-1l-5 5 5 5 5-5A10 10 0 0 0 31 8z"/></svg>';
     return '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 13h28v22H10zM16 8h16M16 21h16M16 28h10"/></svg>';
   }
-  function directionIcon(d){
-    const icon=d?.icon||'';
-    if(window.MGIconSVG) return window.MGIconSVG(icon,d?.name||'');
-    return calcServiceIcon(d?.name,'');
+  function approvedDirectionIcon(icon,name=''){
+    if(typeof window.MGIconSVG==='function') return window.MGIconSVG(icon,name);
+    const known=new Set(['clean','camera','plumbing','electrical','construction','masonry','welding','metal','paint','aircon','heating','ventilation','window','roof','finishing','landscape','excavator','transport','sewer','water','fence','flooring','tools','other']);
+    const aliases={"🌿":"landscape","📹":"camera","⚙️":"metal","🔧":"plumbing","bolt":"electrical","home":"construction","brick":"masonry","brush":"finishing","snow":"aircon","drain":"sewer","tree":"landscape","case":"other","car":"transport","drill":"tools","dril":"tools"};
+    let key=String(icon||'').trim().toLowerCase();
+    if(aliases[key]) key=aliases[key];
+    if(!known.has(key)) key='other';
+    const alt=String(name||key).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<img src="./icons/direction-approved/${key}.png" class="mg-work-icon-image" alt="${alt}" draggable="false" decoding="async">`;
   }
+  function directionIcon(d){ return approvedDirectionIcon(d?.icon||'', d?.name||''); }
+
   function renderItems(){
     const arr=ctx.allItems();
     const categoryCount=ctx.state.directions.filter(d=>d.items.length).length;
@@ -195,7 +197,7 @@
     }).join('');
     ctx.$('total').textContent=ctx.money(ctx.total())+' MDL';
   }
-  function renderCalcDirectionPicker(){const list=ctx.catalog.map(d=>[d.name,d.icon||'•']);ctx.$('calcDirectionList').innerHTML=list.map(([n,ic])=>{const added=ctx.state.directions.some(d=>d.name===n);return `<button type="button" class="direction-picker-item ${added?'is-added':''}" data-calc-new-direction="${ctx.esc(n)}"><span class="mini-icon">${window.MGIconSVG?window.MGIconSVG(ic,n):ic}</span><b>${ctx.esc(n)}</b>${added?'<small>Уже добавлено</small>':''}</button>`}).join('')}
+  function renderCalcDirectionPicker(){const list=ctx.catalog.map(d=>[d.name,d.icon||'•']);ctx.$('calcDirectionList').innerHTML=list.map(([n,ic])=>{const added=ctx.state.directions.some(d=>d.name===n);return `<button type="button" class="direction-picker-item ${added?'is-added':''}" data-calc-new-direction="${ctx.esc(n)}"><span class="mini-icon">${approvedDirectionIcon(ic,n)}</span><b>${ctx.esc(n)}</b>${added?'<small>Уже добавлено</small>':''}</button>`}).join('')}
   function renderCalcPicker(){
  const dirs=ctx.$('calcPickerDirs'), services=ctx.$('calcPickerServices');
  dirs.innerHTML=ctx.state.directions.map((d,i)=>`<button type="button" class="calc-picker-dir ${i===ctx.state.activeDirection?'active':''}" data-calc-dir="${i}">${ctx.esc(d.name)}</button>`).join('');

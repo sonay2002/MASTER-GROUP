@@ -6,7 +6,7 @@
 
 /* Softer default typography across every app screen. */
 html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) *:not(#document):not(#document *) {
-  font-weight: 500 !important;
+  font-weight: 550 !important;
   text-shadow: none !important;
 }
 
@@ -18,7 +18,7 @@ html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
       .home-estimate-title, .home-estimate-total, .home-summary-value,
       .calc-line b, .total b, .finance-kpi strong, .finance-kpi b)
   :not(#document):not(#document *) {
-  font-weight: 600 !important;
+  font-weight: 650 !important;
 }
 
 /* Regular labels and supporting copy use a softer neutral gray. */
@@ -43,7 +43,7 @@ html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
 }
 
 /* Lighter outlines and restrained shadows for ordinary controls and cards.
-   Selected/primary controls and semantic state colors are deliberately excluded. */
+   Styling is applied only to the card/control itself, not its text children. */
 html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
   :is(.card, .calc-group, .calc-row, .settings-hub-card, .home-quick-card,
       .home-estimate-card, .finance-kpi, .drawer-create, .drawer-close,
@@ -52,16 +52,14 @@ html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
       .calc-picker-service, .calc-picker-dir, .direction-picker-item,
       .analytics-tabs-v3, .analytics-tab-v3:not(.active),
       .btn:not(.primary):not(.active), button:not(.primary):not(.active):not(.danger),
-      [role="button"]:not(.primary):not(.active):not(.danger))
-  :not(#document):not(#document *) {
+      [role="button"]:not(.primary):not(.active):not(.danger)):not(#document):not(#document *) {
   border-color: #e8eaed !important;
   box-shadow: 0 1px 3px rgba(24, 30, 40, .025) !important;
 }
 
 /* Make separators less prominent without changing their spacing or geometry. */
 html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
-  :is(hr, .calc-line, .drawer-account, .drawer-account-state, .settings-divider)
-  :not(#document):not(#document *) {
+  :is(hr, .calc-line, .drawer-account, .drawer-account-state, .settings-divider):not(#document):not(#document *) {
   border-color: #eceef0 !important;
 }
 
@@ -69,11 +67,18 @@ html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
 html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
   :is(input, select, textarea, .calc-stepper input, .calc-price input)
   :not(#document):not(#document *) {
-  font-weight: 500 !important;
+  font-weight: 550 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) *:not(#document):not(#document *) {
     transition-duration: .01ms !important;
   }
+}
+
+
+/* Only the three field labels on the Contact Information page: font weight 450. */
+html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2)
+  #step4 .contact-field-body-v2 label:not(#document):not(#document *) {
+  font-weight: 450 !important;
 }

@@ -9,6 +9,7 @@
      with the monolithic core. They must live here now that the app is modular. */
   const KEY='master_group_estimates_v8',CAT='master_group_catalog_v1',COMP='master_group_company_v1';
   const DEL='master_group_cloud_deleted_v1',DIRTY='master_group_cloud_dirty_v3',CATDIRTY='master_group_cloud_catalog_dirty_v2',PROFDIRTY='master_group_cloud_profile_dirty_v2';
+  const CAT_LOCAL_UPDATED='master_group_catalog_local_updated_at',CAT_SYNC_AT='master_group_catalog_sync_at';
   const SYNC_VER='master_group_firebase_v22';
   const $=id=>document.getElementById(id);
   const read=(k,fb)=>{try{const x=JSON.parse(localStorage.getItem(k)||'null');return x==null?fb:x}catch(e){return fb}};
@@ -138,7 +139,17 @@
   window.__mgCloudMarkDirty=function(ids){const a=Array.isArray(ids)?ids:[];if(a.length)markDirty(a);if(cloudMode)scheduleUpload()};
   window.__mgCloudMarkCatalogDirty=function(){write(CATDIRTY,true);if(cloudMode)scheduleUpload()};
   window.__mgCloudMarkCompanyDirty=function(){write(PROFDIRTY,true);if(cloudMode)scheduleUpload()};
-  function scheduleUpload(){if(pending)return;pending=true;setTimeout(()=>{pending=false;syncNow()},120)}
+  function scheduleUpload(delay=120){
+    if(pending)return;
+    pending=true;
+    setTimeout(()=>{
+      pending=false;
+      if(!user||!cloudMode)return;
+      // A timer firing during an active upload must not discard the requested sync.
+      if(busy){scheduleUpload(220);return;}
+      syncNow();
+    },delay);
+  }
   function estimateRef(id){return root.child('estimates').child(String(id))}
   function firebaseSafe(value, seen){
     if(value===undefined)return null;
@@ -228,27 +239,72 @@
       clearDirty(estimate.id);status('Firebase подключён • Смета сохранена',false);msg('Смета сохранена в облаке.');return true;
     }catch(e){if(estimate?.id)markDirty([String(estimate.id)]);cloudError(e,'sync');status('Облако недоступно — смета сохранена на устройстве',true);return false}
   };
+  function adoptRemoteCatalog(data,cloudAt,force=false){
+    if(!Array.isArray(data))return false;
+    if(read(CATDIRTY,false)===true)return false;
+    const localEditedAt=Number(localStorage.getItem(CAT_LOCAL_UPDATED)||0)||0;
+    const localSyncedAt=Number(localStorage.getItem(CAT_SYNC_AT)||0)||0;
+    // If a local edit is not yet reflected in the cloud, never let a listener
+    // replace it with an older snapshot. Queue it for upload instead.
+    if(localEditedAt>localSyncedAt){
+      write(CATDIRTY,true);
+      if(cloudMode)scheduleUpload();
+      return false;
+    }
+    const at=Number(cloudAt)||0;
+    if(!force&&at<localSyncedAt)return false;
+    if(!force&&at===localSyncedAt&&window.MGCatalog?.isSame?.(data))return false;
+    if(force&&localSyncedAt>0&&(!at||at<localSyncedAt))return false;
+    if(window.MGCatalog?.applyRemote){
+      const applied=window.MGCatalog.applyRemote(data,at||Date.now());
+      if(!applied)return false;
+    }else{
+      if(!write(CAT,data))return false;
+      try{localStorage.setItem(CAT_SYNC_AT,String(at||Date.now()))}catch(_){}
+    }
+    return true;
+  }
+  async function uploadCatalogIfDirty(){
+    if(read(CATDIRTY,false)!==true)return {uploaded:false,stillDirty:false};
+    const changedAtBefore=Number(localStorage.getItem(CAT_LOCAL_UPDATED)||0)||0;
+    const payload=localCatalog();
+    const payloadJson=JSON.stringify(payload);
+    const savedCatalog=await FIREBASE_REPO.writeCatalog(user.uid,payload);
+    const cloudAt=Number(savedCatalog?._cloudUpdatedAt)||Date.now();
+    try{localStorage.setItem(CAT_SYNC_AT,String(cloudAt))}catch(_){}
+    const changedAtAfter=Number(localStorage.getItem(CAT_LOCAL_UPDATED)||0)||0;
+    const latestJson=JSON.stringify(localCatalog());
+    const unchanged=changedAtBefore===changedAtAfter&&payloadJson===latestJson;
+    if(unchanged){
+      // Clear dirty only after confirming no edit happened during the network write.
+      if(Number(localStorage.getItem(CAT_LOCAL_UPDATED)||0)===changedAtBefore){
+        try{localStorage.removeItem(CAT_LOCAL_UPDATED)}catch(_){}
+      }
+      write(CATDIRTY,false);
+      return {uploaded:true,stillDirty:false};
+    }
+    // A second edit happened while Firebase was writing the first snapshot.
+    // Keep it pending; syncNow's finally block will schedule another pass.
+    write(CATDIRTY,true);
+    return {uploaded:true,stillDirty:true};
+  }
   async function uploadDirty(){
     const ids=Array.from(dirtyIds());
     for(const id of ids) await uploadEstimate(id);
     const ts=tombstones();
     for(const [id,at] of ts){await FIREBASE_REPO.markDeleted(user.uid,id,at);clearDeleted(id)}
-    if(read(CATDIRTY,false)===true){
-      const savedCatalog=await FIREBASE_REPO.writeCatalog(user.uid,localCatalog());
-      write(CATDIRTY,false);
-      const cloudAt=Number(savedCatalog?._cloudUpdatedAt)||Date.now();
-      try{localStorage.setItem('master_group_catalog_sync_at',String(cloudAt))}catch(_){}
-    }
+    await uploadCatalogIfDirty();
     if(read(PROFDIRTY,false)===true){await FIREBASE_REPO.writeCompany(user.uid,read(COMP,{}));write(PROFDIRTY,false)}
     await FIREBASE_REPO.acknowledge(user.uid,{appVersion:SYNC_VER})
   }
   async function verifyCloudAccess(){if(!root||!user)throw Object.assign(new Error('Cloud access unavailable'),{code:'database/permission-denied'});return FIREBASE_REPO.verify(user.uid)}
   function applyRemoteEstimate(id,v){id=String(id||'');if(!id||!v)return;const local=localEstimates();const idx=local.findIndex(x=>String(x.id)===id);if(v._deleted===true){if(v._purged===true){if(idx>=0){local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);}try{const tk='master_group_deleted_estimates_v1';write(tk,read(tk,[]).filter(x=>String(x?.id)!==id));}catch(_){}try{window.__mgRenderTrash?.()}catch(_){}refreshUi();return;}if(idx>=0&&dirtyIds().has(id))return;try{const tk='master_group_deleted_estimates_v1';const ta=JSON.parse(localStorage.getItem(tk)||'[]').filter(x=>x&&String(x.id)!==id);const tomb=JSON.parse(JSON.stringify(v));tomb.id=tomb.id||id;tomb._deletedAt=Number(v._deletedAt)||Date.now();tomb._deletedFrom='estimates';delete tomb._deleted;delete tomb._cloudUpdatedAt;ta.unshift(tomb);localStorage.setItem(tk,JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}}catch(err){console.warn('MG remote trash save failed',err)}if(idx>=0){const before=local[idx];local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);refreshUi();if(!starting)addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'deleted',title:estimateDisplay(before)+' удалена',body:'Смета удалена на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}return}const remoteAt=Number(v._cloudUpdatedAt)||0;const remoteClientAt=Number(v._clientUpdatedAt)||0;const oldAt=Math.max(Number(idx>=0?local[idx]._syncUpdatedAt:0)||0,Number(idx>=0?local[idx]._clientUpdatedAt:0)||0);if(idx>=0&&dirtyIds().has(id)){if(remoteAt>oldAt||remoteClientAt>oldAt){addNotification({id:'n_conflict_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'change',title:estimateDisplay(local[idx])+' — конфликт синхронизации',body:'Локальные изменения сохранены на устройстве и будут отправлены в облако. Облачная версия не перезаписала их.',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true});}return;}if(idx>=0&&remoteAt<=oldAt&&remoteClientAt<=oldAt)return;const before=idx>=0?JSON.parse(JSON.stringify(local[idx])):null;let copy=JSON.parse(JSON.stringify(v));delete copy._cloudUpdatedAt;delete copy._deleted;delete copy._deletedAt;if(window.MGDataModel?.normalizeEstimate)copy=window.MGDataModel.normalizeEstimate(copy);copy._syncUpdatedAt=Math.max(remoteAt,remoteClientAt);if(idx>=0)local[idx]=copy;else local.unshift(copy);write(KEY,local);refreshUi();if(!starting){const changes=estimateChanges(before,copy);if(changes.length){const details=changes.map(c=>c.body).filter(Boolean);const kind=changes.some(c=>c.type==='payment')?'payment':changes.some(c=>c.type==='expense')?'expense':changes.some(c=>c.type==='status')?'status':'change';addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:kind,title:estimateDisplay(copy)+' изменена',body:details.length===1?details[0]:(details.length+' изменений: '+details.slice(0,4).join(' • ')+(details.length>4?' • и ещё '+(details.length-4):'')),at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}else if(idx<0){addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:'created',title:estimateDisplay(copy)+' создана',body:'Новая смета создана на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}}}
-function listen(){stopListeners();if(!root)return;const onListenerError=e=>cloudError(e,'sync');const er=root.child('estimates');const onAdded=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onChanged=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onRemoved=s=>{try{const id=String(s.key);if(!starting&&!dirtyIds().has(id)){const a=localEstimates().filter(x=>String(x.id)!==id);write(KEY,a);}const tk='master_group_deleted_estimates_v1';const trash=read(tk,[]).filter(x=>String(x?.id)!==id);write(tk,trash);try{window.__mgRenderTrash?.()}catch(_){}refreshUi();if(!starting)notify('Смета удалена навсегда','Изменение пришло с другого устройства')}catch(e){onListenerError(e)}};estimateListener={er,onAdded,onChanged,onRemoved};er.on('child_added',onAdded,onListenerError);er.on('child_changed',onChanged,onListenerError);er.on('child_removed',onRemoved,onListenerError);catalogListener=root.child('catalog').on('value',s=>{const v=s.val();if(!v||read(CATDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_catalog_sync_at')||0);if(at>localAt&&Array.isArray(v.data)){write(CAT,v.data);localStorage.setItem('master_group_catalog_sync_at',String(at));refreshUi();notify('Каталог обновлён','Направления и услуги синхронизированы')}},onListenerError);companyListener=root.child('company').on('value',s=>{const v=s.val();if(!v||read(PROFDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_company_sync_at')||0);if(at>localAt&&v.data){write(COMP,v.data);localStorage.setItem('master_group_company_sync_at',String(at));refreshUi();notify('Профиль обновлён','Данные компании синхронизированы')}},onListenerError);notificationListener=root.child('notifications').on('child_added',s=>{const n=s.val();if(!n||String(n.sourceClientId||'')===notificationClientId())return;addNotification(n,{cloud:false,toastIt:true})},onListenerError)}
+function listen(){stopListeners();if(!root)return;const onListenerError=e=>cloudError(e,'sync');const er=root.child('estimates');const onAdded=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onChanged=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onRemoved=s=>{try{const id=String(s.key);if(!starting&&!dirtyIds().has(id)){const a=localEstimates().filter(x=>String(x.id)!==id);write(KEY,a);}const tk='master_group_deleted_estimates_v1';const trash=read(tk,[]).filter(x=>String(x?.id)!==id);write(tk,trash);try{window.__mgRenderTrash?.()}catch(_){}refreshUi();if(!starting)notify('Смета удалена навсегда','Изменение пришло с другого устройства')}catch(e){onListenerError(e)}};estimateListener={er,onAdded,onChanged,onRemoved};er.on('child_added',onAdded,onListenerError);er.on('child_changed',onChanged,onListenerError);er.on('child_removed',onRemoved,onListenerError);catalogListener=root.child('catalog').on('value',s=>{const v=s.val();if(!v||!Array.isArray(v.data))return;const at=Number(v._cloudUpdatedAt)||0;if(adoptRemoteCatalog(v.data,at,false)){refreshUi();notify('Каталог обновлён','Направления и услуги синхронизированы')}},onListenerError);companyListener=root.child('company').on('value',s=>{const v=s.val();if(!v||read(PROFDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_company_sync_at')||0);if(at>localAt&&v.data){write(COMP,v.data);localStorage.setItem('master_group_company_sync_at',String(at));refreshUi();notify('Профиль обновлён','Данные компании синхронизированы')}},onListenerError);notificationListener=root.child('notifications').on('child_added',s=>{const n=s.val();if(!n||String(n.sourceClientId||'')===notificationClientId())return;addNotification(n,{cloud:false,toastIt:true})},onListenerError)}
 function stopListeners(){try{if(root){if(estimateListener){const er=estimateListener.er;er.off('child_added',estimateListener.onAdded);er.off('child_changed',estimateListener.onChanged);er.off('child_removed',estimateListener.onRemoved)}if(catalogListener)root.child('catalog').off('value',catalogListener);if(companyListener)root.child('company').off('value',companyListener);if(notificationListener)root.child('notifications').off('child_added',notificationListener)}}catch(e){}estimateListener=catalogListener=companyListener=notificationListener=null}
   async function syncNow(){
     if(!cloudMode||busy||!root||!user)return;
     busy=true;
+    let catalogRetryNeeded=false;
     status('Синхронизация…',false);
     try{
       normalizeLocalIds();
@@ -263,13 +319,8 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
         try{await FIREBASE_REPO.markDeleted(user.uid,id,at);clearDeleted(id)}
         catch(err){if(SYNC_ENGINE)SYNC_ENGINE.fail('delete',id,err);throw err}
       }
-      if(read(CATDIRTY,false)===true){
-        const savedCatalog=await FIREBASE_REPO.writeCatalog(user.uid,localCatalog());
-        write(CATDIRTY,false);
-        try{localStorage.removeItem('master_group_catalog_local_updated_at')}catch(_){}
-        const cloudAt=Number(savedCatalog?._cloudUpdatedAt)||Date.now();
-        try{localStorage.setItem('master_group_catalog_sync_at',String(cloudAt))}catch(_){}
-      }
+      const catalogSyncResult=await uploadCatalogIfDirty();
+      catalogRetryNeeded=!!catalogSyncResult.stillDirty;
       if(read(PROFDIRTY,false)===true){
         await FIREBASE_REPO.writeCompany(user.uid,read(COMP,{}));
         write(PROFDIRTY,false);
@@ -283,7 +334,10 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       status('Облако недоступно — данные сохранены на устройстве',true);
       try{if(user)setTimeout(()=>{if(user&&cloudMode&&!busy)syncNow();else if(user&&!cloudMode)initialSync()},3000)}catch(_){}
       return false;
-    }finally{busy=false}
+    }finally{
+      busy=false;
+      if(catalogRetryNeeded&&user&&cloudMode)scheduleUpload(180);
+    }
   }
   async function initialSync(){if(!user||!db)return;busy=true;starting=true;try{
     normalizeLocalIds();root=FIREBASE_REPO.path(user.uid);
@@ -309,20 +363,17 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       }applyRemoteEstimate(id,v)}
     const catalogSnap=await root.child('catalog').once('value');
     const remoteCatalog=catalogSnap.val();
-    // Never overwrite a catalog that was changed locally but whose dirty marker is
-    // missing or was created during startup. Local directions must survive the first sync.
-    const catalogDirty=read(CATDIRTY,false)===true;
-    const catalogLocalChangedAt=Number(localStorage.getItem('master_group_catalog_local_updated_at')||0);
-    if(!catalogDirty && !catalogLocalChangedAt && Array.isArray(remoteCatalog?.data)){
-      // Cloud catalog is authoritative only when there are no local catalog changes.
-      // Do not require localCatalog().length===0: that condition made newly-created
-      // or default local directions survive only until a refresh on another device.
-      const cloudAt=Number(remoteCatalog?._cloudUpdatedAt)||0;
-      const localAt=Number(localStorage.getItem('master_group_catalog_sync_at')||0);
-      if(cloudAt>=localAt || !localAt){
-        write(CAT,remoteCatalog.data);
-        try{localStorage.setItem('master_group_catalog_sync_at',String(cloudAt||Date.now()))}catch(_){}
-      }
+    // Apply Firebase catalog to BOTH storage and the shared in-memory catalog.
+    // Writing only localStorage left modules holding stale arrays, so entries appeared
+    // and disappeared whenever another refresh re-rendered the page.
+    if(Array.isArray(remoteCatalog?.data)){
+      adoptRemoteCatalog(remoteCatalog.data,Number(remoteCatalog?._cloudUpdatedAt)||0,true);
+    }else if(read(CATDIRTY,false)!==true){
+      // No cloud catalog exists yet. If a prior build left a local edit marker,
+      // promote it to a real dirty flag so the user's catalog is not stranded locally.
+      const localEditedAt=Number(localStorage.getItem(CAT_LOCAL_UPDATED)||0)||0;
+      const localSyncedAt=Number(localStorage.getItem(CAT_SYNC_AT)||0)||0;
+      if(localEditedAt>localSyncedAt)write(CATDIRTY,true);
     }
     if(read(PROFDIRTY,false)!==true){const c=await root.child('company').once('value');const v=c.val();if(v?.data&&Object.keys(read(COMP,{})).length===0)write(COMP,v.data)}
     cloudMode=true;
