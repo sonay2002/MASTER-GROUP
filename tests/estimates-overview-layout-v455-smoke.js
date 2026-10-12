@@ -7,7 +7,7 @@ const html = read('index.html');
 const css = read('css/estimates-editor-v456.css');
 const sw = read('sw.js');
 if (!html.includes('css/estimates-editor-v456.css?v=456')) throw new Error('Index does not load v455 layout CSS');
-if (!sw.includes('master-group-v461-desktop-workspace') || !sw.includes('./css/estimates-editor-v456.css?v=456')) throw new Error('Service Worker does not precache v455 layout CSS');
+if (!sw.includes('master-group-v462-desktop-workspace') || !sw.includes('./css/estimates-editor-v456.css?v=456')) throw new Error('Service Worker does not precache v455 layout CSS');
 for (const rule of ['flex-direction:column!important','overflow:hidden!important','flex:1 1 auto!important;min-height:0!important;max-height:none!important','position:relative!important;top:auto!important;bottom:auto!important','white-space:nowrap!important','@media(max-width:360px)']) {
   if (!css.includes(rule)) throw new Error(`Missing responsive alignment rule: ${rule}`);
 }
