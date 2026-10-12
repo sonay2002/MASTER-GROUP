@@ -27,7 +27,7 @@ if (!finance.includes('savedNode.innerHTML=recent.length?recent.map(e=>') || !fi
 if (!finance.includes("dashboardNode.classList.remove('mg-home-render-pending')")) {
   throw new Error('Dashboard render gate is not released after current markup is rendered');
 }
-if (!html.includes('js/estimate-core.js?v=447') || !html.includes('js/finance-ui.js?v=460') || !sw.includes('master-group-v465-approved-workspace-layout')) {
+if (!html.includes('js/estimate-core.js?v=447') || !html.includes('js/finance-ui.js?v=460') || !sw.includes('master-group-v467-mobile-palette-sidebar')) {
   throw new Error('Renderer assets are not cache-busted');
 }
 // Legacy reference must be a no-op before finance-ui registers; it must not render old HTML.

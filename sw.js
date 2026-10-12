@@ -1,6 +1,6 @@
-/* Master Group v450 — GitHub Pages safe Service Worker */
+/* Master Group v467 — GitHub Pages safe Service Worker */
 // Supersedes master-group-v458-estimate-list-compact.
-const CACHE = 'master-group-v465-approved-workspace-layout';
+const CACHE = 'master-group-v467-mobile-palette-sidebar';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -14,6 +14,7 @@ const CORE = [
   "./css/estimates-status-palette-v460.css?v=460",
   "./css/desktop-layout-v462.css?v=462",
   "./css/desktop-layout-v465.css?v=465",
+  "./css/desktop-layout-v467.css?v=467",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -28,7 +29,7 @@ const CORE = [
   "./js/finance-ui.js?v=460",
   "./js/estimates-redesign-v454.js?v=460",
   "./js/document-actions-v419.js?v=431",
-  "./js/desktop-workspace-v465.js?v=465",
+  "./js/desktop-workspace-v465.js?v=467",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",

@@ -1,0 +1,17 @@
+const fs = require('fs');
+const assert = require('assert');
+const html = fs.readFileSync('index.html', 'utf8');
+const css = fs.readFileSync('css/desktop-layout-v467.css', 'utf8');
+const sw = fs.readFileSync('sw.js', 'utf8');
+assert.match(html, /desktop-layout-v465\.css\?v=465/);
+assert.match(html, /desktop-layout-v467\.css\?v=467/);
+assert.match(html, /desktop-workspace-v465\.js\?v=467/);
+assert.match(sw, /master-group-v467-mobile-palette-sidebar/);
+assert.match(sw, /\.\/css\/desktop-layout-v467\.css\?v=467/);
+assert.match(sw, /\.\/js\/desktop-workspace-v465\.js\?v=467/);
+assert.match(css, /@media screen and \(min-width:700px\) and \(min-height:600px\)/);
+assert.match(css, /background: linear-gradient\(180deg, #101317 0%, #0b0d10 100%\)\s*!important/);
+assert.match(css, /\.drawer-item\s*\{[\s\S]*?border: 0\s*!important/);
+assert.match(css, /\.drawer-item b\s*\{[\s\S]*?color: #f0f3f7\s*!important/);
+assert.match(css, /\.drawer-item small\s*\{[\s\S]*?color: #a9b3c0\s*!important/);
+console.log('v467 sidebar palette checks passed');
