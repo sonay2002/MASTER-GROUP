@@ -1,6 +1,6 @@
 /* Master Group v450 — GitHub Pages safe Service Worker */
 // Supersedes master-group-v458-estimate-list-compact.
-const CACHE = 'master-group-v463-desktop-layout-fix';
+const CACHE = 'master-group-v464-desktop-tablet-layout';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -13,7 +13,7 @@ const CORE = [
   "./css/estimates-list-compact-v458.css?v=458",
   "./css/estimates-status-palette-v460.css?v=460",
   "./css/desktop-layout-v462.css?v=462",
-  "./css/desktop-layout-v463.css?v=463",
+  "./css/desktop-layout-v464.css?v=464",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",

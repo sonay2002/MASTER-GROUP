@@ -9,9 +9,9 @@ for (const token of [
   'css/estimates-status-palette-v460.css?v=460',
   'js/finance-ui.js?v=460',
   'js/estimates-redesign-v454.js?v=460',
-  '<meta name="app-version" content="v463">'
+  '<meta name="app-version" content="v464">'
 ]) if (!html.includes(token)) throw new Error(`Missing v460 app asset/version: ${token}`);
-if (!sw.includes("master-group-v463-desktop-layout-fix") ||
+if (!sw.includes("master-group-v464-desktop-tablet-layout") ||
     !sw.includes('./css/estimates-status-palette-v460.css?v=460') ||
     !sw.includes('./js/finance-ui.js?v=460') ||
     !sw.includes('./js/estimates-redesign-v454.js?v=460')) {

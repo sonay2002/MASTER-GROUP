@@ -12,7 +12,7 @@ const finance = read('js/finance-ui.js');
 const core = read('js/estimate-core.js');
 const baselineSha256 = '441bcd8302a39f60f498f1a5cdfc7135fa6ed1057f4593b589ac4bac72d0d10c';
 if (!html.includes('css/estimates-editor-v456.css?v=456') || !html.includes('js/estimates-redesign-v454.js?v=460')) throw new Error('Index does not load the expected estimate editor assets');
-if (!sw.includes('master-group-v463-desktop-layout-fix') || !sw.includes('./css/estimates-editor-v456.css?v=456') || !sw.includes('./js/estimates-redesign-v454.js?v=460')) throw new Error('Service Worker cache does not include the expected estimate editor assets');
+if (!sw.includes('master-group-v464-desktop-tablet-layout') || !sw.includes('./css/estimates-editor-v456.css?v=456') || !sw.includes('./js/estimates-redesign-v454.js?v=460')) throw new Error('Service Worker cache does not include the expected estimate editor assets');
 if (!html.includes('js/estimate-core.js?v=447') || !html.includes('js/firebase-sync.js?v=447')) throw new Error('Accepted core/catalog baselines changed unexpectedly');
 if(crypto.createHash('sha256').update(core).digest('hex')!==baselineSha256) throw new Error('Accepted v447 estimate-core.js baseline changed unexpectedly');
 for(const needle of ['function overviewMarkup()', 'data-mge-open-native-directions', 'function openNativeDirectionWorkflow()', 'function returnFromNativeDirectionWorkflow()', 'Редактировать направления', 'data-mge-finance="payment"', 'data-mge-finance="expenses"', 'data-mge-field="client"', 'data-mge-field="phone"', 'data-mge-field="object"', 'MGStorage.persist(old)', 'before.id', 'before.number']) if(!editor.includes(needle)) throw new Error(`Estimate overview/native workflow missing: ${needle}`);
