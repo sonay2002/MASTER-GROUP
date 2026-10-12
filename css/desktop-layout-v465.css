@@ -411,3 +411,23 @@
 
 /* On phones, preserve the existing drawer exactly; these two shortcuts are desktop/tablet only. */
 @media screen and (max-width:699px){html body #drawerOverlay .mg-desktop-only-nav{display:none!important}}
+
+
+/* v466 contrast hotfix: all desktop/tablet sidebar labels must remain readable on the dark rail. */
+@media screen and (min-width:700px) and (min-height:600px){
+ html body #drawerOverlay .drawer-item{color:#f1f5f9!important}
+ html body #drawerOverlay .drawer-item b,
+ html body #drawerOverlay .drawer-item>span:nth-child(2) b,
+ html body #drawerOverlay .drawer-item [class*="title"],
+ html body #drawerOverlay .drawer-item [class*="label"]{color:#f1f5f9!important;text-shadow:none!important;opacity:1!important}
+ html body #drawerOverlay .drawer-item small,
+ html body #drawerOverlay .drawer-item>span:nth-child(2) small{color:#c1cbd5!important;text-shadow:none!important;opacity:1!important}
+ html body #drawerOverlay .drawer-section-title.drawer-main-title{color:#d1d9e2!important;opacity:1!important}
+ html body #drawerOverlay .drawer-create-copy b{color:#ffffff!important;opacity:1!important}
+ html body #drawerOverlay .drawer-account,
+ html body #drawerOverlay .drawer-account *{text-shadow:none!important}
+ html body #drawerOverlay .drawer-cloud-row b{color:#f1f5f9!important;opacity:1!important}
+ html body #drawerOverlay .drawer-cloud-row small,
+ html body #drawerOverlay .drawer-account-email{color:#c1cbd5!important;opacity:1!important}
+ html body #drawerOverlay .drawer-account-actions button{color:#f1f5f9!important}
+}
