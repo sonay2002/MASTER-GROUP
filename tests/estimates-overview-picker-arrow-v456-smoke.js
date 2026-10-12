@@ -4,7 +4,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 const sw = fs.readFileSync('sw.js', 'utf8');
 const css = fs.readFileSync('css/estimates-editor-v456.css', 'utf8');
 if (!html.includes('css/estimates-editor-v456.css?v=456')) throw new Error('Index does not load v456 CSS');
-if (!sw.includes("master-group-v464-desktop-tablet-layout") || !sw.includes('./css/estimates-editor-v456.css?v=456')) throw new Error('Service worker does not cache v456 CSS');
+if (!sw.includes("master-group-v465-approved-workspace-layout") || !sw.includes('./css/estimates-editor-v456.css?v=456')) throw new Error('Service worker does not cache v456 CSS');
 const required = [
   '#estimatesScreen.mge-editing .mge-overview-stack .mge-field > .mge-field-control{',
   'display:grid!important;',

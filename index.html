@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v464"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v464"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v464</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v465"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v465"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v465</title>
 
 
 
@@ -559,8 +559,8 @@
 
 <div id="settingsPanelUpdates" hidden class="settings-panel-v2">
   <section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
-    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v444 · приложение автоматически проверяет новые версии.</p></div></div>
-    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v444 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v465 · приложение автоматически проверяет новые версии.</p></div></div>
+    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v465 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
   </section>
 </div>
 
@@ -596,14 +596,39 @@
           <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v11H4z"/><path d="M4 11h16"/><path d="M16.5 15.3h3.5"/><circle cx="14.3" cy="15.2" r="1.2"/><path d="M6 8.5V6.7c0-.9.7-1.7 1.7-1.7H18"/></svg></span>
           <span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i>
         </button>
+        <button class="drawer-item mg-desktop-only-nav" data-open-archives aria-label="Открыть архив смет">
+          <span class="drawer-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16v12H4z"/><path d="M3 4.5h18v3H3zM9 11h6M10 11v3h4v-3"/></svg></span>
+          <span><b>Архив</b><small>Черновики и удалённые сметы</small></span><i>›</i>
+        </button>
+        <button class="drawer-item mg-desktop-only-nav" data-menu-action="notifications" aria-label="Открыть историю изменений">
+          <span class="drawer-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+          <span><b>История изменений</b><small>Уведомления по сметам</small></span><i>›</i>
+        </button>
         
       </nav>
 
       <div class="drawer-menu-separator" aria-hidden="true"></div>
+      <div class="drawer-section-title drawer-main-title mg-desktop-only-nav">Разделы приложения</div>
       <nav class="drawer-list">
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="catalog" aria-label="Открыть каталог направлений и услуг">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16M4 12h16M4 18.5h16"/><circle cx="8" cy="5.5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="18.5" r="1.5"/></svg></span>
+          <span><b>Направления и услуги</b><small>Каталог компании</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="estimates" aria-label="Открыть шаблоны смет">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v5h4M10 12h5M10 15.5h5M10 19h3"/></svg></span>
+          <span><b>Шаблоны смет</b><small>Оформление документов</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="trash" aria-label="Открыть корзину">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></span>
+          <span><b>Корзина</b><small>Удалённые сметы</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="updates" aria-label="Открыть обновления">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg></span>
+          <span><b>Обновления</b><small>Версия приложения</small></span><i>›</i>
+        </button>
         <button type="button" class="drawer-item" data-menu-action="settings" aria-label="Открыть настройки">
           <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg></span>
-          <span><b>Настройки</b><small>Услуги и профиль компании</small></span><i>›</i>
+          <span><b>Настройки</b><small>Параметры приложения</small></span><i>›</i>
         </button>
       </nav>
 
@@ -750,7 +775,8 @@
 <script src="js/v284-settings-cleanup.js"></script>
 <script src="js/settings-hub-v357.js"></script>
 <script src="js/document-actions-v419.js?v=431"></script>
-<style id="mg-desktop-heading-default-v464">#mgDesktopEstimatesHeading{display:none!important}</style>
+<script src="js/desktop-workspace-v465.js?v=465"></script>
+<style id="mg-desktop-heading-default-v465">#mgDesktopEstimatesHeading{display:none!important}</style>
 
 <style id="mg-analytics-layout-v311">
 /* v311 — move the entire analytics content below the fixed top bar. Button design is unchanged. */
@@ -1290,5 +1316,5 @@
 @media(max-width:600px){#settingsScreen .settings-hub-grid{grid-template-columns:1fr!important;gap:9px!important}#settingsScreen .settings-hub-card{height:66px!important;min-height:66px!important;border-radius:15px!important}}
 @media(max-width:360px){#settingsScreen .settings-topbar-title{font-size:19px!important}#settingsScreen .settings-hub-card{grid-template-columns:38px minmax(0,1fr) 12px!important;gap:9px!important;padding:0 10px!important}#settingsScreen .settings-hub-copy small{font-size:10px!important}}
 </style>
-<link rel="stylesheet" href="css/desktop-layout-v464.css?v=464">
+<link rel="stylesheet" href="css/desktop-layout-v465.css?v=465">
 </body></html>

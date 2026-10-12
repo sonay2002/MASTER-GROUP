@@ -1,0 +1,25 @@
+const fs = require('fs');
+const assert = require('assert');
+const html = fs.readFileSync('index.html', 'utf8');
+const css = fs.readFileSync('css/desktop-layout-v465.css', 'utf8');
+const sw = fs.readFileSync('sw.js', 'utf8');
+assert.match(html, /app-version" content="v465"/);
+assert.match(html, /desktop-layout-v465\.css\?v=465/);
+assert.match(html, /data-open-archives[^>]*aria-label="Открыть архив смет"/);
+assert.match(html, /drawer-item mg-desktop-only-nav" data-menu-action="notifications"/);
+assert.match(html, /data-menu-action="stats"/);
+assert.match(html, /data-desktop-open-settings-section="catalog"/);
+assert.match(html, /data-desktop-open-settings-section="estimates"/);
+assert.match(html, /data-desktop-open-settings-section="trash"/);
+assert.match(html, /data-desktop-open-settings-section="updates"/);
+assert.match(html, /js\/desktop-workspace-v465\.js\?v=465/);
+assert.match(css, /@media screen and \(min-width:1100px\)/);
+assert.match(css, /\.home-summary,html body #dashboard \.home-quick\{display:contents!important\}/);
+assert.match(css, /\.mg-new-estimate-btn::after\{content:"Новая смета"/);
+assert.match(css, /@media screen and \(min-width:700px\) and \(max-width:899px\)/);
+assert.match(css, /@media screen and \(max-width:699px\).*mg-desktop-only-nav/s);
+assert.match(sw, /master-group-v465-approved-workspace-layout/);
+assert.match(sw, /desktop-layout-v465\.css\?v=465/);
+// No placeholder navigation modules from the AI-only collage were added.
+for (const fake of ['Клиенты', 'Материалы', 'Календарь', 'Заметки', 'Справочник']) assert.ok(!html.includes(`<b>${fake}</b>`), `Unexpected invented page: ${fake}`);
+console.log('v465 desktop/tablet template smoke test passed');
