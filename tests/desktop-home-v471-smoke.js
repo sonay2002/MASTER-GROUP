@@ -1,0 +1,15 @@
+const fs = require('fs');
+const assert = require('assert');
+const html = fs.readFileSync('index.html', 'utf8');
+const sw = fs.readFileSync('sw.js', 'utf8');
+const css = fs.readFileSync('css/desktop-home-v471.css', 'utf8');
+const js = fs.readFileSync('js/desktop-home-v471.js', 'utf8');
+assert.ok(html.includes('css/desktop-home-v471.css?v=471') && html.includes('js/desktop-home-v471.js?v=471'), 'index.html must load the v471 home files');
+assert.ok(html.indexOf('desktop-home-v471.css') > html.indexOf('desktop-master-detail-v470.css'), 'v471 css must load after v470');
+assert.ok(sw.includes('./css/desktop-home-v471.css?v=471') && sw.includes('./js/desktop-home-v471.js?v=471'), 'Service Worker must precache the v471 files');
+assert.ok(/min-width:1100px/.test(css) && !/@media[^{]*max-width/.test(css), 'home css must be desktop-only');
+assert.ok(js.includes("matchMedia('(min-width:1100px)"), 'home js must be gated by the desktop media query');
+assert.ok(!/localStorage\.setItem|MGStorage\.persist|persist\(/.test(js), 'the home screen must never write data');
+['new', 'estimates', 'stats'].forEach(a => assert.ok(js.includes('data-hd-go="' + a + '"'), 'quick action ' + a));
+assert.ok(js.includes('MGDesktopMD'), 'home rows must be able to preselect an estimate');
+console.log('v471 desktop home smoke test passed');

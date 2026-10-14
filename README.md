@@ -1,3 +1,19 @@
+# Установка (GitHub Pages)
+
+Загрузите содержимое архива в корень репозитория (ветка `main`), не вкладывая папку внутрь другой папки. Service Worker использует network-first для JS/CSS, поэтому старые кэшированные сборки не переиспользуются.
+
+---
+
+# Master Group v468 — точечная очистка навигации компьютера и планшета
+
+Внесены только две запрошенные правки интерфейса:
+- убрана дублирующая кнопка «Новая смета» из заголовка страницы списка смет; кнопка создания в верхней панели и кнопка создания в боковой панели сохранены;
+- убран пункт «История изменений / Уведомления по сметам» из бокового меню; кнопка уведомлений в верхней панели сохранена.
+
+Архив, финансы, обзор, настройки и быстрые переходы к существующим разделам оставлены. Мобильные стили и логика смет/финансов не менялись. Проверки: 39 smoke-тестов пройдены, 54 локальные ссылки на ресурсы проверены, ошибок синтаксиса JavaScript нет.
+
+---
+
 # Master Group v440 — offline estimate and correction fixes
 
 This build fixes offline estimate creation, safely reconciles temporary local estimate numbers when cloud sync returns, allows the “Продолжить без облака” action to close the sign-in overlay, applies the “Запомнить меня” session choice, and disables public self-registration through the app client. Local term correction now receives direction/service context and is used if both model-based routes cannot provide a confident correction. The interface and visual styles are unchanged.
@@ -109,3 +125,33 @@ OpenRouter endpoint: https://openrouter.ai/api/v1/chat/completions
 Model: openrouter/free
 
 If OpenRouter is unavailable, the existing deterministic Master Group fallback remains available. The old on-device Qwen3 deep-inference path is disabled to avoid the iPhone memory/reload problem.
+
+---
+
+## История: v467
+
+Master Group v467 — Mobile-matched desktop/tablet sidebar
+
+Changes:
+- Restored valid links to the existing desktop/tablet workspace stylesheet and navigation handler.
+- Added css/desktop-layout-v467.css for screens 700px wide and larger with 600px minimum height.
+- Sidebar palette matches the existing dark mobile drawer: near-black graphite surface, readable light text, subtle icon wells.
+- Removed bright borders around navigation rows and icon tiles; added quiet hover/selected states.
+- Updated service worker cache version and precache list.
+- Phone layout and core estimate/finance logic are unchanged.
+
+## Desktop polish v469
+
+Новый файл `css/desktop-layout-v469.css` (подключён после v467 и добавлен в precache). Только оформление для экранов от 700px, телефон и логика не менялись: единые радиусы и тени карточек, типографика заголовков и чисел, аккуратные фильтры, таблица смет со статусами-«пилюлями», карточки обзора и графики, видимый фокус с клавиатуры, центрирование рабочей области на широких экранах.
+
+## Desktop variant A, шаг 1 (v470): «Все сметы» — список и детали
+
+`js/desktop-master-detail-v470.js` + `css/desktop-master-detail-v470.css` (от 1100px). Слева компактный список смет, справа панель выбранной сметы: клиент, адрес, услуги, оплаты, итоги, смена статуса, «Редактировать», «Открыть смету», «Удалить». Панель только читает данные; действия выполняются теми же кнопками и обработчиками, что и раньше. Во время редактирования режим выключается. На телефоне и планшете до 1100px ничего не меняется.
+
+## Desktop variant A, шаг 2 (v471): «Главный экран»
+
+`js/desktop-home-v471.js` + `css/desktop-home-v471.css` (от 1100px). Показатели (сумма смет, получено, осталось получить, расходы), последние сметы, блок оплаты и быстрые действия. Строка сметы открывает «Все сметы» с этой сметой выбранной. Если смет нет, показывается пустое состояние с кнопкой «Создать смету». Экран отображается сразу, не дожидаясь старой отрисовки (`mg-home-render-pending`). Только читает данные.
+
+## Cleanup v468 (служебная чистка)
+
+Удалены неиспользуемые файлы прежних версий (estimates-editor v448–v452/v455, estimates-redesign v448–v452, desktop-layout v461–v464), устаревший `desktop-layout-v462.css` убран из precache, удалены `login-css.txt` и разрозненные txt-заметки. Поведение приложения не менялось.

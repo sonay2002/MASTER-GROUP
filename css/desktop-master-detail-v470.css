@@ -1,0 +1,141 @@
+/* Master Group v470 — «Все сметы»: список слева, детали справа (вариант A). Только от 1100px. */
+@media screen and (min-width:1100px) and (min-height:600px) {
+  html body #estimatesScreen[data-mg-md]:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+    column-gap: 20px;
+    align-items: start;
+    align-content: start;
+  }
+  html body #estimatesScreen[data-mg-md] > * { grid-column: 1 / -1; }
+  html body #estimatesScreen[data-mg-md] > #mgDesktopEstimatesHeading { grid-row: 1; }
+  html body #estimatesScreen[data-mg-md] > .status-filter-card { grid-column: 1; grid-row: 2; }
+  html body #estimatesScreen[data-mg-md] > #estimatesList { grid-column: 1; grid-row: 3; }
+  html body #estimatesScreen[data-mg-md] > .mg-md-detail { grid-column: 2; grid-row: 2 / span 2; }
+
+  /* фильтры переносятся в узкой колонке */
+  html body #estimatesScreen[data-mg-md] > .status-filter-card {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    overflow: visible !important;
+  }
+  html body #estimatesScreen[data-mg-md] > .status-filter-card .status-filter { flex: 0 0 auto !important; height: 34px !important; padding: 0 11px !important; font-size: 13px !important; }
+
+  /* список — компактные карточки */
+  html body #estimatesScreen[data-mg-md] #estimatesList {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+  }
+  html body #estimatesScreen[data-mg-md] #estimatesList::before,
+  html body #estimatesScreen[data-mg-md] #estimatesList::after { display: none !important; content: none !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .estimate-card.estimate-unified-card {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    grid-template-columns: none !important;
+    padding: 14px 16px !important;
+    border: 1px solid #e4e8ee !important;
+    border-radius: 14px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    cursor: pointer;
+    transition: border-color .12s ease, box-shadow .12s ease !important;
+  }
+  html body #estimatesScreen[data-mg-md] #estimatesList .estimate-card.estimate-unified-card:hover { background: #fff !important; border-color: #cfd6e0 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #estimatesScreen[data-mg-md] #estimatesList article.estimate-card.estimate-unified-card.mg-md-selected {
+    border: 1.5px solid #14181f !important;
+    padding: 13.5px 15.5px !important;
+    box-shadow: 0 8px 20px -12px rgba(16,24,40,.28) !important;
+  }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-grid { display: block !important; grid-template-columns: none !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-main { display: flex !important; gap: 12px !important; align-items: flex-start !important; width: 100% !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .estimate-badge { display: none !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .estimate-info { flex: 1 1 auto; width: 100% !important; min-width: 0; display: flex !important; flex-direction: column !important; gap: 6px !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .estimate-info { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-title-row { display: flex !important; align-items: center !important; width: 100% !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-title-row b { font-size: 14px !important; font-weight: 650 !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-mobile-total {
+    display: inline !important;
+    margin-left: auto !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    font-variant-numeric: tabular-nums;
+  }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-client-date { font-size: 13px !important; color: #3a424e !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-directions,
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-side,
+  html body #estimatesScreen[data-mg-md] #estimatesList .mge-card-actions { display: none !important; }
+  html body #estimatesScreen[data-mg-md] #estimatesList .estimate-meta-row { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
+
+  /* правая панель */
+  html body #estimatesScreen .mg-md-detail {
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e4e8ee;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1);
+    color: #14181f;
+    display: flex;
+    flex-direction: column;
+  }
+  .mg-md-empty { display: flex; flex-direction: column; gap: 6px; padding: 56px 24px; text-align: center; color: #667085; }
+  .mg-md-empty b { font-size: 18px; color: #14181f; }
+  .mg-md-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 20px 24px; border-bottom: 1px solid #eef1f5; }
+  .mg-md-badge { display: none; }
+  .mg-md-title { display: flex; flex-direction: column; gap: 3px; margin-right: auto; min-width: 0; }
+  .mg-md-title h2 { margin: 0; font-size: 21px; line-height: 1.2; font-weight: 720; letter-spacing: -.015em; }
+  .mg-md-title span { font-size: 13px; color: #667085; }
+  .mg-md-status { position: relative; display: inline-flex; }
+  .mg-md-status select {
+    appearance: none; -webkit-appearance: none;
+    height: 36px; padding: 0 16px; border: 0; border-radius: 999px;
+    font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;
+    background: #eeeceb; color: #4a4540; text-align: center;
+  }
+  .mg-md-status-sent select { background: #e8e4f0; color: #5a4a78; }
+  .mg-md-status-work select { background: #dce8e2; color: #2f5d4a; }
+  .mg-md-status-done select { background: #e9ead9; color: #5c5b22; }
+  .mg-md-status-canceled select { background: #f3e3e1; color: #8a2f27; }
+  .mg-md-btn { height: 40px; padding: 0 14px; border: 1px solid #e4e8ee; border-radius: 11px; background: #fff; color: #14181f; font: inherit; font-size: 14px; font-weight: 620; cursor: pointer; white-space: nowrap; }
+  .mg-md-btn:hover { background: #f6f8fb; border-color: #cfd6e0; }
+  .mg-md-btn-primary { border-color: #14181f; background: #14181f; color: #fff; }
+  .mg-md-btn-primary:hover { background: #262c36; border-color: #262c36; }
+  .mg-md-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 20px 26px 4px; }
+  .mg-md-fact { padding: 14px 16px; border-radius: 13px; background: #f6f8fb; border: 1px solid #eef1f5; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .mg-md-fact span { font-size: 12px; font-weight: 560; color: #667085; }
+  .mg-md-fact b { font-size: 14px; font-weight: 620; overflow-wrap: anywhere; }
+  .mg-md-block { padding: 16px 26px 4px; }
+  .mg-md-block h3, .mg-md-payments h3 { margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+  .mg-md-table { border: 1px solid #e4e8ee; border-radius: 13px; overflow: hidden; }
+  .mg-md-row { display: grid; grid-template-columns: minmax(0, 3fr) 90px 100px 130px; gap: 8px; padding: 14px 16px; border-top: 1px solid #eef1f5; align-items: center; font-variant-numeric: tabular-nums; font-size: 14px; }
+  .mg-md-row > :first-child { font-weight: 560; overflow-wrap: anywhere; }
+  .mg-md-row > b { text-align: right; font-weight: 650; }
+  .mg-md-row-head { background: #f6f8fb; border-top: 0; padding: 10px 16px; font-size: 12px; font-weight: 600; color: #667085; }
+  .mg-md-row-empty { display: block; color: #667085; }
+  .mg-md-bottom { display: flex; flex-wrap: wrap; gap: 20px; padding: 18px 26px 10px; }
+  .mg-md-payments { flex: 1 1 260px; min-width: 0; }
+  .mg-md-pay { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid #e4e8ee; border-radius: 13px; margin-bottom: 8px; }
+  .mg-md-pay-ic { width: 34px; height: 34px; border-radius: 10px; background: #dcebe0; color: #2a5a3a; display: flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
+  .mg-md-pay div { display: flex; flex-direction: column; gap: 2px; }
+  .mg-md-pay b { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .mg-md-pay small { font-size: 12px; color: #667085; }
+  .mg-md-pay-empty { padding: 14px 16px; border: 1px dashed #cfd6e0; border-radius: 13px; color: #667085; font-size: 14px; }
+  .mg-md-totals { flex: 1 1 260px; min-width: 0; padding: 18px 20px; border-radius: 14px; background: #14181f; color: #fff; display: flex; flex-direction: column; gap: 10px; align-self: flex-start; }
+  .mg-md-totals > div { display: flex; justify-content: space-between; font-size: 13px; color: #aeb8c5; font-variant-numeric: tabular-nums; }
+  .mg-md-totals > div b { font-weight: 600; color: #e6eaf0; }
+  .mg-md-totals .mg-md-left { flex-direction: column; gap: 2px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.14); }
+  .mg-md-totals .mg-md-left b { font-size: 28px; font-weight: 760; letter-spacing: -.02em; color: #fff; }
+  .mg-md-foot { padding: 6px 26px 22px; }
+  .mg-md-link { border: 0; background: transparent; color: #b42318; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 0; }
+  .mg-md-link:hover { text-decoration: underline; }
+  .mg-md-detail :is(button, select):focus-visible { outline: 2px solid #14181f; outline-offset: 2px; }
+}
