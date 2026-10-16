@@ -1,0 +1,88 @@
+/* Master Group v472 — редактор новой сметы на десктопе (вариант A).
+   Шаг «Расчёт»: услуги слева, итог и кнопки справа. Шаг «Направления»: крупные карточки.
+   Только стили: разметка и расчёты не меняются. Только от 1100px. */
+@media screen and (min-width:1100px) and (min-height:600px) {
+  /* ---------- Шаг «Расчёт» ----------
+     Важно: шаги мастера скрываются атрибутом hidden, поэтому display:grid только для :not([hidden]). */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3.calc-step-screen:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: auto auto 1fr;
+    column-gap: 20px;
+    row-gap: 14px;
+    align-items: start;
+    padding-top: 8px !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 > #items.calc-groups { grid-column: 1; grid-row: 1 / span 3; display: flex !important; flex-direction: column !important; gap: 14px !important; margin: 0 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 > .calc-summary-card {
+    grid-column: 2; grid-row: 1;
+    margin: 0 !important;
+    padding: 20px 22px !important;
+    border: 0 !important;
+    border-radius: 16px !important;
+    background: #14181f !important;
+    color: #fff !important;
+    box-shadow: none !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    align-items: start !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-summary-icon { display: none !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-summary-copy { display: flex !important; flex-direction: column !important; gap: 4px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-summary-copy span { font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: #aeb8c5 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-summary-copy b#total { font-size: 32px !important; line-height: 1.1 !important; font-weight: 760 !important; letter-spacing: -.025em !important; color: #fff !important; font-variant-numeric: tabular-nums; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-summary-copy small { font-size: 13px !important; color: #aeb8c5 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-add-main {
+    width: 100% !important; height: 42px !important; border: 0 !important; border-radius: 11px !important;
+    background: #f5f7fa !important; color: #14181f !important; font-size: 14px !important; font-weight: 650 !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-add-main:hover { background: #fff !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 > .calc-nav-actions { grid-column: 2; grid-row: 2; margin: 0 !important; padding: 0 !important; height: auto !important; min-height: 0 !important; max-height: none !important; overflow: visible !important; display: flex !important; flex-direction: column-reverse !important; gap: 10px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-nav-actions .btn { width: 100% !important; height: 46px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 650 !important; white-space: nowrap !important; }
+
+  /* направление */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-group { border: 1px solid #e4e8ee !important; border-radius: 16px !important; background: #fff !important; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1) !important; overflow: hidden; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-group-head { padding: 14px 18px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-group-title strong { font-size: 17px !important; font-weight: 720 !important; letter-spacing: -.01em; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-group-title span { font-size: 13px !important; color: #667085 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-subtotal { font-size: 14px !important; font-weight: 700 !important; font-variant-numeric: tabular-nums; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-group-body { padding: 4px 18px 14px !important; display: flex !important; flex-direction: column !important; gap: 0 !important; }
+
+  /* услуга — одна строка: название | количество | цена | сумма | удалить */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 150px 170px 120px 40px !important;
+    column-gap: 12px !important;
+    row-gap: 0 !important;
+    align-items: end !important;
+    padding: 14px 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid #eef1f5 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-row-top, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-fields { display: contents !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-service-main { grid-column: 1; grid-row: 1; display: flex !important; align-items: center !important; gap: 12px !important; min-width: 0; align-self: center; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-service-icon { width: 38px !important; height: 38px !important; flex: none; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-name { font-size: 15px !important; line-height: 1.25 !important; font-weight: 650 !important; letter-spacing: -.005em; overflow-wrap: anywhere; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-unit { margin-top: 4px !important; font-size: 12px !important; padding: 2px 9px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-fields > .calc-field:nth-child(1) { grid-column: 2; grid-row: 1; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-fields > .calc-field:nth-child(2) { grid-column: 3; grid-row: 1; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-field label { display: block !important; margin: 0 0 6px !important; font-size: 12px !important; font-weight: 600 !important; color: #667085 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-line { grid-column: 4; grid-row: 1; display: flex !important; flex-direction: column !important; align-items: flex-end !important; gap: 4px !important; margin: 0 !important; padding: 0 !important; border: 0 !important; align-self: end; height: 42px; justify-content: flex-end; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-line span { font-size: 12px !important; font-weight: 600 !important; color: #667085 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-line b { font-size: 15px !important; font-weight: 700 !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step3 .calc-delete { grid-column: 5; grid-row: 1; width: 40px !important; height: 40px !important; border-radius: 10px !important; align-self: end; }
+
+  /* ---------- Шаг «Направления» ---------- */
+  html body #categories.category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 14px !important; }
+  html body #categories .category { min-height: 118px !important; }
+  html body #step1 .direction-continue { white-space: nowrap !important; min-width: 190px !important; }
+}

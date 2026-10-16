@@ -11,7 +11,7 @@ for (const token of [
   'js/estimates-redesign-v454.js?v=460',
   '<meta name="app-version" content="v468">'
 ]) if (!html.includes(token)) throw new Error(`Missing v460 app asset/version: ${token}`);
-if (!sw.includes("master-group-v468-navigation-cleanup") ||
+if (!sw.includes("master-group-v476-desktop-variant-a") ||
     !sw.includes('./css/estimates-status-palette-v460.css?v=460') ||
     !sw.includes('./js/finance-ui.js?v=460') ||
     !sw.includes('./js/estimates-redesign-v454.js?v=460')) {

@@ -1,0 +1,72 @@
+/* Master Group v473 — остальные вкладки на десктопе (вариант A):
+   Финансы, Архив, Настройки и её разделы (Каталог, Шаблоны, Корзина, Обновления).
+   Только стили, только от 1100px. Логика и разметка не меняются. */
+@media screen and (min-width:1100px) and (min-height:600px) {
+  :root { --mg-p-line: #e4e8ee; --mg-p-ink: #14181f; --mg-p-muted: #667085; --mg-p-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1); }
+
+  /* ---------- Настройки: шапка раздела ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-topbar { display: flex !important; align-items: center !important; gap: 12px !important; padding: 0 0 6px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-topbar .menu-btn { display: none !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-topbar-title {
+    position: static !important; transform: none !important; left: auto !important; right: auto !important; width: auto !important; flex: 1 1 auto !important;
+    margin: 0 auto 0 0 !important; text-align: left !important;
+    font-size: 28px !important; line-height: 1.15 !important; font-weight: 760 !important; letter-spacing: -.02em !important; color: var(--mg-p-ink) !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-back-v357 { width: 42px !important; height: 42px !important; border: 1px solid var(--mg-p-line) !important; border-radius: 12px !important; background: #fff !important; box-shadow: none !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-back-v357:hover { background: #f6f8fb !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen #settingsSectionNav { margin: 4px 0 14px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen #settingsSectionTitle { font-size: 18px !important; font-weight: 720 !important; letter-spacing: -.01em; color: var(--mg-p-ink) !important; }
+
+  /* ---------- Настройки: хаб и карточки ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-hub-grid { gap: 14px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-hub-card {
+    border: 1px solid var(--mg-p-line) !important; border-radius: 16px !important; background: #fff !important; box-shadow: var(--mg-p-shadow) !important;
+    transition: border-color .12s ease, transform .12s ease !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-hub-card:hover { border-color: #cfd6e0 !important; transform: translateY(-1px); }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-card-v2 { border: 1px solid var(--mg-p-line) !important; border-radius: 16px !important; background: #fff !important; box-shadow: var(--mg-p-shadow) !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-card-head-v2 h2, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-card-head-v2 h3 { font-size: 18px !important; font-weight: 720 !important; letter-spacing: -.012em; }
+
+  /* Каталог: спокойные поля вместо крупных */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCatalog input[type="text"], html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCatalog input:not([type]) {
+    height: 40px !important; padding: 0 12px !important; font-size: 14px !important; font-weight: 560 !important; border-radius: 10px !important; box-sizing: border-box !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCatalog input::placeholder { font-weight: 500 !important; color: #98a2b3 !important; }
+
+  /* Шаблоны: сетка вместо горизонтальной прокрутки */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen #estimateTemplateList {
+    display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px !important; overflow: visible !important; scroll-snap-type: none !important;
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen #estimateTemplateList .estimate-template-card { width: auto !important; min-width: 0 !important; max-width: none !important; flex: none !important; }
+
+  /* Обновления и корзина: строки без лишней высоты */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen #mgCheckUpdateBtn { height: 44px !important; border-radius: 11px !important; font-size: 14px !important; font-weight: 650 !important; }
+
+  /* ---------- Архив ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveScreen::before {
+    content: "Архив"; display: block; margin: 0 0 18px;
+    font-size: 28px; line-height: 1.15; font-weight: 760; letter-spacing: -.02em; color: var(--mg-p-ink);
+  }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveScreen > * { max-width: none !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveScreen .settings-empty, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveScreen .empty {
+    width: 100% !important; box-sizing: border-box !important; padding: 44px 24px !important; border-radius: 16px !important; background: #fff !important;
+  }
+
+  /* ---------- Финансы (вкладка внутри статистики) ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpis { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 12px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpi { padding: 16px 20px !important; border: 1px solid #eef1f5 !important; border-radius: 14px !important; background: #f6f8fb !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpi span { font-size: 13px !important; font-weight: 560 !important; color: var(--mg-p-muted) !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpi b { font-size: 24px !important; line-height: 1.15 !important; font-weight: 760 !important; letter-spacing: -.02em !important; font-variant-numeric: tabular-nums; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpi.profit { background: var(--mg-p-ink) !important; border-color: var(--mg-p-ink) !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpi.profit span { color: #aeb8c5 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-kpi.profit b { color: #fff !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-summary-caption, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-filter-note { font-size: 13px !important; color: var(--mg-p-muted) !important; font-weight: 500 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance > section.card { border: 1px solid var(--mg-p-line) !important; border-radius: 16px !important; box-shadow: var(--mg-p-shadow) !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-filter-row { gap: 12px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-filter-select, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-search { border-radius: 11px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-estimate { border: 1px solid var(--mg-p-line) !important; border-radius: 14px !important; overflow: hidden; background: #fff !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #analyticsPanelFinance .finance-estimate + .finance-estimate { margin-top: 10px !important; }
+
+  /* общий фокус */
+  html body :is(#settingsScreen, #archiveScreen, #analyticsPanelFinance) :is(button, input, select, summary):focus-visible { outline: 2px solid var(--mg-p-ink); outline-offset: 2px; }
+}

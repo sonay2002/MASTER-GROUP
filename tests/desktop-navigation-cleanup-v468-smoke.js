@@ -3,7 +3,7 @@ const assert = require('assert');
 const html = fs.readFileSync('index.html', 'utf8');
 const sw = fs.readFileSync('sw.js', 'utf8');
 assert.match(html, /name="app-version" content="v468"/);
-assert.match(sw, /master-group-v468-navigation-cleanup/);
+assert.match(sw, /master-group-v476-desktop-variant-a/);
 // Keep all existing actions in the fixed top panel.
 assert.match(html, /class="mg-fixed-nav-btn mg-new-estimate-btn" data-action="new"/);
 assert.match(html, /class="mg-fixed-nav-btn mg-archive-nav-btn"/);

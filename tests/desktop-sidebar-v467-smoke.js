@@ -6,7 +6,7 @@ const sw = fs.readFileSync('sw.js', 'utf8');
 assert.match(html, /desktop-layout-v465\.css\?v=465/);
 assert.match(html, /desktop-layout-v467\.css\?v=467/);
 assert.match(html, /desktop-workspace-v465\.js\?v=468/);
-assert.match(sw, /master-group-v468-navigation-cleanup/);
+assert.match(sw, /master-group-v476-desktop-variant-a/);
 assert.match(sw, /\.\/css\/desktop-layout-v467\.css\?v=467/);
 assert.match(sw, /\.\/js\/desktop-workspace-v465\.js\?v=468/);
 assert.match(css, /@media screen and \(min-width:700px\) and \(min-height:600px\)/);

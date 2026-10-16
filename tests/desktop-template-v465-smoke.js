@@ -22,7 +22,7 @@ assert.match(css, /\.home-summary,html body #dashboard \.home-quick\{display:con
 assert.match(css, /\.mg-new-estimate-btn::after\{content:"Новая смета"/);
 assert.match(css, /@media screen and \(min-width:700px\) and \(max-width:899px\)/);
 assert.match(css, /@media screen and \(max-width:699px\).*mg-desktop-only-nav/s);
-assert.match(sw, /master-group-v468-navigation-cleanup/);
+assert.match(sw, /master-group-v476-desktop-variant-a/);
 assert.match(sw, /desktop-layout-v465\.css\?v=465/);
 // No placeholder navigation modules from the AI-only collage were added.
 for (const fake of ['Клиенты', 'Материалы', 'Календарь', 'Заметки', 'Справочник']) assert.ok(!html.includes(`<b>${fake}</b>`), `Unexpected invented page: ${fake}`);

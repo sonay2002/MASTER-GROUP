@@ -7,7 +7,7 @@ const manifest = fs.readFileSync('manifest.webmanifest', 'utf8');
 if (!html.includes('css/desktop-layout-v465.css?v=465') || !html.includes('css/desktop-layout-v467.css?v=467')) throw new Error('Desktop base or sidebar override stylesheet is not linked');
 if (!html.includes('<meta name="app-version" content="v468">')) throw new Error('App version was not bumped');
 if (!html.includes('id="mgDesktopEstimatesHeading"') || !html.includes('data-action="new"')) throw new Error('Desktop estimates heading/action is missing');
-if (!sw.includes("master-group-v468-navigation-cleanup") || !sw.includes('./css/desktop-layout-v465.css?v=465')) throw new Error('Service Worker does not cache the desktop layout update');
+if (!sw.includes("master-group-v476-desktop-variant-a") || !sw.includes('./css/desktop-layout-v465.css?v=465')) throw new Error('Service Worker does not cache the desktop layout update');
 if (!css.includes('@media screen and (min-width:1100px)')) throw new Error('Desktop styling is not behind a wide-screen breakpoint');
 if (!css.includes('width:calc(100% - 250px)!important')) throw new Error('Main workspace does not account for the persistent sidebar');
 if (!css.includes('#estimatesScreen:not(.mge-editing) .status-filter-card')) throw new Error('Desktop estimate filters are not scoped to list mode');

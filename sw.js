@@ -1,6 +1,6 @@
-/* Master Group v468 — GitHub Pages safe Service Worker */
+/* Master Group v476 — GitHub Pages safe Service Worker */
 // Supersedes master-group-v458-estimate-list-compact.
-const CACHE = 'master-group-v468-navigation-cleanup';
+const CACHE = 'master-group-v476-desktop-variant-a';
 const CORE = [
   "./index.html",
   "./manifest.webmanifest",
@@ -17,6 +17,10 @@ const CORE = [
   "./css/desktop-layout-v469.css?v=469",
   "./css/desktop-master-detail-v470.css?v=470",
   "./css/desktop-home-v471.css?v=471",
+  "./css/desktop-editor-v472.css?v=472",
+  "./css/desktop-pages-v473.css?v=473",
+  "./css/desktop-flow-v475.css?v=475",
+  "./css/desktop-wizard-v476.css?v=476",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
@@ -34,6 +38,7 @@ const CORE = [
   "./js/desktop-workspace-v465.js?v=468",
   "./js/desktop-master-detail-v470.js?v=470",
   "./js/desktop-home-v471.js?v=471",
+  "./js/desktop-wizard-v476.js?v=476",
   "./js/estimate-templates.js",
   "./js/app-core.js",
   "./js/ui-refresh-fix.js",

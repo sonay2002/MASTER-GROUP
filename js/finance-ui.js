@@ -1,6 +1,6 @@
 (()=>{
 const C=window.MGAppCore||{};
-const {state,catalog,$,esc,money,uid,contactData,setContact,toast,saved,persist,drafts,persistDrafts,allItems,total,normalizeDirections,allItemsFromEstimate,screen,renderCats,renderServiceDirections,renderServices,renderItems,renderReview,activeDir,showArchives,showStats,showSettings,showEstimates,renderEstimates,dashboard,load,editSaved,openSaved,deleteSaved,archiveCurrent,discardCurrent,askArchive,resumeDraft,removeDraft}=C;
+let {state,catalog,$,esc,money,uid,contactData,setContact,toast,saved,persist,drafts,persistDrafts,allItems,total,normalizeDirections,allItemsFromEstimate,screen,renderCats,renderServiceDirections,renderServices,renderItems,renderReview,step,activeDir,showArchives,showStats,showSettings,showEstimates,renderEstimates,dashboard,load,editSaved,openSaved,deleteSaved,archiveCurrent,discardCurrent,askArchive,resumeDraft,removeDraft,renderSettings}=C;
 const F=window.MGAppFinance=window.MGAppFinance||{};
 /* v58 integrated features */
 const V58_STATUS=['Черновик','Отправлена','В работе','Выполнена','Отменена'],V58_COMPANY='master_group_company_v1',V58_FILTER='master_group_status_filter_v1';
@@ -210,7 +210,7 @@ share=()=>shareTo('share');
 const originalStep=step;step=function(n){if(n===5){if(!allItems().length)return toast('Добавьте услугу');const c=contactData();if(!c.client&&!c.phone&&!c.address)return toast('Заполните контактную информацию')}originalStep(n);if(n===5){v58SetFinance(state.estimate||{});v58FinanceSummary()}};
 // keep company fields ready
 v58RenderCompany();
-Object.assign(F,{v58n,v58st,v58cl,v58Normalize,v59Normalize,v58Payments,v58TemplateForEstimate,v58SetStatus,v59SaveEstimateFinance,v58RenderEstimates,v59RenderOverview,v59RenderFinance,v59AddPayment,v59DeletePayment,v59EditExpenses,v59SetAnalyticsTab,v59SetSettingsTab,v59ShowStats,v59ShowSettings,v58SaveCompany,v58RenderCompany});
+Object.assign(F,{v58n,v58st,v58cl,v58Normalize,v59Normalize,v59Payments,v58TemplateForEstimate,v58SetStatus,v59SaveEstimateFinance,v58RenderEstimates,v59RenderOverview,v59RenderFinance,v59AddPayment,v59DeletePayment,v59EditExpenses,v59SetAnalyticsTab,v59SetSettingsTab,v59ShowStats,v59ShowSettings,v58SaveCompany,v58RenderCompany});
 F.share=()=>F.shareTo('share');
 F.shareTo=shareTo;
 F.step=step;
