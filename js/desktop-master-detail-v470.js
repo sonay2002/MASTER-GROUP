@@ -86,7 +86,7 @@
       screen.appendChild(pane);
       lastHtml = '';
     }
-    const cards = Array.from(list.querySelectorAll('[data-estimate-card]'));
+    const cards = Array.from(list.querySelectorAll(':scope > article[data-estimate-card]'));
     let html;
     if (!cards.length) { selected = null; html = detailHtml(null); }
     else {
@@ -114,7 +114,7 @@
 
   document.addEventListener('click', ev => {
     if (!mq.matches) return;
-    const card = ev.target.closest && ev.target.closest('#estimatesList [data-estimate-card]');
+    const card = ev.target.closest && ev.target.closest('#estimatesList > article[data-estimate-card]');
     if (!card || !card.closest('#estimatesScreen[data-mg-md]')) return;
     if (ev.target.closest('button, select, a, input, label')) return;
     selected = card.dataset.estimateCard;
@@ -132,7 +132,7 @@
 
   document.addEventListener('keydown', ev => {
     if (!mq.matches || (ev.key !== 'Enter' && ev.key !== ' ')) return;
-    const card = ev.target.closest && ev.target.closest('#estimatesList [data-estimate-card].mg-md-card');
+    const card = ev.target.closest && ev.target.closest('#estimatesList > article[data-estimate-card].mg-md-card');
     if (!card) return;
     ev.preventDefault();
     selected = card.dataset.estimateCard;

@@ -1,0 +1,7 @@
+/* Master Group v478 — скрытый экран должен оставаться скрытым.
+   Баг (был и в v468): пока открыта правка сметы, экран «Сметы» получает класс mge-editing, а правила
+   `#estimatesScreen.mge-editing{display:block|grid!important}` (desktop-layout-v465, estimates-editor-v454/v456)
+   показывали его даже с атрибутом hidden. Из-за этого при переходе из правки в Архив, на Главный экран или
+   в любой другой раздел страница правки оставалась на экране вместе с новой страницей.
+   Без media query: исправление нужно на любой ширине. */
+html body #estimatesScreen.mge-editing[hidden] { display: none !important; }

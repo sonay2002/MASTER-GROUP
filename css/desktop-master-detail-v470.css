@@ -35,6 +35,8 @@
     overflow: visible !important;
     border-radius: 0 !important;
   }
+  /* старая десктопная таблица не нужна: её заменяет список слева и панель справа */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #estimatesScreen[data-mg-md] #estimatesList .mge-estimates-desktop-table { display: none !important; }
   html body #estimatesScreen[data-mg-md] #estimatesList::before,
   html body #estimatesScreen[data-mg-md] #estimatesList::after { display: none !important; content: none !important; }
   html body #estimatesScreen[data-mg-md] #estimatesList .estimate-card.estimate-unified-card {

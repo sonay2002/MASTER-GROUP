@@ -69,4 +69,13 @@
 
   /* общий фокус */
   html body :is(#settingsScreen, #archiveScreen, #analyticsPanelFinance) :is(button, input, select, summary):focus-visible { outline: 2px solid var(--mg-p-ink); outline-offset: 2px; }
+  /* Форма «Новое направление»: фиксированные 280/520/132px не помещались на окнах уже ~1260px */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-add-form-v2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) auto !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-add-form-v2 > * { min-width: 0 !important; }
+}
+
+/* Планшет 700–1099px: та же форма «Новое направление» не помещалась (фиксированные 280/520/132px) */
+@media screen and (min-width:700px) and (max-width:1099px) {
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-add-form-v2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsScreen .settings-add-form-v2 > * { min-width: 0 !important; }
 }
