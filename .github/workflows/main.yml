@@ -2,7 +2,7 @@ name: Validate and Deploy Master Group
 
 on:
   push:
-    branches: [main]
+    branches: [debian-sync]
   workflow_dispatch:
 
 permissions:
