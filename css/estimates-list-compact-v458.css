@@ -1,0 +1,8 @@
+/* Master Group v458 — simplify the estimate overview without changing estimate data. */
+/* Direction names remain stored in the estimate and visible in the estimate editor/document. */
+#estimatesList .mge-card-directions{display:none!important}
+/* Keep desktop overview consistent with the compact card view. */
+#estimatesList .mge-estimates-desktop-table th:nth-child(4),
+#estimatesList .mge-estimates-desktop-table td:nth-child(4){display:none!important}
+/* The gap after client/date remains intentional so status pills do not feel cramped. */
+#estimatesList .mge-card-client-date + .estimate-meta-row{margin-top:9px!important}

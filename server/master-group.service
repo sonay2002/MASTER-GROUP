@@ -1,0 +1,23 @@
+[Unit]
+Description=Master Group application and local database
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=master
+Group=master
+WorkingDirectory=/home/master/MASTER-GROUP-main
+Environment=MASTER_GROUP_BIND=127.0.0.1
+Environment=MASTER_GROUP_PORT=8080
+Environment=MASTER_GROUP_DB=/var/lib/master-group/data.sqlite3
+ExecStart=/usr/bin/python3 /home/master/MASTER-GROUP-main/server/app.py
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/master-group
+
+[Install]
+WantedBy=multi-user.target

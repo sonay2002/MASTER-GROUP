@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Master Group · Монитор Acer</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#11151a;color:#edf2f7;font:16px system-ui,-apple-system,sans-serif;padding:clamp(22px,4vw,64px)}header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:32px}.eyebrow{color:#8f9baa;font-size:13px;letter-spacing:.16em;text-transform:uppercase}h1{font-size:clamp(28px,4vw,48px);margin:8px 0 0}.connection{display:flex;align-items:center;gap:10px;color:#8fe0b0;font-weight:650}.lamp{width:11px;height:11px;border-radius:50%;background:#4dd68a;box-shadow:0 0 18px #4dd68a}.offline{color:#ff8c8c}.offline .lamp{background:#ff6565;box-shadow:0 0 18px #ff6565}.grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:16px}.card,.events{background:#1a2027;border:1px solid #2b333d;border-radius:18px;padding:22px}.label{color:#9ba7b5;font-size:14px}.value{font-size:clamp(32px,4.5vw,58px);font-weight:750;letter-spacing:-.04em;margin-top:10px}.sub{color:#9ba7b5;font-size:13px;margin-top:4px}.section{margin-top:28px}.section h2{font-size:18px;margin:0 0 14px}.events{padding:0;overflow:hidden}.event{display:grid;grid-template-columns:100px minmax(0,1fr) auto;gap:16px;align-items:center;padding:15px 20px;border-top:1px solid #2b333d}.event:first-child{border-top:0}.kind{font-size:12px;font-weight:750;text-transform:uppercase;letter-spacing:.06em;color:#9ec9ff}.kind.deleted,.kind.purged{color:#ff9d9d}.kind.saved,.kind.import{color:#8fe0b0}.message{font-weight:600}.time{color:#8f9baa;font-size:13px;white-space:nowrap}.footer{color:#788493;font-size:13px;margin-top:24px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(130px,1fr))}}@media(max-width:520px){header{align-items:flex-start;flex-direction:column}.event{grid-template-columns:75px minmax(0,1fr);gap:8px}.time{grid-column:2}}
+  </style>
+</head>
+<body>
+  <header>
+    <div><div class="eyebrow">Master Group · Acer · Локальная база</div><h1>Состояние сохранений</h1></div>
+    <div class="connection" id="connection"><span class="lamp"></span><span id="connectionText">Подключаюсь к базе…</span></div>
+  </header>
+  <main>
+    <section class="grid" aria-label="Счётчики базы">
+      <article class="card"><div class="label">Смет сейчас</div><div class="value" id="estimates">—</div><div class="sub">активные записи в SQLite</div></article>
+      <article class="card"><div class="label">Сохранено всего</div><div class="value" id="savedTotal">—</div><div class="sub">включая перенос прежних данных</div></article>
+      <article class="card"><div class="label">Удалено</div><div class="value" id="deletedTotal">—</div><div class="sub">удаления за время работы сервера</div></article>
+      <article class="card"><div class="label">В корзине</div><div class="value" id="trash">—</div><div class="sub">можно восстановить из приложения</div></article>
+      <article class="card"><div class="label">Направлений каталога</div><div class="value" id="catalogDirections">—</div></article>
+      <article class="card"><div class="label">Уведомлений</div><div class="value" id="notifications">—</div></article>
+      <article class="card"><div class="label">Профиль компании</div><div class="value" id="companySaved">—</div></article>
+      <article class="card"><div class="label">Последняя запись</div><div class="value" id="updatedAt" style="font-size:clamp(22px,3vw,38px)">—</div></article>
+    </section>
+    <section class="section"><h2>Последние события</h2><div class="events" id="events"><div class="event"><span class="message">Ожидаю первое событие</span></div></div></section>
+    <div class="footer">Обновление счётчиков каждые 2 секунды · Экран доступен только на самом Acer</div>
+  </main>
+  <script>
+    const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const labels={saved:'СМЕТА',updated:'ИЗМЕНЕНИЕ',deleted:'УДАЛЕНА',purged:'ОЧИЩЕНА',restored:'ВОССТАНОВЛЕНА',import:'ПЕРЕНОС',catalog:'КАТАЛОГ',company:'ПРОФИЛЬ'};
+    const number=value=>new Intl.NumberFormat('ru-RU').format(Number(value)||0);
+    async function update(){
+      try{
+        const response=await fetch('/api/monitor/stats',{cache:'no-store'});
+        if(!response.ok)throw new Error('monitor unavailable');
+        const stats=await response.json();
+        ['estimates','savedTotal','deletedTotal','trash','catalogDirections','notifications'].forEach(key=>document.getElementById(key).textContent=number(stats[key]));
+        document.getElementById('companySaved').textContent=stats.companySaved?'Да':'Нет';
+        document.getElementById('updatedAt').textContent=stats.updatedAt?new Date(stats.updatedAt).toLocaleTimeString('ru-RU'):'Пока нет';
+        document.getElementById('events').innerHTML=stats.recent.length?stats.recent.map(event=>'<div class="event"><span class="kind '+esc(event.kind)+'">'+esc(labels[event.kind]||event.kind)+'</span><span class="message">'+esc(event.message)+'</span><time class="time">'+esc(new Date(event.occurredAt).toLocaleString('ru-RU'))+'</time></div>').join(''):'<div class="event"><span class="message">Пока нет сохранений</span></div>';
+        document.getElementById('connection').classList.remove('offline');
+        document.getElementById('connectionText').textContent='Сервер работает';
+      }catch(error){
+        document.getElementById('connection').classList.add('offline');
+        document.getElementById('connectionText').textContent='Нет связи с базой Acer';
+      }
+    }
+    update();setInterval(update,2000);
+  </script>
+</body>
+</html>

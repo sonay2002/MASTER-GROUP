@@ -1,0 +1,72 @@
+/* Master Group v475 — шаги «Клиент» и «Проверка», экран документа, уведомления (вариант A).
+   Только стили, только от 1100px. Шаги мастера скрываются атрибутом hidden — display задаём аккуратно. */
+@media screen and (min-width:1100px) and (min-height:600px) {
+  /* ---------- Шаг «Клиент» ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step4 .contact-card-v2 { max-width: 860px; margin-left: auto !important; margin-right: auto !important; border: 1px solid #e4e8ee !important; border-radius: 16px !important; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1) !important; }
+  html body #step4 .contact-heading-v2 h1.title { font-size: 22px !important; font-weight: 740 !important; letter-spacing: -.015em; }
+  html body #step4 .contact-field-v2 label { font-size: 12.5px !important; font-weight: 600 !important; color: #667085 !important; }
+  html body #step4 .contact-field-v2 input { height: 44px !important; border-radius: 11px !important; font-size: 14px !important; font-weight: 500 !important; }
+  html body #step4 .nav-actions { gap: 12px !important; }
+  html body #step4 .nav-actions .btn { height: 46px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 650 !important; }
+
+  /* ---------- Шаг «Проверка» ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step5 .card, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step5.card { max-width: 860px; margin-left: auto !important; margin-right: auto !important; border: 1px solid #e4e8ee !important; border-radius: 16px !important; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1) !important; }
+  html body #step5 h1.title { font-size: 24px !important; font-weight: 760 !important; letter-spacing: -.02em !important; margin-bottom: 14px !important; }
+  html body #step5 #review.review { width: 100% !important; max-width: none !important; margin: 0 0 16px !important; border: 1px solid #e4e8ee !important; border-radius: 14px !important; overflow: hidden; background: #fff !important; padding: 0 !important; }
+  html body #step5 #review .review-row { padding: 12px 18px !important; font-size: 14px !important; font-variant-numeric: tabular-nums; }
+  html body #step5 #review .review-row > span { color: #667085 !important; font-weight: 560 !important; }
+  html body #step5 #review .review-row > b { font-weight: 650 !important; text-align: right; }
+  html body #step5 #review .review-row:last-child { background: #14181f !important; padding: 16px 18px !important; }
+  html body #step5 #review .review-row:last-child > span { color: #aeb8c5 !important; }
+  html body #step5 #review .review-row:last-child > b { color: #fff !important; font-size: 20px !important; font-weight: 760 !important; letter-spacing: -.01em; }
+  html body #step5 .nav-actions { gap: 12px !important; }
+  html body #step5 .nav-actions .btn { height: 46px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 650 !important; }
+
+  /* ---------- Документ: бумага слева, действия справа ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #documentScreen:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    column-gap: 20px;
+    align-items: start;
+  }
+  html body #documentScreen > section#document.card { grid-column: 1; grid-row: 1; max-width: none !important; margin: 0 !important; border: 1px solid #e4e8ee !important; border-radius: 16px !important; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1) !important; }
+  html body #documentScreen > section.actions {
+    grid-column: 2; grid-row: 1; margin: 0 !important; padding: 0 !important;
+    display: flex !important; flex-direction: column !important; gap: 10px !important;
+    height: auto !important; min-height: 0 !important; max-height: none !important;
+    position: sticky; top: 84px;
+  }
+  html body #documentScreen > section.actions .btn { width: 100% !important; height: 46px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 650 !important; }
+
+  /* ---------- Уведомления ---------- */
+  html body #notificationsScreen .btn, html body #notificationsScreen button.secondary { height: 42px !important; border-radius: 11px !important; font-size: 13.5px !important; font-weight: 650 !important; }
+  html body #notificationsScreen .settings-empty, html body #notificationsScreen .empty { padding: 40px 24px !important; border-radius: 16px !important; background: #fff !important; }
+  /* ---------- Правка существующей сметы ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel #mgEstimateEditTitle { font-size: 22px !important; font-weight: 740 !important; letter-spacing: -.015em !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-panel-card { border: 1px solid #e4e8ee !important; border-radius: 16px !important; background: #fff !important; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 8px 20px -12px rgba(16,24,40,.1) !important; padding: 20px 22px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-field > span { font-size: 12.5px !important; font-weight: 600 !important; color: #667085 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-field input, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-field textarea { border-radius: 11px !important; font-size: 14px !important; font-weight: 500 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-field input { height: 44px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance { background: #14181f !important; border-color: #14181f !important; color: #fff !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance .mge-side-heading h3 { color: #fff !important; font-size: 15px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance .mge-finance-lines > div { background: transparent !important; border-radius: 0 !important; border-top: 1px solid rgba(255,255,255,.12) !important; padding: 9px 2px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance .mge-finance-lines > div:first-child { border-top: 0 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance .mge-finance-lines span { color: #aeb8c5 !important; font-size: 13px !important; font-weight: 560 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance .mge-finance-lines b, html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-overview-finance .mge-finance-lines strong { color: #fff !important; font-size: 14px !important; font-weight: 700 !important; font-variant-numeric: tabular-nums; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-side-action { height: 38px !important; border-radius: 10px !important; font-size: 13px !important; font-weight: 650 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #mgEstimateEditPanel .mge-edit-directions-button { height: 46px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 650 !important; }
+
+  /* ---------- Корзина: карточка удалённой сметы ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #deletedEstimatesList .trash-estimate-card { border: 1px solid #e4e8ee !important; border-radius: 14px !important; box-shadow: none !important; background: #fff !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #deletedEstimatesList .trash-estimate-card .estimate-actions { display: flex !important; justify-content: flex-end !important; gap: 10px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #deletedEstimatesList .trash-estimate-card .estimate-actions .btn { flex: 0 0 auto !important; width: auto !important; min-width: 150px; height: 42px !important; border-radius: 11px !important; font-size: 13.5px !important; font-weight: 650 !important; }
+  /* ---------- Архив: карточка-строка во всю ширину ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-card { display: flex !important; align-items: center !important; gap: 20px !important; width: 100% !important; box-sizing: border-box !important; padding: 16px 20px !important; border: 1px solid #e4e8ee !important; border-radius: 14px !important; background: #fff !important; box-shadow: none !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-card > div:first-child { flex: 1 1 auto !important; min-width: 0; display: flex !important; flex-direction: column !important; gap: 3px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-card b { font-size: 15px !important; font-weight: 680 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-card > div:first-child > div { font-size: 13.5px !important; font-weight: 560 !important; color: #3a424e !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-card small { font-size: 12.5px !important; color: #667085 !important; font-weight: 500 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-actions { flex: 0 0 auto !important; display: flex !important; gap: 10px !important; width: auto !important; height: auto !important; min-height: 0 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #archiveList .archive-actions button { width: auto !important; min-width: 130px; height: 42px !important; border-radius: 11px !important; font-size: 13.5px !important; font-weight: 650 !important; }
+}

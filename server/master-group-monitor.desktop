@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Master Group Server Monitor
+Exec=/usr/local/bin/master-group-monitor
+X-GNOME-Autostart-enabled=true
