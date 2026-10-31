@@ -7,13 +7,13 @@ const finance = fs.readFileSync('js/finance-ui.js', 'utf8');
 const editor = fs.readFileSync('js/estimates-redesign-v454.js', 'utf8');
 for (const token of [
   'css/estimates-status-palette-v460.css?v=460',
-  'js/finance-ui.js?v=460',
+  'js/finance-ui.js?v=481',
   'js/estimates-redesign-v454.js?v=460',
-  '<meta name="app-version" content="v468">'
+  '<meta name="app-version" content="v488">'
 ]) if (!html.includes(token)) throw new Error(`Missing v460 app asset/version: ${token}`);
-if (!sw.includes("master-group-v478-desktop-variant-a") ||
+if (!sw.includes("master-group-v488-acer-storage") ||
     !sw.includes('./css/estimates-status-palette-v460.css?v=460') ||
-    !sw.includes('./js/finance-ui.js?v=460') ||
+    !sw.includes('./js/finance-ui.js?v=481') ||
     !sw.includes('./js/estimates-redesign-v454.js?v=460')) {
   throw new Error('Service Worker does not cache all v460 app assets');
 }
