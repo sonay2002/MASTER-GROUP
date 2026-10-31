@@ -452,6 +452,8 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError) as error:
             self.json_response(400, {"error": str(error)})
         except Exception:
+            import traceback
+            traceback.print_exc()
             self.json_response(500, {"error": "Server error"})
 
     def do_GET(self):
