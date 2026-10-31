@@ -15,3 +15,24 @@ firebase-debug.log
 *.zip
 *.tar.gz
 backups/
+
+# Local data and temporary files
+/esit
+*.sqlite
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
+*.log
+*.zip
+*.tar.gz
+backups/
+
+# Private credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+service-account*.json
