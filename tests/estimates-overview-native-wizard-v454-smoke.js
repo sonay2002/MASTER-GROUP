@@ -10,7 +10,7 @@ const css = read('css/estimates-editor-v454.css');
 const sw = read('sw.js');
 const finance = read('js/finance-ui.js');
 const core = read('js/estimate-core.js');
-const baselineSha256 = '441bcd8302a39f60f498f1a5cdfc7135fa6ed1057f4593b589ac4bac72d0d10c';
+const baselineSha256 = '1e43f7f013bc7f44959cd165e34e940bbce77ded31ef6a01b6e4e6420049f847';
 if (!html.includes('css/estimates-editor-v456.css?v=456') || !html.includes('js/estimates-redesign-v454.js?v=460')) throw new Error('Index does not load the expected estimate editor assets');
 if (!sw.includes('master-group-v488-acer-storage') || !sw.includes('./css/estimates-editor-v456.css?v=456') || !sw.includes('./js/estimates-redesign-v454.js?v=460')) throw new Error('Service Worker cache does not include the expected estimate editor assets');
 if (!html.includes('js/estimate-core.js?v=447') || !html.includes('js/firebase-sync.js?v=479')) throw new Error('Accepted core/catalog baselines changed unexpectedly');
