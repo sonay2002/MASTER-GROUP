@@ -1,0 +1,10 @@
+Master Group v562 icon audit notes
+
+The 24 direction categories continue to use the approved 60×60 image-only buttons and the source imagery already bundled with v561. All PNG assets were checked for existence, 256×256 dimensions, and RGBA encoding.
+
+Category-to-artwork behavior:
+- All category icon keys use their correspondingly named approved PNG, except “Сварочные работы”, which reuses metal.png. The previous welding.png crop shows “Бетонные работы” and is not shown for the welding category.
+- “Вентиляция” and “Кондиционирование” intentionally use the same combined HVAC artwork from the supplied reference grid; ventilation.png and aircon.png are byte-identical copies.
+- The v561 corrected clean.png, landscape.png, flooring.png and roof.png assets remain unchanged.
+
+No other image bytes were modified in v562.

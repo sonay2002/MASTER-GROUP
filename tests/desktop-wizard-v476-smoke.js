@@ -1,0 +1,14 @@
+const fs = require('fs');
+const assert = require('assert');
+const html = fs.readFileSync('index.html', 'utf8');
+const sw = fs.readFileSync('sw.js', 'utf8');
+const css = fs.readFileSync('css/desktop-wizard-v476.css', 'utf8');
+const js = fs.readFileSync('js/desktop-wizard-v476.js', 'utf8');
+assert.ok(html.includes('css/desktop-wizard-v476.css?v=476') && html.includes('js/desktop-wizard-v476.js?v=476'), 'index.html must load the v476 files');
+assert.ok(sw.includes('./css/desktop-wizard-v476.css?v=476') && sw.includes('./js/desktop-wizard-v476.js?v=476'), 'Service Worker must precache the v476 files');
+assert.ok(/min-width:1100px/.test(css) && !/@media[^{]*max-width/.test(css), 'wizard css must be desktop-only');
+assert.ok(/#step4:not\(\[hidden\]\)/.test(css), 'step4 grid must be limited to :not([hidden])');
+assert.ok(js.includes("matchMedia('(min-width:1100px)"), 'wizard js must be gated by the desktop media query');
+assert.ok(!/localStorage|MGStorage|persist\(/.test(js), 'the side summary must never read or write storage');
+assert.ok(js.includes("getElementById('total')"), 'summary must read the existing #total element');
+console.log('v476 desktop wizard smoke test passed');

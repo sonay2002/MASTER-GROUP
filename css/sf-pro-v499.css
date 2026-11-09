@@ -1,0 +1,4 @@
+/* Master Group v499 — global Apple system typography */
+:root{--font-main:-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;}
+html,body,body *{font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif!important;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+input,textarea,select,button{font-family:-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif!important;}

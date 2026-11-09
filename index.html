@@ -1,0 +1,1445 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v566"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v566"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v566</title>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="js/zoom-lock.js"></script>
+
+
+
+<link rel="stylesheet" href="css/styles.css?v=498">
+<link rel="stylesheet" href="css/contact-card-final.css?v=440">
+
+<style id="mg-home-render-gate-v446">
+/* Keep the dashboard entirely out of view until the current renderer has filled its content.
+   This prevents an initial flash of the legacy layout before finance-ui.js finishes loading. */
+#dashboard.mg-home-render-pending{visibility:hidden!important}
+</style>
+
+<style id="mg-analytics-tabs-v307">
+/* v307 — Finance / Overview tabs: visible below the fixed header, compact and monochrome. */
+#statsScreen{padding-top:60px!important;box-sizing:border-box!important;}
+#statsScreen .analytics-tabs-v3{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:9px!important;
+  width:calc(100% - 44px)!important;
+  margin:0 22px 14px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-sizing:border-box!important;
+  position:relative!important;
+  z-index:2!important;
+}
+#statsScreen .analytics-tab-v3{
+  min-width:0!important;
+  min-height:62px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:9px!important;
+  padding:9px 12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #d8dce1!important;
+  border-radius:18px!important;
+  background:#fff!important;
+  color:#171b23!important;
+  box-shadow:0 1px 3px rgba(17,24,39,.045)!important;
+  text-align:center!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease!important;
+  -webkit-tap-highlight-color:transparent!important;
+}
+#statsScreen .analytics-tab-v3:active{transform:scale(.985)!important;}
+#statsScreen .analytics-tab-v3.active{
+  background:#151515!important;
+  border-color:#151515!important;
+  color:#fff!important;
+  box-shadow:0 4px 12px rgba(0,0,0,.09)!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:30px!important;height:30px!important;min-width:30px!important;
+  display:grid!important;place-items:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#151515!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon{color:#fff!important;background:transparent!important;border:0!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  display:block!important;width:20px!important;height:20px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy{display:block!important;min-width:0!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  display:block!important;font-size:15px!important;line-height:1.05!important;
+  font-weight:800!important;color:#171b23!important;white-space:nowrap!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-copy b{color:#fff!important;}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg,
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg *{stroke:#fff!important;color:#fff!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy small{display:none!important;}
+@media(max-width:430px){
+  #statsScreen{padding-top:60px!important;}
+  #statsScreen .analytics-tabs-v3{gap:8px!important;width:calc(100% - 44px)!important;margin:0 22px 13px!important;}
+  #statsScreen .analytics-tab-v3{min-height:60px!important;border-radius:17px!important;padding:8px 10px!important;gap:8px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{width:28px!important;height:28px!important;min-width:28px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{width:19px!important;height:19px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{font-size:15px!important;}
+}
+</style>
+
+<style id="mg-analytics-tabs-v310">
+/* v310 — clean two-button Overview / Finance switcher. Removes the old clipped tab styling. */
+#statsScreen{padding-top:16px!important;box-sizing:border-box!important;}
+#statsScreen .analytics-tabs-v3{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+  width:calc(100% - 44px)!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:0 22px 16px!important;
+  padding:6px!important;
+  box-sizing:border-box!important;
+  background:#f1f3f5!important;
+  border:1px solid #e0e3e7!important;
+  border-radius:24px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;
+  position:relative!important;
+  overflow:visible!important;
+  z-index:3!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:100%!important;
+  min-width:0!important;
+  height:64px!important;
+  min-height:64px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  margin:0!important;
+  padding:0 12px!important;
+  box-sizing:border-box!important;
+  border:1px solid #dfe3e7!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  color:#171a1f!important;
+  box-shadow:0 1px 2px rgba(17,24,39,.035)!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+#statsScreen .analytics-tab-v3.active{
+  background:#151515!important;
+  border-color:#151515!important;
+  color:#fff!important;
+  box-shadow:0 5px 14px rgba(0,0,0,.10)!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:28px!important;height:28px!important;min-width:28px!important;
+  display:grid!important;place-items:center!important;
+  margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;
+  color:#151515!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon{color:#fff!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  display:block!important;width:23px!important;height:23px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.9!important;
+  stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy{display:block!important;min-width:0!important;margin:0!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  display:block!important;margin:0!important;
+  font-size:16px!important;line-height:1!important;
+  font-weight:800!important;color:#171a1f!important;
+  white-space:nowrap!important;
+}
+#statsScreen .analytics-tab-v3.active .analytics-tab-copy b{color:#fff!important;}
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg,
+#statsScreen .analytics-tab-v3.active .analytics-tab-icon svg *{stroke:#fff!important;color:#fff!important;}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy small{display:none!important;}
+@media(max-width:430px){
+  #statsScreen{padding-top:14px!important;}
+  #statsScreen .analytics-tabs-v3{width:calc(100% - 32px)!important;margin:0 16px 14px!important;gap:8px!important;padding:5px!important;border-radius:22px!important;}
+  #statsScreen .analytics-tab-v3{height:60px!important;min-height:60px!important;border-radius:18px!important;gap:8px!important;padding:0 8px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{width:25px!important;height:25px!important;min-width:25px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{width:21px!important;height:21px!important;}
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{font-size:15px!important;}
+}
+</style>
+
+<style id="mg-analytics-tabs-v312">
+/* v312 — compact Overview / Finance tabs on mobile.
+   Reduce the switcher to roughly half its previous height and remove
+   the safe-area/padding gap above Analytics. */
+#statsScreen{
+  padding-top:0!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tabs-v3{
+  width:calc(100% - 32px)!important;
+  margin:0 16px 8px!important;
+  padding:3px!important;
+  gap:4px!important;
+  border-radius:14px!important;
+}
+#statsScreen .analytics-tab-v3{
+  height:32px!important;
+  min-height:32px!important;
+  padding:0 7px!important;
+  gap:5px!important;
+  border-radius:10px!important;
+  font-size:13px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:16px!important;
+  height:16px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:13px!important;
+  line-height:1!important;
+}
+@media(max-width:430px){
+  #statsScreen{
+    padding-top:0!important;
+  }
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 32px)!important;
+    margin:0 16px 8px!important;
+    padding:3px!important;
+    gap:4px!important;
+    border-radius:14px!important;
+  }
+  #statsScreen .analytics-tab-v3{
+    height:32px!important;
+    min-height:32px!important;
+    padding:0 7px!important;
+    gap:5px!important;
+    border-radius:10px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{
+    width:18px!important;
+    height:18px!important;
+    min-width:18px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+    width:16px!important;
+    height:16px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+    font-size:13px!important;
+  }
+}
+<style id="mg-analytics-tabs-v313">
+/* v313 — enlarge Overview / Finance buttons 2x and halve the top gap. */
+#statsScreen .analytics-tabs-v3{
+  margin-top:-28px!important;
+}
+#statsScreen .analytics-tab-v3{
+  height:64px!important;
+  min-height:64px!important;
+  padding:0 12px!important;
+  gap:10px!important;
+  border-radius:18px!important;
+  font-size:16px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:28px!important;
+  height:28px!important;
+  min-width:28px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:23px!important;
+  height:23px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:16px!important;
+}
+@media(max-width:430px){
+  #statsScreen .analytics-tabs-v3{
+    margin-top:-28px!important;
+  }
+  #statsScreen .analytics-tab-v3{
+    height:64px!important;
+    min-height:64px!important;
+    padding:0 10px!important;
+    gap:8px!important;
+    border-radius:18px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon{
+    width:28px!important;
+    height:28px!important;
+    min-width:28px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+    width:23px!important;
+    height:23px!important;
+  }
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+    font-size:16px!important;
+  }
+}
+</style>
+</style>
+<style id="mg-analytics-tabs-v314">
+/* v314 — Analytics: exact 178px button width, 58px height, slightly tighter top spacing. */
+#statsScreen .analytics-tabs-v3{
+  width:366px!important;
+  max-width:calc(100% - 24px)!important;
+  grid-template-columns:178px 178px!important;
+  margin:0 auto 8px!important;
+  gap:4px!important;
+  padding:3px!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:178px!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+  padding:0 10px!important;
+  gap:8px!important;
+  border-radius:16px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:26px!important;
+  height:26px!important;
+  min-width:26px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:21px!important;
+  height:21px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:15px!important;
+}
+@media(max-width:390px){
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 24px)!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #statsScreen .analytics-tab-v3{
+    width:100%!important;
+  }
+}
+</style>
+
+<link rel="stylesheet" href="css/soft-ui.css?v=443">
+<link rel="stylesheet" href="css/estimates-editor-v456.css?v=456">
+<link rel="stylesheet" href="css/estimates-list-compact-v458.css?v=458">
+<link rel="stylesheet" href="css/estimates-status-palette-v460.css?v=460">
+
+<link rel="stylesheet" href="css/desktop-layout-v465.css?v=465">
+<link rel="stylesheet" href="css/desktop-layout-v467.css?v=467">
+<link rel="stylesheet" href="css/desktop-layout-v469.css?v=469">
+<link rel="stylesheet" href="css/desktop-master-detail-v470.css?v=470">
+<link rel="stylesheet" href="css/desktop-home-v471.css?v=471">
+<link rel="stylesheet" href="css/desktop-editor-v472.css?v=472">
+<link rel="stylesheet" href="css/desktop-pages-v473.css?v=473">
+<link rel="stylesheet" href="css/desktop-flow-v475.css?v=475">
+<link rel="stylesheet" href="css/desktop-wizard-v476.css?v=476">
+<link rel="stylesheet" href="css/desktop-catalog-v477.css?v=477">
+<link rel="stylesheet" href="css/fix-hidden-screens-v478.css?v=478">
+<link rel="stylesheet" href="css/desktop-workspace-nav-v483.css?v=488">
+  <link rel="stylesheet" href="css/sf-pro-v499.css?v=499">
+  <link rel="stylesheet" href="css/admin-monitor-v503.css?v=509">
+  <link rel="stylesheet" href="css/team-workflow-v512.css?v=512">
+  <link rel="stylesheet" href="css/team-estimate-editor-v517.css?v=517">
+  <link rel="stylesheet" href="css/wizard-v518.css?v=562">
+
+<style id="mg-startup-splash-v566">
+#mgStartupSplash{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#fff 0%,#f7f7f6 58%,#eeeeec 100%);opacity:1;visibility:visible;transition:opacity .72s cubic-bezier(.22,.7,.2,1),visibility .72s;isolation:isolate}
+#mgStartupSplash.mg-splash-leaving{opacity:0;visibility:hidden;pointer-events:none}
+#mgStartupSplash .mg-splash-inner{width:min(82vw,360px);display:flex;flex-direction:column;align-items:center;position:relative;transform:translateY(8px);animation:mgSplashRise .9s cubic-bezier(.2,.75,.25,1) both}
+#mgStartupSplash .mg-splash-mark{width:116px;height:116px;position:relative;display:grid;place-items:center;margin-bottom:27px}
+#mgStartupSplash .mg-splash-orbit{position:absolute;inset:0;border:1.5px solid transparent;border-top-color:#777;border-right-color:#c5c5c5;border-radius:50%;transform:rotate(-35deg);animation:mgSplashOrbit 2.2s cubic-bezier(.55,.05,.35,.95) infinite}
+#mgStartupSplash .mg-splash-orbit:after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:#252525;top:10px;left:17px;box-shadow:0 0 12px #777}
+#mgStartupSplash .mg-splash-core{width:78px;height:78px;border-radius:25px;background:linear-gradient(145deg,#292929,#090909);display:grid;place-items:center;box-shadow:0 14px 34px #0002, inset 0 1px 0 #ffffff35;animation:mgSplashCore 2.2s ease-in-out infinite}
+#mgStartupSplash .mg-splash-core svg{width:53px;height:53px;overflow:visible}
+#mgStartupSplash .mg-splash-core path{fill:none;stroke:#fff;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:mgSplashDraw 1.25s .2s cubic-bezier(.5,0,.2,1) forwards}
+#mgStartupSplash .mg-splash-title{font:800 25px/1.1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.105em;color:#171717;text-align:center;opacity:0;transform:translateY(12px);animation:mgSplashText .7s .55s ease forwards}
+#mgStartupSplash .mg-splash-subtitle{margin-top:10px;font:500 10px/1.4 -apple-system,BlinkMacSystemFont,Arial,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#858585;opacity:0;animation:mgSplashFade .65s .9s ease forwards}
+#mgStartupSplash .mg-splash-progress{width:116px;height:2px;margin-top:34px;border-radius:10px;background:#dededc;overflow:hidden;opacity:0;animation:mgSplashFade .4s 1s ease forwards}
+#mgStartupSplash .mg-splash-progress:after{content:"";display:block;width:38%;height:100%;border-radius:10px;background:linear-gradient(90deg,#777,#171717,#777);animation:mgSplashProgress 1.35s ease-in-out infinite}
+#mgStartupSplash .mg-splash-loading{margin-top:12px;font:500 11px/1.4 -apple-system,BlinkMacSystemFont,Arial,sans-serif;color:#9a9a98;letter-spacing:.035em;opacity:0;animation:mgSplashFade .4s 1.1s ease forwards}
+@keyframes mgSplashRise{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes mgSplashOrbit{0%{transform:rotate(-35deg)}100%{transform:rotate(325deg)}}
+@keyframes mgSplashCore{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes mgSplashDraw{to{stroke-dashoffset:0}}
+@keyframes mgSplashText{to{opacity:1;transform:translateY(0)}}
+@keyframes mgSplashFade{to{opacity:1}}
+@keyframes mgSplashProgress{0%{transform:translateX(-120%)}100%{transform:translateX(360%)}}
+@media(prefers-reduced-motion:reduce){#mgStartupSplash *,#mgStartupSplash *:before{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+<script id="mg-startup-splash-controller-v566">
+(function(){
+  var started=Date.now(),minTime=1900,finished=false;
+  function finish(){
+    if(finished)return;finished=true;
+    var wait=Math.max(0,minTime-(Date.now()-started));
+    setTimeout(function(){
+      var el=document.getElementById('mgStartupSplash');
+      if(!el)return;
+      el.classList.add('mg-splash-leaving');
+      setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},800);
+    },wait);
+  }
+  window.MGSplash={finish:finish};
+  window.addEventListener('load',function(){setTimeout(finish,450)}, {once:true});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(finish,1800)}, {once:true});
+  setTimeout(finish,12000);
+})();
+</script>
+
+</head><body><div id="mgStartupSplash" role="status" aria-label="Загрузка Master Group">
+  <div class="mg-splash-inner">
+    <div class="mg-splash-mark" aria-hidden="true">
+      <div class="mg-splash-orbit"></div>
+      <div class="mg-splash-core">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M8 48V16l15 19 9-12 9 12 15-19v32"/>
+          <path d="M23 35l9 11 9-11"/>
+        </svg>
+      </div>
+    </div>
+    <div class="mg-splash-title">MASTER GROUP</div>
+    <div class="mg-splash-subtitle">Construction · Service · Quality</div>
+    <div class="mg-splash-progress"></div>
+    <div class="mg-splash-loading">Подготавливаем приложение</div>
+  </div>
+</div><!-- v296 slim fixed edge-to-edge top navigation -->
+<div id="mgFixedTopNav" class="mg-fixed-top-nav" aria-label="Верхняя навигация">
+  <button type="button" class="mg-fixed-nav-btn" data-menu="open" aria-label="Открыть меню" title="Меню"><span class="mg-menu-icon" aria-hidden="true">☰</span></button>
+  <nav class="mg-workspace-nav" aria-label="Разделы рабочего пространства">
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8M5.5 9.5v11h13v-11M9.5 20.5v-7h5v7"/></svg><span>Главный экран</span></button>
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11M10 19V6M16 19v-8M22 19V4M3 20h20"/></svg><span>Финансы</span></button>
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="estimates"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3 3V20H6zM14 3.5v4h4M9 12h6M9 15.5h6"/></svg><span>Все сметы</span></button>
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1m7.8 7.8L18 18m0-12-2.1 2.1m-7.8 7.8L6 18"/></svg><span>Настройки</span></button>
+  </nav>
+  <div class="mg-fixed-nav-actions" aria-label="Быстрые действия">
+    <button type="button" class="mg-fixed-nav-btn mg-new-estimate-btn" data-action="new" aria-label="Новая смета" title="Новая смета">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h8.2L19 7.8v12.7H6.5z"/><path d="M14.5 3.5v4.3H19M12.7 11.2v5.6M9.9 14h5.6"/></svg>
+    </button>
+    <button type="button" class="mg-fixed-nav-btn mg-archive-nav-btn" data-open-archives aria-label="Открыть архивы смет" title="Архивы">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16v12H4z"/><path d="M3 4.5h18v3H3zM9 11h6M10 11v3h4v-3"/></svg>
+    </button>
+    <button type="button" class="mg-fixed-nav-btn mg-notification-btn" aria-label="Открыть уведомления" title="Уведомления" onclick="return window.openNotificationsScreen ? window.openNotificationsScreen() : false;">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      <span class="mg-notification-dot" id="mgFixedNotifBadge" hidden></span>
+    </button>
+  </div>
+</div>
+
+<!-- Master Group v105: responsive notification controls -->
+<div id="dashboard" class="app screen dashboard-v3 mg-home-render-pending">
+<header class="home-head">
+  <button class="home-menu menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
+  <div class="home-brand"><span class="home-mark">MG</span><div><b>Master Group</b></div></div>
+
+</header>
+
+<section class="home-summary" aria-label="Краткая сводка по сметам">
+  <div class="home-summary-card">
+    <span class="home-summary-label">В работе</span>
+    <b class="home-summary-value" id="homeWorkingCount">0 смет</b>
+    <small class="home-summary-note">текущий статус</small>
+  </div>
+  <div class="home-summary-card">
+    <span class="home-summary-label">Ожидают оплаты</span>
+    <b class="home-summary-value" id="homePendingAmount">0 MDL</b>
+    <small class="home-summary-note">сумма остатков</small>
+  </div>
+</section>
+
+<section class="home-quick">
+  <button class="home-quick-card" data-v58="estimates" data-nav="estimates"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7 3.75h7.8L19 8v12.25H7a2 2 0 0 1-2-2V5.75a2 2 0 0 1 2-2Z"/><path d="M14.5 4v4.5H19M9 12h7M9 15.5h7M9 19h4"/><path d="M3 7.5v12A2.5 2.5 0 0 0 5.5 22H16"/></svg></span><span><b>Все сметы</b><small>Документы</small></span><i>›</i></button>
+  <button class="home-quick-card" data-v58="stats" data-nav="stats"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 9h17M7 15h3"/><path d="m13 15 2-2 2 1 2-3"/><path d="M17 11h2v2"/></svg></span><span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i></button>
+</section>
+
+<section class="home-recent">
+  <div class="home-section-head"><div><h2>Последние сметы</h2></div><button class="home-see-all" data-v58="estimates" data-nav="estimates">Все&nbsp; →</button></div>
+  <div id="saved"></div>
+</section>
+<div id="count" hidden>0</div><div id="sum" hidden>0</div>
+</div>
+
+<div id="editor" class="app screen" hidden>
+<header class="top editor-default-top" id="editorDefaultTop"><div class="top-left"><button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span id="mode">Новая смета</span></div></div></div><button class="btn secondary" data-action="home" hidden aria-hidden="true">Сметы</button></header>
+<header class="top calc-editor-top" id="calcEditorTop" hidden><button type="button" class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><button type="button" class="btn secondary" data-action="home" hidden aria-hidden="true">Сметы</button></header>
+<div class="stepbar" id="stepbar"></div><div id="flowNote" class="flow-note"></div>
+<section id="step1" class="step-screen"><div class="direction-screen"><div class="section-kicker">01 · НАПРАВЛЕНИЯ</div><div class="direction-heading"><div><h1 class="direction-title">Направления работ</h1></div><div class="selection-count direction-count" id="selectionCount"><b>0</b><small>выбрано</small></div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="direction-bottom"><div class="direction-selected-note"><span class="direction-selected-icon">✓</span><div><b id="directionSelectedLabel">Выбрано: 0</b><small id="directionSelectedHint">Выберите хотя бы одно направление</small></div></div><button class="btn primary direction-continue" data-action="step2">Продолжить <span>→</span></button></div></div></section>
+<section id="step3" class="step-screen calc-step-screen" hidden>
+  <div class="calc-summary-card">
+    <div class="calc-summary-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="10" y="5" width="28" height="38" rx="6"></rect><path d="M16 12h16M16 21h5M27 21h5M16 29h5M27 29h5M16 37h5M27 37h5"></path></svg></div>
+    <div class="calc-summary-copy"><span>ИТОГО</span><b id="total">0.00 MDL</b><small id="calcCount">0 позиций · 0 категорий</small></div>
+    <button type="button" class="calc-add-main" data-calc-open-add-menu aria-label="Добавить">＋ Добавить</button>
+  </div>
+  <div id="items" class="calc-groups"></div>
+  <div class="nav-actions calc-nav-actions"><button class="btn secondary full" data-action="step1">← Назад</button><button class="btn primary full" data-action="step3">Далее →</button></div>
+</section>
+<section id="step4" class="step-screen" hidden><div class="card contact-card-v2"><div class="contact-heading-v2"><div class="contact-heading-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-3.3 3.2-5 7-5s6.2 1.7 7 5"></path></svg></div><div><h1 class="title">Контактная информация</h1></div></div><div class="contact-fields-v2"><div class="contact-field-v2"><div class="contact-field-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c.8-3.3 3.2-5 7-5s6.2 1.7 7 5"></path></svg></div><div class="contact-field-body-v2"><label>Имя и фамилия</label><input id="client" autocomplete="name" placeholder="Иван Иванов"></div></div><div class="contact-field-v2"><div class="contact-field-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 3.8 9.8 3l2 4.5-2 1.7c1 2.1 2.8 4 4.9 4.9l1.7-2 4.5 2-0.8 2.6c-.4 1.4-1.8 2.2-3.2 1.8C10.8 17.2 6.8 13.2 5.5 7c-.4-1.4.4-2.8 1.7-3.2Z"></path></svg></div><div class="contact-field-body-v2"><label>Номер телефона</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+373 XX XXX XXX"></div></div><div class="contact-field-v2"><div class="contact-field-icon-v2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.4 6-11a6 6 0 1 0-12 0c0 5.6 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></div><div class="contact-field-body-v2"><label>Адрес</label><input id="address" autocomplete="street-address" placeholder="Улица, дом, квартира"></div></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step2">← Назад</button><button class="btn primary full" data-action="step4">Далее →</button></div></div></section>
+<section id="step5" class="step-screen" hidden><div class="card"><h1 class="title">Проверка</h1><p class="subtitle">Проверьте данные перед сохранением.</p><div id="review" class="review"></div><div class="finance-box"><div class="section-kicker">ФИНАНСЫ</div><div class="finance-grid"><div class="field"><label>Предоплата, MDL</label><input id="prepayment" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Материалы, MDL</label><input id="expenseMaterial" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Транспорт, MDL</label><input id="expenseTransport" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Зарплата, MDL</label><input id="expenseSalary" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div><div class="field"><label>Другие расходы, MDL</label><input id="expenseOther" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div></div><div id="financeSummary" class="finance-summary"></div></div><div class="nav-actions"><button class="btn secondary full" data-action="step3">← Изменить</button><button class="btn primary full" data-action="create">Создать смету</button></div></div></section>
+<div id="directionServiceOverlay" class="direction-service-overlay" hidden>
+  <div class="direction-service-modal" role="dialog" aria-modal="true" aria-labelledby="directionServiceTitle">
+    <div class="direction-service-head">
+      <div class="direction-service-heading">
+        <span id="directionServiceIcon" class="direction-service-icon"></span>
+        <div><h2 id="directionServiceTitle">Услуги</h2><p id="directionServiceSubtitle">Выберите нужные услуги.</p></div>
+      </div>
+      <button type="button" class="direction-service-close" data-direction-service-close aria-label="Закрыть">×</button>
+    </div>
+    <div id="directionServiceList" class="direction-service-list"></div>
+    <div id="directionServiceAiSuggestion" class="direction-service-ai-suggestion" hidden aria-live="polite">
+      <div class="direction-service-ai-head"><span class="direction-service-ai-badge">AI</span><span>Возможная формулировка</span></div>
+      <button type="button" class="direction-service-ai-main" data-ai-apply=""></button>
+      <div id="directionServiceAiAlternatives" class="direction-service-ai-alternatives" hidden></div>
+      <div id="directionServiceAiStatus" class="direction-service-ai-status"></div>
+      <div class="direction-service-ai-tools"><button type="button" data-ai-local-download hidden>Загрузить локальный ИИ · 570 МБ</button><button type="button" data-ai-terms-export>Скачать мои слова</button><button type="button" data-ai-terms-import>Восстановить копию</button></div>
+      <input id="directionServiceAiTermsFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <div class="direction-service-quick-add">
+      <input id="directionServiceQuickInput" type="text" autocomplete="off" placeholder="Напишите услугу как умеете — AI поможет исправить" aria-label="Название услуги">
+      <button type="button" class="btn primary" data-direction-service-quick-add>Добавить</button>
+    </div>
+  </div>
+</div></div>
+
+<div id="documentScreen" class="app screen" hidden><section class="card doc" id="document"></section><section class="actions no-print"><button type="button" class="btn primary" data-action="share" onclick="return window.__mgDirectShare ? window.__mgDirectShare() : false;">Поделиться</button><button class="btn secondary" data-action="wa">WhatsApp</button><button class="btn secondary" data-action="tg">Telegram</button><button class="btn secondary" data-action="print">Печать / PDF</button></section></div>
+
+<div id="estimatesScreen" class="app screen" hidden><div id="mgDesktopEstimatesHeading" class="mg-desktop-estimates-heading"><div><h1>Сметы</h1><p>Управление сметами и оплатами</p></div></div><div id="mgEstimateEditPanel" class="mg-estimate-editor" hidden></div><section class="card status-filter-card"><div id="statusFilters" class="status-filters"></div></section><div id="estimatesList" class="list"></div></div>
+<div id="archiveScreen" class="app screen" hidden><div class="archive-intro"><div class="archive-mark">▣</div><div><b>Сохранённые черновики</b><span>Незавершённые сметы, которые можно продолжить.</span></div></div><div id="archiveList" class="list"></div></div>
+
+
+<div id="statsScreen" class="app screen" hidden><section class="analytics-tabs analytics-tabs-v3" role="tablist" aria-label="Внутренний обзор и финансы">
+<button type="button" class="analytics-tab analytics-tab-v3 active" data-analytics-tab="overview" aria-selected="true">
+  <span class="analytics-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19V10"/><path d="M12 19V5"/><path d="M19 19v-7"/><path d="M3.5 19.5h17"/></svg></span>
+  <span class="analytics-tab-copy"><b>Внутренний обзор</b></span>
+</button>
+<button type="button" class="analytics-tab analytics-tab-v3" data-analytics-tab="finance" aria-selected="false">
+  <span class="analytics-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M3.5 10h17"/><path d="M15.5 14.5h2.5"/></svg></span>
+  <span class="analytics-tab-copy"><b>Финансы</b></span>
+</button>
+</section><div id="analyticsPanelOverview"><section class="card"><div class="stats-grid"><div class="stats-big"><b id="statCount">0</b><span>Всего смет</span></div><div class="stats-big"><b id="statMonth">0 MDL</b><span>Выручка за месяц</span></div><div class="stats-big"><b id="statProfit">0 MDL</b><span>Чистая прибыль</span></div><div class="stats-big"><b id="statExpenses">0 MDL</b><span>Расходы</span></div></div></section><section class="card"><h2>По месяцам</h2><div id="monthStats" class="month-list"></div></section></div><div id="analyticsPanelFinance" hidden><div id="financeOverview"></div><section class="card"><div class="settings-section-head"><div><h2>Финансы по сметам</h2><p class="muted">Все оплаты и расходы привязаны к конкретной смете.</p></div></div><div id="financeEstimates"></div></section></div></div>
+<div id="notificationsScreen" class="app screen" hidden><section class="notifications-hero"><div class="notifications-mark">🔔</div><div><h2>История изменений</h2><p>Здесь отображается, что именно было изменено в сметах и когда.</p></div><div class="notifications-actions"><button class="btn secondary" data-notif-read>Прочитать все</button><button class="btn secondary" data-notif-clear>Очистить</button></div></section><section id="notificationsList" class="notifications-list"></section></div><div id="settingsScreen" class="app screen" hidden>
+<header class="top settings-topbar">
+  <button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
+  <h1 class="settings-topbar-title">Настройки</h1>
+</header>
+<section id="settingsHub" class="settings-hub-v357" aria-label="Все настройки">
+  <div class="settings-hub-grid">
+    <button type="button" class="settings-hub-card" data-settings-hub="company">
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M9 20.5v-13h6v13M7 7h.01M7 11h.01M17 7h.01M17 11h.01M11 11h2M11 14h2"/></svg></span><span class="settings-hub-copy"><b>Компания</b><small>Реквизиты и профиль</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="catalog">
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16M4 12h16M4 18.5h16"/><circle cx="8" cy="5.5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="18.5" r="1.5"/></svg></span><span class="settings-hub-copy"><b>Каталог</b><small>Направления и услуги</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="estimates">
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v5h4M10 12h5M10 15.5h5M10 19h3"/></svg></span><span class="settings-hub-copy"><b>Сметы</b><small>Шаблоны и оформление</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="trash">
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></span><span class="settings-hub-copy"><b>Корзина</b><small>Удалённые сметы</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+    <button type="button" class="settings-hub-card" data-settings-hub="updates">
+      <span class="settings-hub-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg></span><span class="settings-hub-copy"><b>Обновления</b><small>Версия приложения</small></span><span class="settings-hub-arrow">›</span>
+    </button>
+  </div>
+</section>
+<div id="settingsSectionNav" class="settings-section-nav-v357" hidden>
+  <button type="button" class="settings-back-v357" data-settings-back aria-label="Вернуться к настройкам">‹</button>
+  <div><span>НАСТРОЙКИ</span><b id="settingsSectionTitle">Раздел</b></div>
+</div>
+
+
+
+
+<div id="settingsPanelCatalog" class="settings-panel-v2" hidden>
+  <section class="settings-card-v2 settings-add-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">＋</div><div><span class="settings-overline">КАТАЛОГ</span><h2>Новое направление</h2><p>Создайте направление и добавьте в него услуги.</p></div></div>
+    <div class="settings-add-form-v2">
+      <div class="settings-field-v2 settings-field-main"><label for="newDirectionName">Название направления</label><input id="newDirectionName" class="settings-input" placeholder="Например, Электрика"></div>
+      <div class="settings-field-v2 settings-icon-field-v3">
+        <label>Иконка направления</label>
+        <input type="hidden" id="newDirectionIcon" value="other">
+        <div class="new-direction-icon-picker" role="listbox" aria-label="Выберите иконку направления">
+          ${''}
+        </div>
+      </div>
+      <button type="button" class="btn primary settings-add-btn-v2" data-settings-add-direction><span>＋</span> Добавить</button>
+    </div>
+  </section>
+  <section class="settings-card-v2">
+    <div class="settings-card-head-simple"><div><span class="settings-overline">ВАШ КАТАЛОГ</span><h2>Направления и услуги</h2><p>Редактируйте названия, иконки и услуги без изменения уже созданных смет.</p></div><span id="settingsCount" class="settings-count-v2">0</span></div>
+    <div id="settingsCatalog"></div>
+  </section>
+</div>
+
+<div id="settingsPanelCompany" hidden class="settings-panel-v2">
+  <section class="settings-card-v2 company-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">▣</div><div><span class="settings-overline">ПРОФИЛЬ КОМПАНИИ</span><h2>Данные компании</h2><p>Эти данные используются в клиентских документах.</p></div></div>
+    <div class="settings-group-v2"><div class="settings-group-title">Основная информация</div>
+      <div class="fields company-fields-v2">
+        <div class="field"><label>Название компании</label><input id="companyName" class="settings-input" placeholder="Master Group"></div>
+        <div class="field"><label>Телефон</label><input id="companyPhone" class="settings-input" placeholder="+373 ..."></div>
+      </div>
+    </div>
+    <div class="settings-group-v2"><div class="settings-group-title">Адрес</div>
+      <div class="fields company-fields-v2">
+        <div class="field"><label>Город</label><input id="companyCity" class="settings-input" placeholder="Кишинёв"></div>
+        <div class="field"><label>Адрес</label><input id="companyAddress" class="settings-input" placeholder="Адрес компании"></div>
+      </div>
+    </div>
+    <div class="settings-group-v2"><div class="settings-group-title">Реквизиты и подпись</div>
+      <div class="fields company-fields-v2">
+        <div class="field"><label>Реквизиты</label><textarea id="companyDetails" class="settings-input" rows="3" placeholder="IDNO, IBAN и т. д."></textarea></div>
+        <div class="field"><label>Банковские данные</label><textarea id="companyBank" class="settings-input" rows="3" placeholder="Банк, счёт..."></textarea></div>
+        <div class="field"><label>Подпись</label><input id="companySignature" class="settings-input" placeholder="Директор / Ответственное лицо"></div>
+      </div>
+    </div>
+    <div class="settings-group-v2 settings-logo-group"><div class="settings-group-title">Логотип</div><div class="logo-upload-v2"><label class="logo-upload-button" for="companyLogo">Выбрать изображение</label><input id="companyLogo" type="file" accept="image/*"><div id="companyLogoPreview" class="logo-preview"></div></div></div>
+    <button type="button" class="btn primary full settings-save-company" data-v58="saveCompany">Сохранить профиль</button>
+  </section>
+</div>
+
+<div id="settingsPanelTrash" hidden class="settings-panel-v2">
+  <section class="settings-card-v2 trash-v2">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">⌫</div><div><span class="settings-overline">КОРЗИНА</span><h2>Удалённые сметы</h2><p>Здесь находятся удалённые документы, которые можно восстановить или удалить навсегда.</p></div><span id="trashCount" class="settings-count-v2">0</span></div>
+    <div id="deletedEstimatesList"></div>
+  </section>
+</div>
+
+<div id="settingsPanelEstimates" hidden class="settings-panel-v2" aria-label="Настройка сметы">
+  <section class="estimate-template-settings mg-template-settings-v2">
+    <div id="estimateTemplateList" class="estimate-template-list"></div>
+  </section>
+</div>
+
+<div id="settingsPanelUpdates" hidden class="settings-panel-v2">
+  <section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v504 · шрифт -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif во всём приложении.</p></div></div>
+    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v500 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
+  </section>
+</div>
+
+</div>
+<section id="adminMonitorScreen" class="app screen mg-admin-screen" hidden aria-label="Мониторинг пользователей">
+
+  <div class="mg-admin-content">
+    <div class="mg-admin-intro"><div><b>Панель администратора</b><small id="mgAdminIdentity">Проверка доступа…</small></div><span class="mg-admin-secure">Защищённый доступ</span></div>
+    <div class="mg-admin-summary" id="mgAdminSummary">
+      <article><small>Пользователи</small><b id="mgAdminUsersCount">—</b></article>
+      <article><small>Сейчас онлайн</small><b id="mgAdminOnlineCount">—</b></article>
+      <article><small>Создано смет</small><b id="mgAdminCreatedCount">—</b></article>
+      <article><small>Изменено / удалено</small><b id="mgAdminChangedCount">—</b></article>
+    </div>
+    <div class="mg-admin-section-head"><div><h2>Аккаунты</h2><small>Адрес Gmail и активность каждого пользователя</small></div><input id="mgAdminSearch" type="search" placeholder="Поиск по Gmail" aria-label="Поиск пользователя"></div>
+    <div id="mgAdminUsers" class="mg-admin-users"><div class="mg-admin-empty">Загрузка пользователей…</div></div>
+    <div class="mg-admin-section-head mg-admin-events-head"><div><h2>История действий</h2><small>Создание, изменение и удаление смет</small></div><span id="mgAdminEventsCount">0 событий</span></div>
+    <div id="mgAdminEvents" class="mg-admin-events"><div class="mg-admin-empty">Загрузка истории…</div></div>
+
+    <section id="mgAdminEmployeePanel" class="mg-admin-employee-panel" hidden aria-label="Рабочие данные сотрудника">
+      <div class="mg-admin-employee-head">
+        <div><small>АДМИНИСТРАТИВНЫЙ ПРОСМОТР</small><h2 id="mgAdminEmployeeTitle">Сметы сотрудника</h2></div>
+        <button type="button" id="mgAdminEmployeeClose" class="mg-admin-employee-close">Закрыть</button>
+      </div>
+      <div id="mgAdminEmployeeEstimates" class="mg-admin-employee-estimates"><div class="mg-admin-empty">Выберите аккаунт.</div></div>
+      <p class="mg-admin-note">Режим только для чтения. Данные сотрудника не изменяются.</p>
+    </section>
+    <p class="mg-admin-note">Новые аккаунты появляются здесь после первого входа в обновлённую версию приложения. Пароли не собираются и не отображаются.</p>
+  </div>
+</section>
+
+<section id="teamScreen" class="app screen mg-team-screen" hidden aria-label="Моя команда">
+  <div class="mg-team-page">
+    <div id="mgTeamScreenContent">
+      <div class="mg-team-loading">Загрузка…</div>
+    </div>
+  </div>
+</section>
+<div id="drawerOverlay" class="drawer-overlay" data-menu="close">
+  <aside class="drawer" data-menu-panel aria-label="Основное меню">
+    <div class="drawer-head">
+      <div class="drawer-brand">
+        <div class="drawer-mg-logo" aria-hidden="true">MG</div>
+        <div class="drawer-brand-copy"><div class="drawer-title">Master Group</div><small>Сметы и финансы</small></div>
+      </div>
+      <button class="drawer-close" data-menu="close" aria-label="Закрыть меню">×</button>
+    </div>
+
+    <div class="drawer-scroll">
+      <button class="drawer-create" data-menu-action="new">
+        <span class="drawer-create-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        <span class="drawer-create-copy"><b>Новая смета</b><small>Создать документ</small></span>
+        <span class="drawer-chevron">›</span>
+      </button>
+
+      <div class="drawer-section-title drawer-main-title">Главное меню</div>
+      <nav class="drawer-list">
+        <button class="drawer-item drawer-item-home" data-menu-action="home">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.2 8.5-7 8.5 7"/><path d="M5.5 9.5v10.8h5v-6h3v6h5V9.5"/><path d="M9 6.4v-2h2.2"/></svg></span>
+          <span><b>Главный экран</b><small>Обзор приложения</small></span><i>›</i>
+        </button>
+        <button class="drawer-item" data-menu-action="estimates">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 4.5h11v15h-11z"/><path d="M5 7.5H3.5v13h11v-1"/><path d="M10 9h6M10 12.5h6M10 16h4"/></svg></span>
+          <span><b>Все сметы</b><small>Список документов</small></span><i>›</i>
+        </button>
+        <button class="drawer-item" data-menu-action="stats">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v11H4z"/><path d="M4 11h16"/><path d="M16.5 15.3h3.5"/><circle cx="14.3" cy="15.2" r="1.2"/><path d="M6 8.5V6.7c0-.9.7-1.7 1.7-1.7H18"/></svg></span>
+          <span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i>
+        </button>
+        <button class="drawer-item mg-admin-menu-item" id="mgAdminMenuItem" data-menu-action="admin-monitor" hidden>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="17" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 2 2 4-4"/></svg></span>
+          <span><b>Мониторинг пользователей</b><small>Аккаунты и история действий</small></span><i>›</i>
+        </button>
+        <button class="drawer-item mg-admin-menu-item" id="mgTeamMenuItem" data-menu-action="team" hidden>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 20c.3-3.2 2.1-5 5.5-5s5.2 1.8 5.5 5"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17 15c2.2.5 3.3 2.1 3.5 5"/></svg></span>
+          <span><b>Моя команда</b><small>Сотрудники и их сметы</small></span><i>›</i>
+        </button>
+        <button class="drawer-item mg-desktop-only-nav" data-open-archives aria-label="Открыть архив смет">
+          <span class="drawer-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16v12H4z"/><path d="M3 4.5h18v3H3zM9 11h6M10 11v3h4v-3"/></svg></span>
+          <span><b>Архив</b><small>Черновики и удалённые сметы</small></span><i>›</i>
+        </button>
+
+      </nav>
+
+      <div class="drawer-menu-separator" aria-hidden="true"></div>
+      <div class="drawer-section-title drawer-main-title mg-desktop-only-nav">Разделы приложения</div>
+      <nav class="drawer-list">
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="catalog" aria-label="Открыть каталог направлений и услуг">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16M4 12h16M4 18.5h16"/><circle cx="8" cy="5.5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="18.5" r="1.5"/></svg></span>
+          <span><b>Направления и услуги</b><small>Каталог компании</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="estimates" aria-label="Открыть шаблоны смет">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v5h4M10 12h5M10 15.5h5M10 19h3"/></svg></span>
+          <span><b>Шаблоны смет</b><small>Оформление документов</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="trash" aria-label="Открыть корзину">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg></span>
+          <span><b>Корзина</b><small>Удалённые сметы</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item mg-desktop-only-nav" data-desktop-open-settings-section="updates" aria-label="Открыть обновления">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.4-3"/></svg></span>
+          <span><b>Обновления</b><small>Версия приложения</small></span><i>›</i>
+        </button>
+        <button type="button" class="drawer-item" data-menu-action="settings" aria-label="Открыть настройки">
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/></svg></span>
+          <span><b>Настройки</b><small>Параметры приложения</small></span><i>›</i>
+        </button>
+      </nav>
+
+    </div>
+    <div class="drawer-account" id="mgCloudStatus" aria-label="Аккаунт">
+      <div class="drawer-account-state" id="mgCloudSignedIn" hidden>
+        <div class="drawer-cloud-row">
+          <span class="drawer-cloud-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.5-3.6 2.7-5.5 6.5-5.5s6 1.9 6.5 5.5"/></svg></span>
+          <span><b id="mgCloudStatusText">Аккаунт подключён</b><small id="mgCloudStatusSubtext">Синхронизация активна</small></span>
+          <span class="drawer-account-dot dot" aria-hidden="true"></span>
+        </div>
+        <div id="mgCloudAccount" class="drawer-account-email"></div>
+        <div class="drawer-account-actions" id="mgCloudSignedInActions"><button id="mgFirebaseDiagnosticOpen" type="button">Диагностика</button><button id="mgAdminVerifyButton" type="button" hidden>Подтвердить Gmail</button><button id="mgCloudLogout" type="button">Выйти из аккаунта</button></div>
+      </div>
+      <div class="drawer-account-state" id="mgCloudSignedOut">
+        <div class="drawer-cloud-row">
+          <span class="drawer-cloud-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c.5-3.6 2.7-5.5 6.5-5.5s6 1.9 6.5 5.5"/></svg></span>
+          <span><b>Облачный аккаунт</b><small id="mgCloudSignedOutText">Вход не выполнен</small></span>
+          <span class="drawer-account-dot dot" aria-hidden="true"></span>
+        </div>
+        <div class="drawer-account-actions" id="mgCloudSignedOutActions"><button type="button" id="mgCloudLoginButton" class="drawer-account-login">Войти в аккаунт <span aria-hidden="true">›</span></button></div>
+      </div>
+    </div>
+  </aside>
+</div>
+<div id="calcAddMenuOverlay" class="calc-add-menu-overlay" hidden>
+  <div class="calc-add-menu" role="dialog" aria-modal="true" aria-labelledby="calcAddMenuTitle">
+    <div class="calc-add-menu-head">
+      <h3 id="calcAddMenuTitle">Добавить</h3>
+      <button type="button" class="calc-add-menu-control" data-calc-add-menu-close aria-label="Закрыть">×</button>
+    </div>
+    <div class="calc-add-menu-buttons">
+      <button type="button" class="calc-add-menu-option" data-calc-add-direction><span>＋</span><b>Направление</b></button>
+      <button type="button" class="calc-add-menu-option" data-calc-add><span>＋</span><b>Категория</b></button>
+    </div>
+  </div>
+</div>
+<div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Название услуги" aria-label="Название услуги"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="dialog" aria-modal="true" aria-labelledby="mgUpdateNoticeTitle"><div class="mg-update-notice-card"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong id="mgUpdateNoticeTitle">Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div></div>
+<div id="toast" class="toast"></div><div id="archiveModal" class="modal-overlay"><div class="confirm-modal"><h3>Сохранить смету в архив?</h3><p>Вы сейчас находитесь в процессе создания сметы. Можно сохранить черновик в архив и вернуться к нему позже.</p><div class="confirm-actions"><button class="primary" data-archive-action="save">📦 Поставить в архив</button><button data-archive-action="continue">↩️ Продолжить работу</button><button data-archive-action="discard">Не сохранять</button></div></div></div>
+<script src="js/account-data-scope-v510.js"></script>
+<script src="js/offline-db.js"></script>
+<script src="js/state.js"></script>
+<script src="js/data-model.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/responsive-runtime-v351.js"></script>
+<script src="js/catalog.js?v=533"></script>
+<script src="js/estimate-engine.js"></script>
+<script src="js/calculations.js"></script>
+<script src="js/finance-service.js"></script>
+<script src="./js/mg-icons-v208.js?v=560"></script>
+<script src="js/estimate-ui.js"></script>
+<script src="js/mg-ai-service.js"></script>
+<script src="js/estimate-core.js?v=512"></script>
+<script src="js/finance-ui.js?v=481"></script>
+<script src="js/estimate-templates.js"></script>
+<script src="js/app-core.js"></script>
+
+<!-- extracted JS: v41-fixes-js -->
+<script src="js/ui-refresh-fix.js"></script>
+
+<!-- extracted JS: v49-print-js -->
+<script src="js/print.js"></script>
+<script src="js/pwa.js"></script>
+<script src="js/finance-modal-v71.js"></script>
+<script src="js/finance-actions-v70.js"></script>
+
+<script src="js/mobile-webview.js"></script>
+
+
+
+
+
+
+<div id="mgCloudAuth" hidden>
+  <div class="mg-cloud-card">
+    <button type="button" id="mgCloudClose" class="mg-cloud-close" aria-label="Закрыть окно входа">×</button>
+    <section class="mg-cloud-intro">
+      <h1 id="mgCloudTitle">Вход в аккаунт</h1>
+    </section>
+    <div class="mg-cloud-tabs mg-cloud-tabs-legacy" aria-hidden="true">
+      <button type="button" id="mgCloudLoginTab" class="active" tabindex="-1">Войти</button>
+      <button type="button" id="mgCloudSignupTab" tabindex="-1">Регистрация</button>
+    </div>
+    <form id="mgCloudAuthForm">
+      <div class="mg-cloud-field">
+        <label for="mgCloudEmail">Email</label>
+        <div class="mg-cloud-input-wrap"><span class="mg-cloud-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg></span><input id="mgCloudEmail" type="email" autocomplete="email" required placeholder="Email"></div>
+      </div>
+      <div class="mg-cloud-field">
+        <label for="mgCloudPassword">Пароль</label>
+        <div class="mg-cloud-input-wrap"><span class="mg-cloud-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><circle cx="12" cy="15.5" r="1"></circle></svg></span><input id="mgCloudPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="Пароль"><button class="mg-cloud-eye" id="mgCloudPasswordToggle" type="button" aria-label="Показать пароль"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></button></div>
+      </div>
+      <div id="mgCloudMsg" class="mg-cloud-msg"></div>
+      <button id="mgCloudSubmit" class="mg-cloud-primary" type="submit">Войти</button>
+      <div class="mg-cloud-meta">
+        <label class="mg-cloud-check"><input id="mgCloudRemember" type="checkbox" checked><span>Запомнить меня</span></label>
+        <button type="button" class="mg-cloud-link" id="mgCloudForgot" disabled>Забыли пароль?</button>
+      </div>
+      <div class="mg-cloud-or"><span></span><b>или</b><span></span></div>
+      <button id="mgCloudCreate" class="mg-cloud-create" type="button"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.6-3.2 2.4-5 5.5-5s4.9 1.8 5.5 5"></path><path d="M17 8v6M14 11h6"></path></svg><span>Создать аккаунт</span></button>
+      <button id="mgCloudLocal" class="mg-cloud-secondary" type="button">Продолжить без облака</button>
+    </form>
+  </div>
+</div>
+<div id="mgFirebaseDiagnostic" class="mg-fd-overlay" hidden>
+  <div class="mg-fd-card" role="dialog" aria-modal="true" aria-labelledby="mgFdTitle">
+    <div class="mg-fd-head">
+      <div><div id="mgFdTitle" class="mg-fd-title">Диагностика Firebase</div><div class="mg-fd-sub">Проверяет вход Firebase Authentication и запись в Realtime Database по пути <span class="mg-fd-path">users/{uid}/estimates</span>.</div></div>
+      <button id="mgFdClose" class="mg-fd-close" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div id="mgFdSummary" class="mg-fd-summary"><strong>Готово к проверке.</strong><br>Нажмите «Запустить диагностику».</div>
+    <div class="mg-fd-actions"><button id="mgFdRun" class="mg-fd-btn primary" type="button">Запустить диагностику</button><button id="mgFdCopy" class="mg-fd-btn secondary" type="button" disabled>Скопировать отчёт</button></div>
+    <div id="mgFdGrid" class="mg-fd-grid"></div>
+    <div id="mgFdLog" class="mg-fd-log" hidden></div>
+    <div class="mg-fd-foot">Диагностика создаёт временную запись с префиксом <span class="mg-fd-path">_diagnostic_</span> в Firebase Realtime Database и удаляет её после проверки. Пароль, токены и содержимое смет в отчёт не попадают.</div>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="js/offline-engine.js"></script>
+<script src="js/firebase-client.js"></script>
+<script src="js/firebase-repository.js"></script>
+<script src="js/firebase-sync.js?v=510"></script>
+<script src="js/direct-interaction-fix.js"></script>
+<script src="js/settings-trash-fix.js"></script>
+<script src="js/status-direct-fix.js"></script>
+<script src="js/filter-direct-fix.js"></script>
+<script src="js/finance-final-fix.js"></script>
+<script src="js/estimates-redesign-v512.js?v=512"></script>
+<script src="js/analytics-tabs-v310.js?v=311"></script>
+
+
+
+
+
+
+
+
+
+<script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=560"></script>
+<script src="js/v280-fixed-top-nav.js"></script>
+<script src="js/v282-fixed-top-nav-visibility.js"></script>
+
+
+<script src="js/v284-settings-cleanup.js"></script>
+<script src="js/settings-hub-v357.js"></script>
+<script src="js/document-actions-v419.js?v=431"></script>
+<script src="js/desktop-workspace-v465.js?v=468"></script>
+<script src="js/desktop-master-detail-v470.js?v=470"></script>
+<script src="js/desktop-home-v471.js?v=481"></script>
+<script src="js/desktop-workspace-nav-v483.js?v=488"></script>
+<script src="js/desktop-wizard-v476.js?v=476"></script>
+<script src="js/desktop-catalog-v477.js?v=477"></script>
+<style id="mg-desktop-heading-default-v468">#mgDesktopEstimatesHeading{display:none!important}</style>
+
+<style id="mg-analytics-layout-v311">
+/* v311 — move the entire analytics content below the fixed top bar. Button design is unchanged. */
+#statsScreen{
+  padding-top:124px!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:430px){
+  #statsScreen{
+    padding-top:124px!important;
+  }
+}
+</style>
+<style id="mg-analytics-tabs-v315">
+/* v315 — match the supplied template: tabs sit immediately below the fixed top panel. */
+#statsScreen{
+  padding-top:67px!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tabs-v3{
+  width:366px!important;
+  max-width:calc(100% - 24px)!important;
+  grid-template-columns:178px 178px!important;
+  gap:4px!important;
+  margin:0 auto 8px!important;
+  padding:3px!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:178px!important;
+  height:58px!important;
+  min-height:58px!important;
+  max-height:58px!important;
+}
+@media(max-width:390px){
+  #statsScreen{
+    padding-top:67px!important;
+  }
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 24px)!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #statsScreen .analytics-tab-v3{width:100%!important;}
+}
+</style>
+
+<style id="mg-analytics-tabs-v316">
+/* v316 — Analytics: exact 178×48 px tabs and slightly tighter clearance below the top panel. */
+#statsScreen{
+  padding-top:62px!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tabs-v3{
+  width:366px!important;
+  max-width:calc(100% - 24px)!important;
+  grid-template-columns:178px 178px!important;
+  gap:4px!important;
+  margin:0 auto 8px!important;
+  padding:3px!important;
+  box-sizing:border-box!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:178px!important;
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  padding:0 10px!important;
+  gap:7px!important;
+  border-radius:14px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{
+  width:23px!important;
+  height:23px!important;
+  min-width:23px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon svg{
+  width:19px!important;
+  height:19px!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  font-size:15px!important;
+}
+@media(max-width:390px){
+  #statsScreen{padding-top:62px!important;}
+  #statsScreen .analytics-tabs-v3{
+    width:calc(100% - 24px)!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  #statsScreen .analytics-tab-v3{width:100%!important;}
+}
+</style>
+
+<style id="mg-finance-dashboard-v431">
+/* v431 — finance dashboard matching the app's monochrome interface. */
+#statsScreen{background:#fff!important;color:#1c1c1e!important}
+#statsScreen .analytics-tabs-v3{
+  width:calc(100% - 24px)!important;max-width:none!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:4px!important;padding:4px!important;margin:0 auto 12px!important;
+  border:1px solid #e5e5ea!important;border-radius:16px!important;
+  background:#f2f2f4!important;box-shadow:none!important;
+}
+#statsScreen .analytics-tab-v3{
+  width:auto!important;min-width:0!important;height:42px!important;
+  min-height:42px!important;max-height:42px!important;padding:0 6px!important;
+  gap:0!important;border:0!important;border-radius:12px!important;
+  color:#6e6e73!important;background:transparent!important;
+  box-shadow:none!important;font-size:13px!important;font-weight:700!important;
+}
+#statsScreen .analytics-tab-v3 .analytics-tab-icon{display:none!important}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy{min-width:0!important}
+#statsScreen .analytics-tab-v3 .analytics-tab-copy b{
+  color:inherit!important;font-size:13px!important;line-height:1.1!important;
+  white-space:nowrap!important;letter-spacing:-.15px!important;
+}
+#statsScreen .analytics-tab-v3.active{
+  color:#fff!important;background:#1c1c1e!important;
+  box-shadow:none!important;
+}
+#statsScreen #analyticsPanelOverview[hidden],
+#statsScreen #analyticsPanelFinance[hidden],
+#statsScreen .finance-legacy-compat[hidden]{display:none!important}
+#statsScreen #analyticsPanelOverview>.card,
+#statsScreen #analyticsPanelFinance>.card,
+#statsScreen #financeOverview>.card{
+  width:100%!important;max-width:none!important;min-width:0!important;
+  margin:0 0 10px!important;padding:14px!important;
+  border:1px solid #e5e5ea!important;border-radius:17px!important;
+  background:#fff!important;box-shadow:0 1px 3px rgba(0,0,0,.035)!important;
+}
+#statsScreen .finance-overview-head{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;margin:0 0 5px!important;
+}
+#statsScreen .finance-overview-head h2,
+#statsScreen .finance-card-heading h2{
+  margin:0!important;color:#1c1c1e!important;font-size:18px!important;
+  line-height:1.15!important;letter-spacing:-.35px!important;
+}
+#statsScreen .finance-overview-head p,
+#statsScreen .finance-card-heading p{
+  margin:4px 0 0!important;color:#8e8e93!important;font-size:11px!important;line-height:1.25!important;
+}
+#statsScreen .finance-overview-period select,
+#statsScreen .finance-filter-select select{
+  max-width:100%!important;min-height:36px!important;padding:0 27px 0 10px!important;
+  border:1px solid #e1e1e6!important;border-radius:11px!important;
+  color:#1c1c1e!important;background:#fff!important;
+  font-size:11px!important;font-weight:650!important;box-shadow:none!important;
+}
+#statsScreen .finance-overview-caption,
+#statsScreen .finance-summary-caption{
+  margin:7px 0 11px!important;color:#8e8e93!important;
+  font-size:10px!important;line-height:1.3!important;
+}
+#statsScreen .finance-overview-grid{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+}
+#statsScreen .finance-overview-kpi{
+  display:flex!important;min-width:0!important;min-height:72px!important;
+  flex-direction:column!important;justify-content:center!important;gap:5px!important;
+  padding:10px 11px!important;border:0!important;border-radius:13px!important;
+  background:#f7f7f8!important;box-shadow:none!important;
+}
+#statsScreen .finance-overview-kpi span{
+  color:#8e8e93!important;font-size:10px!important;line-height:1.1!important;
+}
+#statsScreen .finance-overview-kpi b{
+  color:#1c1c1e!important;font-size:17px!important;line-height:1.1!important;
+  letter-spacing:-.45px!important;white-space:nowrap!important;
+}
+#statsScreen .finance-card-heading{
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:8px!important;margin:0 0 12px!important;
+}
+#statsScreen .finance-chart-unit{
+  color:#8e8e93!important;font-size:10px!important;white-space:nowrap!important;
+}
+#statsScreen .finance-chart-plot{
+  display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  align-items:stretch!important;gap:8px!important;height:142px!important;
+  padding:8px 2px 0!important;border-bottom:1px solid #e5e5ea!important;
+}
+#statsScreen .finance-chart-column{
+  display:grid!important;grid-template-rows:minmax(0,1fr) 22px!important;
+  min-width:0!important;text-align:center!important;
+}
+#statsScreen .finance-chart-bar-area{
+  display:flex!important;align-items:flex-end!important;justify-content:center!important;
+  min-height:0!important;
+  background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#ededf0 calc(25% - 1px),#ededf0 25%)!important;
+}
+#statsScreen .finance-chart-bar{
+  display:block!important;width:min(34px,62%)!important;max-height:100%!important;
+  border-radius:6px 6px 0 0!important;background:#1c1c1e!important;
+}
+#statsScreen .finance-chart-month{
+  overflow:hidden!important;color:#6e6e73!important;font-size:10px!important;
+  line-height:20px!important;text-overflow:ellipsis!important;text-transform:capitalize!important;
+}
+#statsScreen .finance-chart-empty,
+#statsScreen .finance-empty-state{
+  display:flex!important;flex-direction:column!important;gap:5px!important;
+  padding:18px 10px!important;text-align:center!important;color:#8e8e93!important;
+  font-size:11px!important;line-height:1.35!important;
+}
+#statsScreen .finance-empty-state b{color:#1c1c1e!important;font-size:14px!important}
+#statsScreen .finance-status-list{display:flex!important;flex-direction:column!important;gap:12px!important}
+#statsScreen .finance-status-row{
+  display:grid!important;grid-template-columns:minmax(82px,1fr) minmax(70px,2fr) 24px!important;
+  align-items:center!important;gap:9px!important;color:#3a3a3c!important;font-size:11px!important;
+}
+#statsScreen .finance-status-row>b{text-align:right!important;color:#1c1c1e!important;font-size:12px!important}
+#statsScreen .finance-status-track,
+#statsScreen .finance-progress-track{
+  display:block!important;overflow:hidden!important;height:7px!important;
+  border-radius:999px!important;background:#eaeaed!important;
+}
+#statsScreen .finance-status-track i,
+#statsScreen .finance-progress-track i{
+  display:block!important;height:100%!important;border-radius:inherit!important;
+  background:#1c1c1e!important;
+}
+#statsScreen .finance-controls{display:flex!important;flex-direction:column!important;gap:8px!important;margin:0 0 12px!important}
+#statsScreen .finance-filter-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+#statsScreen .finance-filter-select{display:block!important;min-width:0!important}
+#statsScreen .finance-filter-select select{width:100%!important;min-height:38px!important}
+#statsScreen .finance-search{
+  display:flex!important;align-items:center!important;gap:8px!important;
+  min-height:42px!important;padding:0 11px!important;border:1px solid #e1e1e6!important;
+  border-radius:12px!important;background:#f7f7f8!important;color:#6e6e73!important;
+}
+#statsScreen .finance-search-icon{font-size:22px!important;line-height:1!important}
+#statsScreen .finance-search input{
+  width:100%!important;min-width:0!important;height:40px!important;padding:0!important;
+  border:0!important;outline:0!important;background:transparent!important;
+  color:#1c1c1e!important;font-size:12px!important;box-shadow:none!important;
+}
+#statsScreen .finance-search input::placeholder{color:#8e8e93!important;opacity:1!important}
+#statsScreen .finance-filter-note{
+  margin:0!important;color:#8e8e93!important;font-size:9px!important;line-height:1.25!important;
+}
+#statsScreen #analyticsPanelFinance .settings-section-head{
+  display:block!important;margin:0 0 10px!important;padding:0 0 9px!important;
+  border-bottom:1px solid #ededf0!important;
+}
+#statsScreen #analyticsPanelFinance .settings-section-head h2{
+  margin:0!important;color:#1c1c1e!important;font-size:17px!important;
+  line-height:1.15!important;letter-spacing:-.3px!important;
+}
+#statsScreen #analyticsPanelFinance .settings-section-head .muted{
+  margin:4px 0 0!important;color:#8e8e93!important;font-size:10px!important;line-height:1.3!important;
+}
+#statsScreen #financeOverview{margin:0 0 10px!important}
+#statsScreen #financeOverview>.card{margin:0!important;padding:10px!important}
+#statsScreen #financeOverview .finance-kpis{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;
+}
+#statsScreen #financeOverview .finance-kpi{
+  display:flex!important;min-width:0!important;min-height:70px!important;height:auto!important;
+  flex-direction:column!important;justify-content:center!important;gap:5px!important;
+  margin:0!important;padding:10px 11px!important;border:0!important;border-radius:13px!important;
+  background:#f7f7f8!important;box-shadow:none!important;
+}
+#statsScreen #financeOverview .finance-kpi:before,
+#statsScreen #financeOverview .finance-kpi:after{display:none!important}
+#statsScreen #financeOverview .finance-kpi span{
+  color:#8e8e93!important;font-size:10px!important;line-height:1.1!important;letter-spacing:0!important;
+}
+#statsScreen #financeOverview .finance-kpi b{
+  margin:0!important;color:#1c1c1e!important;font-size:16px!important;
+  line-height:1.08!important;letter-spacing:-.4px!important;white-space:nowrap!important;
+}
+#statsScreen #financeOverview .finance-kpi.profit{background:#1c1c1e!important}
+#statsScreen #financeOverview .finance-kpi.profit span{color:#a1a1a6!important}
+#statsScreen #financeOverview .finance-kpi.profit b{color:#fff!important}
+#statsScreen #analyticsPanelFinance>.card{padding:13px!important}
+#statsScreen #financeEstimates{display:flex!important;flex-direction:column!important;gap:7px!important}
+#statsScreen .finance-estimate{
+  min-width:0!important;margin:0!important;padding:0!important;
+  overflow:hidden!important;border:1px solid #e5e5ea!important;
+  border-radius:14px!important;background:#f8f8fa!important;
+  box-shadow:none!important;
+}
+#statsScreen .finance-estimate-summary{
+  position:relative!important;display:block!important;list-style:none!important;
+  min-width:0!important;padding:11px!important;cursor:pointer!important;
+}
+#statsScreen .finance-estimate-summary::-webkit-details-marker{display:none!important}
+#statsScreen .finance-estimate-title-row{
+  display:flex!important;align-items:flex-start!important;justify-content:space-between!important;
+  gap:7px!important;padding-right:20px!important;
+}
+#statsScreen .finance-estimate-title-copy{display:flex!important;min-width:0!important;flex-direction:column!important;gap:4px!important}
+#statsScreen .finance-estimate-title-copy>b{
+  overflow:hidden!important;color:#1c1c1e!important;font-size:13px!important;
+  line-height:1.15!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+#statsScreen .finance-estimate-title-copy>small{
+  overflow:hidden!important;color:#6e6e73!important;font-size:10px!important;
+  line-height:1.25!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+#statsScreen .finance-estimate-badges{display:flex!important;flex:0 0 auto!important;flex-direction:column!important;align-items:flex-end!important;gap:4px!important}
+#statsScreen .finance-work-status,
+#statsScreen .finance-payment-state{
+  display:inline-flex!important;align-items:center!important;max-width:115px!important;
+  min-height:21px!important;padding:3px 7px!important;overflow:hidden!important;
+  border:1px solid #e1e1e6!important;border-radius:999px!important;
+  color:#55555a!important;background:#fff!important;font-size:9px!important;
+  line-height:1.1!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+}
+#statsScreen .finance-payment-state-paid{color:#fff!important;background:#1c1c1e!important;border-color:#1c1c1e!important}
+#statsScreen .finance-payment-state-partial{color:#1c1c1e!important;background:#eaeaed!important;border-color:#e1e1e6!important}
+#statsScreen .finance-estimate-brief{
+  display:grid!important;grid-template-columns:1fr 1fr 14px!important;
+  align-items:center!important;gap:8px!important;margin-top:10px!important;
+  color:#8e8e93!important;font-size:10px!important;
+}
+#statsScreen .finance-estimate-brief>span:not(.finance-toggle-indicator){display:flex!important;flex-direction:column!important;gap:3px!important}
+#statsScreen .finance-estimate-brief b{color:#1c1c1e!important;font-size:11px!important;white-space:nowrap!important}
+#statsScreen .finance-toggle-indicator{
+  display:block!important;color:#6e6e73!important;font-size:16px!important;text-align:right!important;
+  transition:transform .15s ease!important;
+}
+#statsScreen .finance-estimate[open] .finance-toggle-indicator{transform:rotate(180deg)!important}
+#statsScreen .finance-progress-row{display:flex!important;align-items:center!important;gap:8px!important;margin-top:9px!important}
+#statsScreen .finance-progress-row .finance-progress-track{flex:1 1 auto!important;height:6px!important}
+#statsScreen .finance-progress-row>span{min-width:28px!important;color:#6e6e73!important;font-size:9px!important;text-align:right!important}
+#statsScreen .finance-estimate-expanded{
+  padding:0 11px 11px!important;border-top:1px solid #e7e7eb!important;
+}
+#statsScreen .finance-estimate-metrics{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:5px!important;padding-top:9px!important;
+}
+#statsScreen .finance-estimate-metrics>div{
+  display:flex!important;min-width:0!important;min-height:38px!important;
+  flex-direction:column!important;justify-content:center!important;gap:3px!important;
+  padding:6px 8px!important;border:1px solid #ededf0!important;
+  border-radius:9px!important;background:#fff!important;
+}
+#statsScreen .finance-estimate-metrics>div>span{color:#8e8e93!important;font-size:9px!important;line-height:1.1!important}
+#statsScreen .finance-estimate-metrics>div>b{overflow:hidden!important;color:#1c1c1e!important;font-size:11px!important;line-height:1.1!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#statsScreen .finance-estimate-metrics>.finance-estimate-profit{
+  grid-column:1/-1!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;
+}
+#statsScreen .finance-detail-block{margin-top:11px!important}
+#statsScreen .finance-detail-block h3{
+  margin:0 0 6px!important;color:#3a3a3c!important;font-size:11px!important;
+  line-height:1.15!important;font-weight:700!important;
+}
+#statsScreen .finance-expense-chips{display:flex!important;flex-wrap:wrap!important;gap:5px!important}
+#statsScreen .finance-expense-chip{
+  display:inline-flex!important;align-items:center!important;gap:4px!important;
+  padding:5px 7px!important;border-radius:8px!important;background:#fff!important;
+  color:#6e6e73!important;font-size:9px!important;line-height:1.15!important;
+}
+#statsScreen .finance-expense-chip b{color:#1c1c1e!important;font-size:9px!important}
+#statsScreen .finance-empty-inline{color:#8e8e93!important;font-size:10px!important;line-height:1.3!important}
+#statsScreen .finance-payment-list{display:flex!important;flex-direction:column!important}
+#statsScreen .finance-payment-row{
+  display:grid!important;grid-template-columns:minmax(0,1fr) auto 24px!important;
+  align-items:center!important;gap:6px!important;min-width:0!important;
+  padding:8px 0!important;border-bottom:1px solid #eaeaed!important;
+}
+#statsScreen .finance-payment-row:last-child{border-bottom:0!important}
+#statsScreen .finance-payment-row>span{
+  overflow:hidden!important;color:#6e6e73!important;font-size:9px!important;
+  line-height:1.2!important;text-overflow:ellipsis!important;
+}
+#statsScreen .finance-payment-row>b{color:#1c1c1e!important;font-size:10px!important;white-space:nowrap!important}
+#statsScreen .finance-payment-delete{
+  width:23px!important;height:23px!important;padding:0!important;border:1px solid #e1e1e6!important;
+  border-radius:7px!important;background:#fff!important;color:#6e6e73!important;
+  font-size:15px!important;line-height:1!important;
+}
+#statsScreen .estimate-finance-actions{
+  display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:10px!important;
+}
+#statsScreen .estimate-finance-actions .btn{
+  min-width:0!important;min-height:36px!important;height:36px!important;
+  padding:0 8px!important;border-radius:10px!important;font-size:10px!important;font-weight:700!important;
+}
+#statsScreen .estimate-finance-actions .primary{
+  border:1px solid #1c1c1e!important;background:#1c1c1e!important;color:#fff!important;
+}
+#statsScreen .estimate-finance-actions .secondary{
+  border:1px solid #d9d9de!important;background:#fff!important;color:#1c1c1e!important;
+}
+#statsScreen .finance-sr-only{
+  position:absolute!important;width:1px!important;height:1px!important;padding:0!important;
+  margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;border:0!important;
+}
+@media(max-width:390px){
+  #statsScreen .analytics-tab-v3 .analytics-tab-copy b{font-size:12px!important}
+  #statsScreen .finance-overview-kpi{min-height:66px!important;padding:9px!important}
+  #statsScreen .finance-overview-kpi b{font-size:15px!important}
+  #statsScreen #financeOverview .finance-kpi{min-height:66px!important;padding:9px!important}
+  #statsScreen #financeOverview .finance-kpi b{font-size:15px!important}
+  #statsScreen .finance-chart-plot{height:128px!important;gap:5px!important}
+  #statsScreen .finance-estimate-title-copy>b{max-width:170px!important}
+}
+</style>
+
+<style id="mg-finance-safe-area-fix-v432">
+/* Keep finance tabs below the fixed navigation, including the iPhone safe area. */
+#statsScreen{padding-top:calc(env(safe-area-inset-top, 0px) + 70px)!important;box-sizing:border-box!important}
+</style>
+
+<style id="mg-home-dashboard-v433">
+/* Home-only refresh: compact live summary and recent estimates. */
+#dashboard .home-summary{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:9px!important;margin:0 0 13px!important;
+}
+#dashboard .home-summary-card{
+  min-width:0!important;padding:11px 12px 10px!important;
+  border:1px solid #e0e1e3!important;border-radius:15px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+#dashboard .home-summary-label{display:block!important;color:#737579!important;font-size:11px!important;font-weight:600!important}
+#dashboard .home-summary-value{display:block!important;margin-top:5px!important;color:#17181a!important;font-size:18px!important;font-weight:760!important;letter-spacing:-.35px!important;white-space:nowrap!important}
+#dashboard .home-summary-note{display:block!important;margin-top:2px!important;color:#8b8d91!important;font-size:10px!important}
+#dashboard .home-quick{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:9px!important;margin:0 0 21px!important}
+#dashboard .home-quick-card{
+  min-width:0!important;min-height:62px!important;grid-template-columns:35px minmax(0,1fr) 10px!important;
+  gap:8px!important;padding:9px 10px!important;border:1px solid #e0e1e3!important;
+  border-radius:15px!important;background:#fff!important;color:#17181a!important;box-shadow:none!important;
+}
+#dashboard .home-quick-icon{width:35px!important;height:35px!important;border-radius:11px!important;background:#f0f0f1!important;color:#292a2c!important}
+#dashboard .home-quick-icon svg{width:18px!important;height:18px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#dashboard .home-quick-card b{font-size:12px!important;font-weight:700!important}
+#dashboard .home-quick-card small{margin-top:3px!important;color:#85878b!important;font-size:10px!important}
+#dashboard .home-quick-card i{font-size:19px!important;color:#a0a2a6!important}
+#dashboard .home-section-head{align-items:center!important;margin:0 1px 9px!important;padding:0!important}
+#dashboard .home-section-head h2{margin:0!important;color:#17181a!important;font-size:18px!important;font-weight:750!important;letter-spacing:-.3px!important}
+#dashboard .home-see-all{padding:5px 2px!important;color:#65676b!important;font-size:11px!important;font-weight:650!important}
+#dashboard .home-recent #saved{display:flex!important;flex-direction:column!important;gap:8px!important}
+#dashboard #saved .home-estimate-card{
+  display:grid!important;grid-template-columns:minmax(0,1fr) 32px!important;align-items:center!important;gap:8px!important;
+  margin:0!important;padding:11px 12px!important;border:1px solid #e0e1e3!important;border-radius:15px!important;
+  background:#fff!important;box-shadow:none!important;
+}
+#dashboard .home-estimate-content{min-width:0!important}
+#dashboard .home-estimate-top,#dashboard .home-estimate-bottom{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:8px!important}
+#dashboard .home-estimate-title{min-width:0!important;overflow:hidden!important;color:#202124!important;font-size:12px!important;font-weight:720!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#dashboard .home-estimate-total{flex:0 0 auto!important;color:#17181a!important;font-size:12px!important;font-weight:750!important;white-space:nowrap!important}
+#dashboard .home-estimate-bottom{margin-top:7px!important}
+#dashboard .home-estimate-meta{min-width:0!important;overflow:hidden!important;color:#83858a!important;font-size:10px!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#dashboard .home-estimate-status{flex:0 0 auto!important;padding:4px 7px!important;border:0!important;border-radius:999px!important;background:#f0f0f1!important;color:#55575b!important;font-size:9px!important;font-weight:650!important;white-space:nowrap!important}
+#dashboard #saved .home-estimate-card .open{width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border:1px solid #e0e1e3!important;border-radius:10px!important;background:#f8f8f9!important;color:#55575b!important;font-size:20px!important;font-weight:400!important;line-height:1!important;box-shadow:none!important}
+@media(max-width:390px){
+  #dashboard .home-summary{gap:8px!important}
+  #dashboard .home-summary-card{padding:10px!important}
+  #dashboard .home-summary-value{font-size:16px!important}
+  #dashboard .home-quick-card{gap:7px!important;padding:8px!important}
+  #dashboard .home-quick-card b{font-size:11px!important}
+}
+</style>
+
+<style id="mg-sidebar-redesign-v436">
+/* Rebuilt menu hierarchy: bright brand, distinct navigation icons, neutral actions and a pinned account area. */
+#drawerOverlay{background:rgba(0,0,0,.22)!important;backdrop-filter:blur(2px)!important;-webkit-backdrop-filter:blur(2px)!important}
+#drawerOverlay .drawer{box-sizing:border-box;width:min(350px,88vw)!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;background:#fff!important;color:#171819!important;border:0!important;border-right:1px solid #e2e3e5!important;border-radius:0 22px 22px 0!important;box-shadow:14px 0 38px rgba(0,0,0,.14)!important}
+#drawerOverlay .drawer-head{flex:0 0 auto!important;min-height:78px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;margin:0!important;padding:calc(13px + env(safe-area-inset-top)) 17px 13px!important;border-bottom:1px solid #e7e7e9!important;background:#fff!important}
+#drawerOverlay .drawer-brand{display:flex!important;align-items:center!important;gap:12px!important;min-width:0!important}
+#drawerOverlay .drawer-mg-logo{box-sizing:border-box!important;width:48px!important;height:48px!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;border:1px solid #dedfe1!important;border-radius:15px!important;background:#eeeeef!important;color:#171819!important;font-size:15px!important;font-weight:800!important;letter-spacing:.02em!important}
+#drawerOverlay .drawer-brand-copy{min-width:0!important}
+#drawerOverlay .drawer-brand-copy .drawer-title{display:block!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#171819!important;opacity:1!important;font-size:20px!important;font-weight:800!important;line-height:1.15!important;letter-spacing:-.3px!important;box-shadow:none!important;text-shadow:none!important}
+#drawerOverlay .drawer-brand-copy small{display:block!important;margin-top:4px!important;color:#707276!important;font-size:12px!important;font-weight:500!important;line-height:1.2!important}
+#drawerOverlay .drawer-close{box-sizing:border-box!important;width:38px!important;height:38px!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;padding:0!important;border:1px solid #e4e5e7!important;border-radius:12px!important;background:#f5f5f6!important;color:#55575a!important;font-size:24px!important;line-height:1!important;box-shadow:none!important}
+#drawerOverlay .drawer-scroll{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:17px 15px 10px!important;background:#fff!important;scrollbar-width:none!important}
+#drawerOverlay .drawer-scroll::-webkit-scrollbar{display:none!important}
+#drawerOverlay .drawer-create{box-sizing:border-box!important;width:100%!important;min-height:60px!important;height:60px!important;display:flex!important;align-items:center!important;gap:11px!important;margin:0 0 22px!important;padding:8px 11px!important;border:1px solid #e2e3e5!important;border-radius:15px!important;background:#f3f3f4!important;color:#222325!important;box-shadow:none!important;text-align:left!important}
+#drawerOverlay .drawer-create-icon{box-sizing:border-box!important;width:39px!important;height:39px!important;display:grid!important;place-items:center!important;flex:0 0 auto!important;border:1px solid #e5e6e8!important;border-radius:12px!important;background:#fff!important;color:#303235!important;font-size:21px!important;line-height:1!important}
+#drawerOverlay .drawer-create-icon svg{width:19px!important;height:19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important}
+#drawerOverlay .drawer-create-copy{min-width:0!important;display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:3px!important}
+#drawerOverlay .drawer-create-copy b{color:#202123!important;font-size:15px!important;font-weight:700!important;letter-spacing:0!important;line-height:1.15!important}
+#drawerOverlay .drawer-create-copy small{color:#727478!important;font-size:11px!important;font-weight:500!important;line-height:1.2!important}
+#drawerOverlay .drawer-chevron{margin-left:auto!important;color:#8a8c90!important;font-size:24px!important;font-weight:400!important;line-height:1!important}
+#drawerOverlay .drawer-section-title.drawer-main-title{margin:0 4px 9px!important;color:#202123!important;font-size:17px!important;font-weight:750!important;letter-spacing:0!important;line-height:1.25!important}
+#drawerOverlay .drawer-list{display:grid!important;gap:4px!important;margin:0!important;padding:0!important}
+#drawerOverlay .drawer-item{box-sizing:border-box!important;width:100%!important;min-width:0!important;min-height:58px!important;height:58px!important;display:grid!important;grid-template-columns:40px minmax(0,1fr) 16px!important;align-items:center!important;gap:11px!important;padding:0 10px!important;border:1px solid transparent!important;border-radius:14px!important;background:#fff!important;color:#27282a!important;text-align:left!important;box-shadow:none!important;transform:none!important;transition:background .14s ease,border-color .14s ease!important}
+#drawerOverlay .drawer-item:active{background:#f1f1f2!important;border-color:#e7e7e9!important;transform:none!important}
+#drawerOverlay .drawer-item-home{background:#f0f0f1!important;border-color:#e5e5e7!important}
+#drawerOverlay .drawer-item>span:nth-child(2){min-width:0!important;display:flex!important;flex-direction:column!important;gap:3px!important}
+#drawerOverlay .drawer-item b{display:block!important;color:#222325!important;font-size:14px!important;font-weight:650!important;line-height:1.15!important;letter-spacing:0!important}
+#drawerOverlay .drawer-item small{display:block!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.2!important}
+#drawerOverlay .drawer-item i{color:#a0a2a5!important;font-size:19px!important;font-weight:400!important;line-height:1!important}
+#drawerOverlay .drawer-icon{box-sizing:border-box!important;width:38px!important;height:38px!important;display:grid!important;place-items:center!important;border:1px solid #e6e6e8!important;border-radius:12px!important;background:#f5f5f6!important;color:#424447!important}
+#drawerOverlay .drawer-icon svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#drawerOverlay .drawer-item-home .drawer-icon{border-color:#dddee0!important;background:#e5e5e7!important;color:#242527!important}
+#drawerOverlay .drawer-menu-separator{height:1px!important;margin:13px 5px!important;background:#e7e7e9!important}
+#drawerOverlay .drawer-account{box-sizing:border-box!important;flex:0 0 auto!important;margin:0!important;padding:12px 15px calc(12px + env(safe-area-inset-bottom))!important;border:0!important;border-top:1px solid #e5e6e8!important;border-radius:0!important;background:#fff!important;color:#242527!important;box-shadow:none!important}
+#drawerOverlay .drawer-account-state[hidden],#drawerOverlay .drawer-account-actions[hidden]{display:none!important}
+#drawerOverlay .drawer-cloud-row{display:grid!important;grid-template-columns:40px minmax(0,1fr) 8px!important;align-items:center!important;gap:11px!important}
+#drawerOverlay .drawer-cloud-icon{box-sizing:border-box!important;width:40px!important;height:40px!important;display:grid!important;place-items:center!important;border:1px solid #e3e4e6!important;border-radius:13px!important;background:#f1f1f2!important;color:#424447!important}
+#drawerOverlay .drawer-cloud-icon svg{width:20px!important;height:20px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#drawerOverlay .drawer-cloud-row b{display:block!important;color:#242527!important;font-size:12px!important;font-weight:650!important;line-height:1.2!important}
+#drawerOverlay .drawer-cloud-row small{display:block!important;margin-top:3px!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.25!important;overflow-wrap:anywhere!important}
+#drawerOverlay .drawer-account-dot{width:8px!important;height:8px!important;border-radius:50%!important;background:#56585b!important;box-shadow:none!important}
+#drawerOverlay .drawer-account.offline .drawer-account-dot{background:#a3a4a7!important}
+#drawerOverlay .drawer-account-email{margin:8px 0 0 51px!important;padding:0!important;border:0!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#drawerOverlay .drawer-account-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;margin-top:10px!important}
+#drawerOverlay .drawer-account-actions button{box-sizing:border-box!important;width:100%!important;min-height:40px!important;padding:0 9px!important;border:1px solid #e0e1e3!important;border-radius:11px!important;background:#f4f4f5!important;color:#3c3e41!important;font:inherit!important;font-size:11px!important;font-weight:600!important;box-shadow:none!important}
+#drawerOverlay .drawer-account-actions button:active{background:#e9e9eb!important}
+#drawerOverlay #mgCloudSignedOutActions{grid-template-columns:1fr!important}
+#drawerOverlay #mgCloudSignedOutActions .drawer-account-login{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-top:11px!important;padding:0 11px!important;background:#f0f0f1!important;color:#242527!important;text-align:left!important}
+#drawerOverlay #mgCloudSignedOutActions .drawer-account-login span{color:#686a6d!important;font-size:20px!important;font-weight:400!important}
+@media(max-width:390px){#drawerOverlay .drawer{width:min(340px,88vw)!important}#drawerOverlay .drawer-head{padding-left:14px!important;padding-right:12px!important}#drawerOverlay .drawer-scroll{padding-left:12px!important;padding-right:12px!important}#drawerOverlay .drawer-account{padding-left:12px!important;padding-right:12px!important}}
+</style>
+
+
+<style id="mg-settings-hub-polish-v438">
+/* Settings landing page: lower the local header and make each section scannable at a glance. */
+#settingsScreen.app{padding-top:calc(env(safe-area-inset-top,0px) + 20px)!important}
+#settingsScreen .settings-topbar{min-height:48px!important;margin-bottom:14px!important;align-items:center!important}
+#settingsScreen .settings-topbar .mg-legacy-top-control{width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;flex:0 0 44px!important;border-radius:13px!important;font-size:23px!important}
+#settingsScreen .settings-topbar-title{font-size:21px!important;font-weight:700!important;letter-spacing:-.035em!important}
+#settingsScreen .settings-hub-v357{max-width:1000px!important;padding:0 0 24px!important}
+#settingsScreen .settings-hub-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+#settingsScreen .settings-hub-card{box-sizing:border-box!important;width:100%!important;height:68px!important;min-height:68px!important;display:grid!important;grid-template-columns:40px minmax(0,1fr) 15px!important;align-items:center!important;gap:11px!important;padding:0 13px!important;border:1px solid #e2e3e5!important;border-radius:16px!important;background:#fff!important;box-shadow:0 3px 12px rgba(0,0,0,.035)!important;text-align:left!important}
+#settingsScreen .settings-hub-card:active{transform:scale(.99)!important;background:#f7f7f8!important}
+#settingsScreen .settings-hub-icon{box-sizing:border-box!important;width:38px!important;height:38px!important;display:grid!important;place-items:center!important;border:1px solid #e4e5e7!important;border-radius:12px!important;background:#f2f2f3!important;color:#383a3d!important;font-size:16px!important}
+#settingsScreen .settings-hub-icon svg{width:19px!important;height:19px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.65!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+#settingsScreen .settings-hub-copy{min-width:0!important;display:flex!important;flex-direction:column!important;gap:3px!important}
+#settingsScreen .settings-hub-copy b{display:block!important;overflow:hidden!important;color:#202123!important;font-size:14px!important;font-weight:650!important;line-height:1.15!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#settingsScreen .settings-hub-copy small{display:block!important;overflow:hidden!important;color:#77797d!important;font-size:11px!important;font-weight:450!important;line-height:1.15!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+#settingsScreen .settings-hub-arrow{color:#8a8c90!important;font-size:23px!important;line-height:1!important;text-align:center!important}
+@media(max-width:600px){#settingsScreen .settings-hub-grid{grid-template-columns:1fr!important;gap:9px!important}#settingsScreen .settings-hub-card{height:66px!important;min-height:66px!important;border-radius:15px!important}}
+@media(max-width:360px){#settingsScreen .settings-topbar-title{font-size:19px!important}#settingsScreen .settings-hub-card{grid-template-columns:38px minmax(0,1fr) 12px!important;gap:9px!important;padding:0 10px!important}#settingsScreen .settings-hub-copy small{font-size:10px!important}}
+</style>
+
+<script src="js/admin-monitor-v500.js?v=509"></script>
+  <script src="js/team-workflow-v512.js?v=512"></script>
+  <script src="js/wizard-v518.js?v=562"></script>
+</body></html>

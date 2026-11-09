@@ -1,0 +1,25 @@
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const core = fs.readFileSync(path.join(root, 'js/estimate-core.js'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'js/team-workflow-v506.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'css/team-workflow-v506.css'), 'utf8');
+const rules = JSON.parse(fs.readFileSync(path.join(root, 'database.rules.json'), 'utf8'));
+function assert(condition, message) { if (!condition) throw new Error(message); }
+assert(/id="mgTeamMenuItem"[^>]*data-menu-action="team"/.test(html), 'Sidebar button missing');
+assert(/id="teamScreen"/.test(html), 'Dedicated team screen missing');
+assert(/team-workflow-v506\.css/.test(html), 'Team CSS not linked');
+assert(/team-workflow-v506\.js/.test(html), 'Team JS not linked');
+assert(/'teamScreen'/.test(core), 'Team screen missing from screen router');
+assert(/action==='team'.*MGTeamWorkflow\?\.open/.test(core), 'Sidebar action not routed');
+assert(/users\/\$\{uid\}\/estimates/.test(js), 'Employee estimates Firebase path missing');
+assert(/estimateRef\.set\(normalized\)/.test(js), 'Original estimate write missing');
+assert(/estimateRef\.once\('value'\)/.test(js), 'Write verification read missing');
+assert(/adminEstimateEdits\/\$\{uid\}/.test(js), 'Admin edit history write missing');
+assert(/accepted === true/.test(js), 'Accepted team member check missing');
+assert(/emailVerified === true/.test(js), 'Verified admin check missing');
+assert(rules.rules.users.$uid.estimates['.write'].includes('teamMembers'), 'Firebase estimate write rule missing team membership check');
+assert(rules.rules.teamMembers['.write'].includes('email_verified'), 'Firebase team membership rule missing admin verification');
+assert(css.includes('.mg-team-screen') && css.includes('@media (max-width:650px)'), 'Responsive team CSS missing');
+console.log('PASS: Real Team v506 integration smoke test');

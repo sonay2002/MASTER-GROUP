@@ -1,0 +1,44 @@
+/* Master Group v476 — оформление новой сметы на десктопе (вариант A): шаг «Клиент» и окно выбора услуг.
+   Только от 1100px. Шаги скрываются атрибутом hidden — display задаём только для :not([hidden]). */
+@media screen and (min-width:1100px) and (min-height:600px) {
+  /* ---------- Шаг «Клиент»: форма слева, итог справа ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #step4:not([hidden]) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 20px;
+    align-items: start;
+  }
+  html body #step4 > .contact-card-v2 { grid-column: 1; max-width: none !important; margin: 0 !important; }
+  html body #step4 .contact-fields-v2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px 20px !important; height: auto !important; }
+  html body #step4 .contact-fields-v2 > .contact-field-v2:nth-child(3) { grid-column: 1 / -1; }
+  html body #step4 .contact-field-v2 { margin: 0 !important; }
+  html body #step4 .mg-wz-side {
+    grid-column: 2; grid-row: 1;
+    padding: 20px 22px; border-radius: 16px; background: #14181f; color: #fff;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  html body #step4 .mg-wz-side span { font-size: 13px; font-weight: 600; color: #aeb8c5; }
+  html body #step4 .mg-wz-side b { font-size: 32px; line-height: 1.1; font-weight: 760; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+  html body #step4 .mg-wz-side small { font-size: 13px; color: #aeb8c5; }
+  html body #step4 .mg-wz-side p { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.14); font-size: 13px; line-height: 1.45; color: #aeb8c5; }
+
+  /* ---------- Окно выбора услуг: по центру, без наложения списка на подсказку ---------- */
+  html body #directionServiceOverlay { align-items: center !important; justify-content: center !important; }
+  html body #directionServiceOverlay .direction-service-modal {
+    display: flex !important; flex-direction: column !important;
+    height: auto !important; max-height: min(760px, 88vh) !important;
+    border-radius: 20px !important; overflow: hidden !important;
+    box-shadow: 0 24px 60px -20px rgba(16,24,40,.45) !important;
+  }
+  html body #directionServiceOverlay #directionServiceList { flex: 1 1 auto !important; height: auto !important; max-height: none !important; min-height: 120px; overflow-y: auto !important; }
+  html body #directionServiceOverlay .direction-service-ai-suggestion,
+  html body #directionServiceOverlay .direction-service-quick-add { flex: 0 0 auto !important; }
+  /* ---------- Настройки → Компания ---------- */
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany .settings-group-title { margin: 0 0 10px !important; font-size: 13px !important; font-weight: 700 !important; letter-spacing: 0 !important; text-transform: none !important; color: #14181f !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany .field label { margin: 0 0 6px !important; font-size: 12.5px !important; font-weight: 600 !important; color: #667085 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany .settings-input { border-radius: 11px !important; font-size: 14px !important; font-weight: 500 !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany input.settings-input { height: 44px !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany textarea.settings-input { width: 100% !important; box-sizing: border-box !important; min-height: 96px !important; padding: 12px 14px !important; resize: vertical; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany .company-fields-v2 { align-items: start !important; }
+  html body:not(#mg-soft-ui-guard):not(#mg-soft-ui-guard-2) #settingsPanelCompany button.primary { width: auto !important; min-width: 240px !important; height: 46px !important; border-radius: 12px !important; font-size: 14px !important; font-weight: 650 !important; }
+}

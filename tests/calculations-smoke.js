@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const ctx={window:{}};vm.createContext(ctx);
+vm.runInContext(fs.readFileSync('js/calculations.js','utf8'),ctx);
+const c=ctx.window.MGCalculations;
+assert.strictEqual(c.itemTotal({qty:2,price:125}),250);
+assert.strictEqual(c.directionTotal({items:[{qty:2,price:125},{qty:3,price:10}]}),280);
+const e={total:1000,payments:[{amount:200},{amount:150}],expenseMaterial:100,expenseTransport:50,expenseSalary:200,expenseOther:25};
+const n=c.normalizeFinance(e);
+assert.strictEqual(n.prepayment,350);
+assert.strictEqual(n.balance,650);
+assert.strictEqual(n.expenseTotal,375);
+assert.strictEqual(n.profit,625);
+assert.strictEqual(c.estimateTotal({directions:[{items:[{qty:2,price:100}]}]}),200);
+console.log('calculations-smoke: OK');

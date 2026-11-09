@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+const fs=require('fs'),path=require('path');
+const root=path.resolve(__dirname,'..');
+const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+const templates=fs.readFileSync(path.join(root,'js','estimate-templates.js'),'utf8');
+const finance=fs.readFileSync(path.join(root,'js','finance-ui.js'),'utf8');
+const css=fs.readFileSync(path.join(root,'css','styles.css'),'utf8');
+const app=fs.readFileSync(path.join(root,'js','document-actions-v419.js'),'utf8');
+if(!templates.includes("const allowed=['template1','template2']")) throw new Error('Settings must expose exactly two templates');
+for(const name of ['Классическая','По разделам']) if(!templates.includes(name)) throw new Error(`Missing approved design: ${name}`);
+if(!index.includes('id="estimateTemplateList" class="estimate-template-list"></div>')) throw new Error('Template card host missing');
+if(index.includes('estimateTemplateDots')||templates.includes('data-template-dot')) throw new Error('Template pagination dots must be removed');
+if(!finance.includes("const grouped=currentTemplate==='template2'")) throw new Error('Template 2 is not routed to grouped document output');
+if(!finance.includes('const tableColumns=grouped?6:7')) throw new Error('Document column count does not match selected template');
+if(!finance.includes('data-rendered-template="${currentTemplate}"')) throw new Error('Rendered template marker missing');
+for(const col of ['Направление','Работа / услуга','Ед.','Цена за единицу','Количество','Сумма']) if(!finance.includes(col)) throw new Error(`Missing document column: ${col}`);
+if(!css.includes('.tpl-template2 .tpl-section-row th')) throw new Error('Section layout styling missing');
+if(!css.includes('#document .tpl-template2 .tpl-work-table th:nth-child(2),#document .tpl-template2 .tpl-work-table td:nth-child(2){display:table-cell!important')) throw new Error('Section template work column is hidden on phones');
+if(!app.includes('async function printEstimate()')||!app.includes('application/pdf')||!app.includes('pngToPdf(image)')) throw new Error('Print action must generate a PDF');
+console.log('estimate-templates-two-smoke: OK');
