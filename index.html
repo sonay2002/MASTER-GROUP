@@ -1,5 +1,5 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v468"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
-<meta name="application-name" content="Master Group v478"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v475</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#111111"><meta name="app-version" content="v524"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Master Group">
+<meta name="application-name" content="Master Group v504"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><title>Master Group — v504</title>
 
 
 
@@ -17,7 +17,7 @@
 
 
 
-<link rel="stylesheet" href="css/styles.css?v=440">
+<link rel="stylesheet" href="css/styles.css?v=498">
 <link rel="stylesheet" href="css/contact-card-final.css?v=440">
 
 <style id="mg-home-render-gate-v446">
@@ -354,12 +354,92 @@
 <link rel="stylesheet" href="css/estimates-list-compact-v458.css?v=458">
 <link rel="stylesheet" href="css/estimates-status-palette-v460.css?v=460">
 
-</head><body><!-- v296 slim fixed edge-to-edge top navigation -->
+<link rel="stylesheet" href="css/desktop-layout-v465.css?v=465">
+<link rel="stylesheet" href="css/desktop-layout-v467.css?v=467">
+<link rel="stylesheet" href="css/desktop-layout-v469.css?v=469">
+<link rel="stylesheet" href="css/desktop-master-detail-v470.css?v=470">
+<link rel="stylesheet" href="css/desktop-home-v471.css?v=471">
+<link rel="stylesheet" href="css/desktop-editor-v472.css?v=472">
+<link rel="stylesheet" href="css/desktop-pages-v473.css?v=473">
+<link rel="stylesheet" href="css/desktop-flow-v475.css?v=475">
+<link rel="stylesheet" href="css/desktop-wizard-v476.css?v=476">
+<link rel="stylesheet" href="css/desktop-catalog-v477.css?v=477">
+<link rel="stylesheet" href="css/fix-hidden-screens-v478.css?v=478">
+<link rel="stylesheet" href="css/desktop-workspace-nav-v483.css?v=488">
+  <link rel="stylesheet" href="css/sf-pro-v499.css?v=499">
+  <link rel="stylesheet" href="css/admin-monitor-v503.css?v=509">
+  <link rel="stylesheet" href="css/team-workflow-v512.css?v=512">
+  <link rel="stylesheet" href="css/team-estimate-editor-v517.css?v=517">
+  <link rel="stylesheet" href="css/wizard-v518.css?v=562">
+
+<style id="mg-startup-splash-v566">
+#mgStartupSplash{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#fff 0%,#f7f7f6 58%,#eeeeec 100%);opacity:1;visibility:visible;transition:opacity .72s cubic-bezier(.22,.7,.2,1),visibility .72s;isolation:isolate}
+#mgStartupSplash.mg-splash-leaving{opacity:0;visibility:hidden;pointer-events:none}
+#mgStartupSplash .mg-splash-inner{width:min(82vw,360px);display:flex;flex-direction:column;align-items:center;position:relative;transform:translateY(8px);animation:mgSplashRise .9s cubic-bezier(.2,.75,.25,1) both}
+#mgStartupSplash .mg-splash-mark{width:116px;height:116px;position:relative;display:grid;place-items:center;margin-bottom:27px}
+#mgStartupSplash .mg-splash-orbit{position:absolute;inset:0;border:1.5px solid transparent;border-top-color:#777;border-right-color:#c5c5c5;border-radius:50%;transform:rotate(-35deg);animation:mgSplashOrbit 2.2s cubic-bezier(.55,.05,.35,.95) infinite}
+#mgStartupSplash .mg-splash-orbit:after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:#252525;top:10px;left:17px;box-shadow:0 0 12px #777}
+#mgStartupSplash .mg-splash-core{width:78px;height:78px;border-radius:25px;background:linear-gradient(145deg,#292929,#090909);display:grid;place-items:center;box-shadow:0 14px 34px #0002, inset 0 1px 0 #ffffff35;animation:mgSplashCore 2.2s ease-in-out infinite}
+#mgStartupSplash .mg-splash-core svg{width:53px;height:53px;overflow:visible}
+#mgStartupSplash .mg-splash-core path{fill:none;stroke:#fff;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:mgSplashDraw 1.25s .2s cubic-bezier(.5,0,.2,1) forwards}
+#mgStartupSplash .mg-splash-title{font:800 25px/1.1 -apple-system,BlinkMacSystemFont,"SF Pro Display",Arial,sans-serif;letter-spacing:.105em;color:#171717;text-align:center;opacity:0;transform:translateY(12px);animation:mgSplashText .7s .55s ease forwards}
+#mgStartupSplash .mg-splash-subtitle{margin-top:10px;font:500 10px/1.4 -apple-system,BlinkMacSystemFont,Arial,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#858585;opacity:0;animation:mgSplashFade .65s .9s ease forwards}
+#mgStartupSplash .mg-splash-progress{width:116px;height:2px;margin-top:34px;border-radius:10px;background:#dededc;overflow:hidden;opacity:0;animation:mgSplashFade .4s 1s ease forwards}
+#mgStartupSplash .mg-splash-progress:after{content:"";display:block;width:38%;height:100%;border-radius:10px;background:linear-gradient(90deg,#777,#171717,#777);animation:mgSplashProgress 1.35s ease-in-out infinite}
+#mgStartupSplash .mg-splash-loading{margin-top:12px;font:500 11px/1.4 -apple-system,BlinkMacSystemFont,Arial,sans-serif;color:#9a9a98;letter-spacing:.035em;opacity:0;animation:mgSplashFade .4s 1.1s ease forwards}
+@keyframes mgSplashRise{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes mgSplashOrbit{0%{transform:rotate(-35deg)}100%{transform:rotate(325deg)}}
+@keyframes mgSplashCore{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+@keyframes mgSplashDraw{to{stroke-dashoffset:0}}
+@keyframes mgSplashText{to{opacity:1;transform:translateY(0)}}
+@keyframes mgSplashFade{to{opacity:1}}
+@keyframes mgSplashProgress{0%{transform:translateX(-120%)}100%{transform:translateX(360%)}}
+@media(prefers-reduced-motion:reduce){#mgStartupSplash *,#mgStartupSplash *:before{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+<script id="mg-startup-splash-controller-v566">
+(function(){
+  var started=Date.now(),minTime=1900,finished=false;
+  function finish(){
+    if(finished)return;finished=true;
+    var wait=Math.max(0,minTime-(Date.now()-started));
+    setTimeout(function(){
+      var el=document.getElementById('mgStartupSplash');
+      if(!el)return;
+      el.classList.add('mg-splash-leaving');
+      setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},800);
+    },wait);
+  }
+  window.MGSplash={finish:finish};
+  window.addEventListener('load',function(){setTimeout(finish,30000)}, {once:true});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(finish,32000)}, {once:true});
+})();
+</script>
+
+</head><body><div id="mgStartupSplash" role="status" aria-label="Загрузка Master Group">
+  <div class="mg-splash-inner">
+    <div class="mg-splash-mark" aria-hidden="true">
+      <div class="mg-splash-orbit"></div>
+      <div class="mg-splash-core">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M8 48V16l15 19 9-12 9 12 15-19v32"/>
+          <path d="M23 35l9 11 9-11"/>
+        </svg>
+      </div>
+    </div>
+    <div class="mg-splash-title">MASTER GROUP</div>
+    <div class="mg-splash-subtitle">Construction · Service · Quality</div>
+    <div class="mg-splash-progress"></div>
+    <div class="mg-splash-loading">Подготавливаем приложение</div>
+  </div>
+</div><!-- v296 slim fixed edge-to-edge top navigation -->
 <div id="mgFixedTopNav" class="mg-fixed-top-nav" aria-label="Верхняя навигация">
   <button type="button" class="mg-fixed-nav-btn" data-menu="open" aria-label="Открыть меню" title="Меню"><span class="mg-menu-icon" aria-hidden="true">☰</span></button>
-  <div id="mgEditorStepIndicator" class="mg-editor-step-indicator" hidden aria-live="polite" aria-label="Текущий этап создания сметы">
-    <span class="mg-editor-step-label">Направления</span>
-  </div>
+  <nav class="mg-workspace-nav" aria-label="Разделы рабочего пространства">
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.8 12 3l9 7.8M5.5 9.5v11h13v-11M9.5 20.5v-7h5v7"/></svg><span>Главный экран</span></button>
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="stats"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11M10 19V6M16 19v-8M22 19V4M3 20h20"/></svg><span>Финансы</span></button>
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="estimates"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l3 3V20H6zM14 3.5v4h4M9 12h6M9 15.5h6"/></svg><span>Все сметы</span></button>
+    <button type="button" class="mg-workspace-nav-btn" data-workspace-go="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1m7.8 7.8L18 18m0-12-2.1 2.1m-7.8 7.8L6 18"/></svg><span>Настройки</span></button>
+  </nav>
   <div class="mg-fixed-nav-actions" aria-label="Быстрые действия">
     <button type="button" class="mg-fixed-nav-btn mg-new-estimate-btn" data-action="new" aria-label="Новая смета" title="Новая смета">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h8.2L19 7.8v12.7H6.5z"/><path d="M14.5 3.5v4.3H19M12.7 11.2v5.6M9.9 14h5.6"/></svg>
@@ -378,7 +458,7 @@
 <div id="dashboard" class="app screen dashboard-v3 mg-home-render-pending">
 <header class="home-head">
   <button class="home-menu menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button>
-  <div class="home-brand"><span class="home-mark">MG</span><div><b>Master Group</b><small>Рабочее пространство</small></div></div>
+  <div class="home-brand"><span class="home-mark">MG</span><div><b>Master Group</b></div></div>
 
 </header>
 
@@ -396,8 +476,8 @@
 </section>
 
 <section class="home-quick">
-  <button class="home-quick-card" data-v58="estimates" data-nav="estimates"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5h9l3 3V20.5H6z"/><path d="M14.5 3.5v4H18M9 11h6M9 14h6M9 17h4"/></svg></span><span><b>Все сметы</b><small>Документы</small></span><i>›</i></button>
-  <button class="home-quick-card" data-v58="stats" data-nav="stats"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V11M10 19V7M16 19V13M22 19V4"/><path d="m4 8 5-4 5 3 7-5"/></svg></span><span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i></button>
+  <button class="home-quick-card" data-v58="estimates" data-nav="estimates"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7 3.75h7.8L19 8v12.25H7a2 2 0 0 1-2-2V5.75a2 2 0 0 1 2-2Z"/><path d="M14.5 4v4.5H19M9 12h7M9 15.5h7M9 19h4"/><path d="M3 7.5v12A2.5 2.5 0 0 0 5.5 22H16"/></svg></span><span><b>Все сметы</b><small>Документы</small></span><i>›</i></button>
+  <button class="home-quick-card" data-v58="stats" data-nav="stats"><span class="home-quick-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M3.5 9h17M7 15h3"/><path d="m13 15 2-2 2 1 2-3"/><path d="M17 11h2v2"/></svg></span><span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i></button>
 </section>
 
 <section class="home-recent">
@@ -411,7 +491,7 @@
 <header class="top editor-default-top" id="editorDefaultTop"><div class="top-left"><button class="menu-btn mg-legacy-top-control" data-menu="open" aria-label="Открыть меню">☰</button><div class="brand"><div class="logo">MG</div><div><b>Master Group</b><span id="mode">Новая смета</span></div></div></div><button class="btn secondary" data-action="home" hidden aria-hidden="true">Сметы</button></header>
 <header class="top calc-editor-top" id="calcEditorTop" hidden><button type="button" class="menu-btn" data-menu="open" aria-label="Открыть меню">☰</button><button type="button" class="btn secondary" data-action="home" hidden aria-hidden="true">Сметы</button></header>
 <div class="stepbar" id="stepbar"></div><div id="flowNote" class="flow-note"></div>
-<section id="step1" class="step-screen"><div class="direction-screen"><div class="section-kicker">01 · НАПРАВЛЕНИЯ</div><div class="direction-heading"><div><h1 class="direction-title">Направления работ</h1><p class="direction-subtitle">Выберите одно или несколько направлений для этой сметы.</p></div><div class="selection-count direction-count" id="selectionCount"><b>0</b><small>выбрано</small></div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="direction-bottom"><div class="direction-selected-note"><span class="direction-selected-icon">✓</span><div><b id="directionSelectedLabel">Выбрано: 0</b><small id="directionSelectedHint">Выберите хотя бы одно направление</small></div></div><button class="btn primary direction-continue" data-action="step2">Продолжить <span>→</span></button></div></div></section>
+<section id="step1" class="step-screen"><div class="direction-screen"><div class="section-kicker">01 · НАПРАВЛЕНИЯ</div><div class="direction-heading"><div><h1 class="direction-title">Направления работ</h1></div><div class="selection-count direction-count" id="selectionCount"><b>0</b><small>выбрано</small></div></div><div id="categories" class="category-grid"></div><div id="selectedDirections" class="selected-directions"></div><div class="direction-bottom"><div class="direction-selected-note"><span class="direction-selected-icon">✓</span><div><b id="directionSelectedLabel">Выбрано: 0</b><small id="directionSelectedHint">Выберите хотя бы одно направление</small></div></div><button class="btn primary direction-continue" data-action="step2">Продолжить <span>→</span></button></div></div></section>
 <section id="step3" class="step-screen calc-step-screen" hidden>
   <div class="calc-summary-card">
     <div class="calc-summary-icon" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="10" y="5" width="28" height="38" rx="6"></rect><path d="M16 12h16M16 21h5M27 21h5M16 29h5M27 29h5M16 37h5M27 37h5"></path></svg></div>
@@ -559,12 +639,46 @@
 
 <div id="settingsPanelUpdates" hidden class="settings-panel-v2">
   <section class="settings-card-v2 mg-update-settings-card" id="mgUpdateSettingsCard">
-    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v478 · приложение автоматически проверяет новые версии.</p></div></div>
-    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v478 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
+    <div class="settings-card-head-v2"><div class="settings-symbol-v2">↻</div><div><span class="settings-overline">ПРИЛОЖЕНИЕ</span><h2>Обновления</h2><p id="mgUpdateSettingsText">Master Group v504 · шрифт -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif во всём приложении.</p></div></div>
+    <div class="mg-update-settings-row"><div><span id="mgUpdateSettingsStatus" class="mg-update-settings-status">Версия v500 · актуально</span><small class="mg-update-settings-hint">Если доступна новая версия, здесь появится предложение установить её.</small></div><button type="button" class="btn secondary" id="mgCheckUpdateBtn">Проверить обновление</button></div>
   </section>
 </div>
 
 </div>
+<section id="adminMonitorScreen" class="app screen mg-admin-screen" hidden aria-label="Мониторинг пользователей">
+
+  <div class="mg-admin-content">
+    <div class="mg-admin-intro"><div><b>Панель администратора</b><small id="mgAdminIdentity">Проверка доступа…</small></div><span class="mg-admin-secure">Защищённый доступ</span></div>
+    <div class="mg-admin-summary" id="mgAdminSummary">
+      <article><small>Пользователи</small><b id="mgAdminUsersCount">—</b></article>
+      <article><small>Сейчас онлайн</small><b id="mgAdminOnlineCount">—</b></article>
+      <article><small>Создано смет</small><b id="mgAdminCreatedCount">—</b></article>
+      <article><small>Изменено / удалено</small><b id="mgAdminChangedCount">—</b></article>
+    </div>
+    <div class="mg-admin-section-head"><div><h2>Аккаунты</h2><small>Адрес Gmail и активность каждого пользователя</small></div><input id="mgAdminSearch" type="search" placeholder="Поиск по Gmail" aria-label="Поиск пользователя"></div>
+    <div id="mgAdminUsers" class="mg-admin-users"><div class="mg-admin-empty">Загрузка пользователей…</div></div>
+    <div class="mg-admin-section-head mg-admin-events-head"><div><h2>История действий</h2><small>Создание, изменение и удаление смет</small></div><span id="mgAdminEventsCount">0 событий</span></div>
+    <div id="mgAdminEvents" class="mg-admin-events"><div class="mg-admin-empty">Загрузка истории…</div></div>
+
+    <section id="mgAdminEmployeePanel" class="mg-admin-employee-panel" hidden aria-label="Рабочие данные сотрудника">
+      <div class="mg-admin-employee-head">
+        <div><small>АДМИНИСТРАТИВНЫЙ ПРОСМОТР</small><h2 id="mgAdminEmployeeTitle">Сметы сотрудника</h2></div>
+        <button type="button" id="mgAdminEmployeeClose" class="mg-admin-employee-close">Закрыть</button>
+      </div>
+      <div id="mgAdminEmployeeEstimates" class="mg-admin-employee-estimates"><div class="mg-admin-empty">Выберите аккаунт.</div></div>
+      <p class="mg-admin-note">Режим только для чтения. Данные сотрудника не изменяются.</p>
+    </section>
+    <p class="mg-admin-note">Новые аккаунты появляются здесь после первого входа в обновлённую версию приложения. Пароли не собираются и не отображаются.</p>
+  </div>
+</section>
+
+<section id="teamScreen" class="app screen mg-team-screen" hidden aria-label="Моя команда">
+  <div class="mg-team-page">
+    <div id="mgTeamScreenContent">
+      <div class="mg-team-loading">Загрузка…</div>
+    </div>
+  </div>
+</section>
 <div id="drawerOverlay" class="drawer-overlay" data-menu="close">
   <aside class="drawer" data-menu-panel aria-label="Основное меню">
     <div class="drawer-head">
@@ -596,11 +710,19 @@
           <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v11H4z"/><path d="M4 11h16"/><path d="M16.5 15.3h3.5"/><circle cx="14.3" cy="15.2" r="1.2"/><path d="M6 8.5V6.7c0-.9.7-1.7 1.7-1.7H18"/></svg></span>
           <span><b>Финансы</b><small>Доходы и расходы</small></span><i>›</i>
         </button>
+        <button class="drawer-item mg-admin-menu-item" id="mgAdminMenuItem" data-menu-action="admin-monitor" hidden>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="17" height="13" rx="2"/><path d="M8 21h8M12 17v4M7 12l3-3 2 2 4-4"/></svg></span>
+          <span><b>Мониторинг пользователей</b><small>Аккаунты и история действий</small></span><i>›</i>
+        </button>
+        <button class="drawer-item mg-admin-menu-item" id="mgTeamMenuItem" data-menu-action="team" hidden>
+          <span class="drawer-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 20c.3-3.2 2.1-5 5.5-5s5.2 1.8 5.5 5"/><path d="M16 5.5a3 3 0 0 1 0 5.8M17 15c2.2.5 3.3 2.1 3.5 5"/></svg></span>
+          <span><b>Моя команда</b><small>Сотрудники и их сметы</small></span><i>›</i>
+        </button>
         <button class="drawer-item mg-desktop-only-nav" data-open-archives aria-label="Открыть архив смет">
           <span class="drawer-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16v12H4z"/><path d="M3 4.5h18v3H3zM9 11h6M10 11v3h4v-3"/></svg></span>
           <span><b>Архив</b><small>Черновики и удалённые сметы</small></span><i>›</i>
         </button>
-        
+
       </nav>
 
       <div class="drawer-menu-separator" aria-hidden="true"></div>
@@ -637,7 +759,7 @@
           <span class="drawer-account-dot dot" aria-hidden="true"></span>
         </div>
         <div id="mgCloudAccount" class="drawer-account-email"></div>
-        <div class="drawer-account-actions" id="mgCloudSignedInActions"><button id="mgFirebaseDiagnosticOpen" type="button">Диагностика</button><button id="mgCloudLogout" type="button">Выйти из аккаунта</button></div>
+        <div class="drawer-account-actions" id="mgCloudSignedInActions"><button id="mgFirebaseDiagnosticOpen" type="button">Диагностика</button><button id="mgAdminVerifyButton" type="button" hidden>Подтвердить Gmail</button><button id="mgCloudLogout" type="button">Выйти из аккаунта</button></div>
       </div>
       <div class="drawer-account-state" id="mgCloudSignedOut">
         <div class="drawer-cloud-row">
@@ -664,19 +786,21 @@
 </div>
 <div id="calcDirectionOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить направление</h3><button type="button" class="calc-picker-close" data-calc-direction-close>×</button></div><p class="muted">Выберите направление.</p><div id="calcDirectionList" class="direction-picker-grid"></div></div></div><div id="calcPickerOverlay" class="calc-picker-overlay"><div class="calc-picker" role="dialog" aria-modal="true"><div class="calc-picker-head"><h3>Добавить услугу</h3><button type="button" class="calc-picker-close" data-calc-picker-close>×</button></div><div id="calcPickerDirs" class="calc-picker-dirs"></div><div id="calcPickerServices" class="calc-picker-services"></div><div class="calc-picker-custom"><input id="calcManual" placeholder="Название услуги" aria-label="Название услуги"><button type="button" data-calc-manual>Добавить</button></div></div></div><div id="mgUpdateNotice" class="mg-update-notice" hidden role="dialog" aria-modal="true" aria-labelledby="mgUpdateNoticeTitle"><div class="mg-update-notice-card"><div class="mg-update-notice-icon">↻</div><div class="mg-update-notice-copy"><strong id="mgUpdateNoticeTitle">Доступно обновление</strong><span id="mgUpdateNoticeText">Вышла новая версия Master Group.</span></div><div class="mg-update-notice-actions"><button type="button" class="mg-update-later" id="mgUpdateLaterBtn">Позже</button><button type="button" class="mg-update-now" id="mgUpdateNowBtn">Обновить сейчас</button></div></div></div>
 <div id="toast" class="toast"></div><div id="archiveModal" class="modal-overlay"><div class="confirm-modal"><h3>Сохранить смету в архив?</h3><p>Вы сейчас находитесь в процессе создания сметы. Можно сохранить черновик в архив и вернуться к нему позже.</p><div class="confirm-actions"><button class="primary" data-archive-action="save">📦 Поставить в архив</button><button data-archive-action="continue">↩️ Продолжить работу</button><button data-archive-action="discard">Не сохранять</button></div></div></div>
+<script src="js/account-data-scope-v510.js"></script>
+<script src="js/offline-db.js"></script>
 <script src="js/state.js"></script>
 <script src="js/data-model.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/responsive-runtime-v351.js"></script>
-<script src="js/catalog.js?v=447"></script>
+<script src="js/catalog.js?v=533"></script>
 <script src="js/estimate-engine.js"></script>
 <script src="js/calculations.js"></script>
 <script src="js/finance-service.js"></script>
-<script src="./js/mg-icons-v208.js"></script>
+<script src="./js/mg-icons-v208.js?v=560"></script>
 <script src="js/estimate-ui.js"></script>
 <script src="js/mg-ai-service.js"></script>
-<script src="js/estimate-core.js?v=447"></script>
-<script src="js/finance-ui.js?v=460"></script>
+<script src="js/estimate-core.js?v=512"></script>
+<script src="js/finance-ui.js?v=481"></script>
 <script src="js/estimate-templates.js"></script>
 <script src="js/app-core.js"></script>
 
@@ -713,7 +837,7 @@
       </div>
       <div class="mg-cloud-field">
         <label for="mgCloudPassword">Пароль</label>
-        <div class="mg-cloud-input-wrap"><span class="mg-cloud-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><circle cx="12" cy="15.5" r="1"></circle></svg></span><input id="mgCloudPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="Пароль"><button class="mg-cloud-eye" id="mgCloudPasswordToggle" type="button" aria-label="Показать пароль"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></button></div>
+        <div class="mg-cloud-input-wrap"><span class="mg-cloud-input-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="3"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><circle cx="12" cy="15.5" r="1"></circle></svg></span><input id="mgCloudPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="Пароль"><button class="mg-cloud-eye" id="mgCloudPasswordToggle" type="button" aria-label="Показать пароль"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path><circle cx="12" cy="12" r="2.7"></circle></svg></button></div>
       </div>
       <div id="mgCloudMsg" class="mg-cloud-msg"></div>
       <button id="mgCloudSubmit" class="mg-cloud-primary" type="submit">Войти</button>
@@ -730,14 +854,14 @@
 <div id="mgFirebaseDiagnostic" class="mg-fd-overlay" hidden>
   <div class="mg-fd-card" role="dialog" aria-modal="true" aria-labelledby="mgFdTitle">
     <div class="mg-fd-head">
-      <div><div id="mgFdTitle" class="mg-fd-title">Firebase Diagnostic Center</div><div class="mg-fd-sub">Проверяет именно тот путь, который использует Master Group: Firebase SDK → Auth → UID → Realtime Database → <span class="mg-fd-path">users/{uid}/estimates</span>.</div></div>
+      <div><div id="mgFdTitle" class="mg-fd-title">Диагностика Firebase</div><div class="mg-fd-sub">Проверяет вход Firebase Authentication и запись в Realtime Database по пути <span class="mg-fd-path">users/{uid}/estimates</span>.</div></div>
       <button id="mgFdClose" class="mg-fd-close" type="button" aria-label="Закрыть">×</button>
     </div>
     <div id="mgFdSummary" class="mg-fd-summary"><strong>Готово к проверке.</strong><br>Нажмите «Запустить диагностику».</div>
     <div class="mg-fd-actions"><button id="mgFdRun" class="mg-fd-btn primary" type="button">Запустить диагностику</button><button id="mgFdCopy" class="mg-fd-btn secondary" type="button" disabled>Скопировать отчёт</button></div>
     <div id="mgFdGrid" class="mg-fd-grid"></div>
     <div id="mgFdLog" class="mg-fd-log" hidden></div>
-    <div class="mg-fd-foot">Диагностика создаёт временную тестовую запись с префиксом <span class="mg-fd-path">_diagnostic_</span> внутри вашего собственного раздела и сразу удаляет её после проверки. Пароль, токены и содержимое смет в отчёт не попадают.</div>
+    <div class="mg-fd-foot">Диагностика создаёт временную запись с префиксом <span class="mg-fd-path">_diagnostic_</span> в Firebase Realtime Database и удаляет её после проверки. Пароль, токены и содержимое смет в отчёт не попадают.</div>
   </div>
 </div>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -746,13 +870,13 @@
 <script src="js/offline-engine.js"></script>
 <script src="js/firebase-client.js"></script>
 <script src="js/firebase-repository.js"></script>
-<script src="js/firebase-sync.js?v=447"></script>
+<script src="js/firebase-sync.js?v=510"></script>
 <script src="js/direct-interaction-fix.js"></script>
 <script src="js/settings-trash-fix.js"></script>
 <script src="js/status-direct-fix.js"></script>
 <script src="js/filter-direct-fix.js"></script>
 <script src="js/finance-final-fix.js"></script>
-<script src="js/estimates-redesign-v454.js?v=460"></script>
+<script src="js/estimates-redesign-v512.js?v=512"></script>
 <script src="js/analytics-tabs-v310.js?v=311"></script>
 
 
@@ -763,7 +887,7 @@
 
 
 
-<script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=213"></script>
+<script src="./js/settings-icon-runtime-v208.js"></script><script src="./js/new-direction-icon-picker-v211.js?v=560"></script>
 <script src="js/v280-fixed-top-nav.js"></script>
 <script src="js/v282-fixed-top-nav-visibility.js"></script>
 
@@ -773,7 +897,8 @@
 <script src="js/document-actions-v419.js?v=431"></script>
 <script src="js/desktop-workspace-v465.js?v=468"></script>
 <script src="js/desktop-master-detail-v470.js?v=470"></script>
-<script src="js/desktop-home-v471.js?v=471"></script>
+<script src="js/desktop-home-v471.js?v=481"></script>
+<script src="js/desktop-workspace-nav-v483.js?v=488"></script>
 <script src="js/desktop-wizard-v476.js?v=476"></script>
 <script src="js/desktop-catalog-v477.js?v=477"></script>
 <style id="mg-desktop-heading-default-v468">#mgDesktopEstimatesHeading{display:none!important}</style>
@@ -1292,10 +1417,6 @@
 @media(max-width:390px){#drawerOverlay .drawer{width:min(340px,88vw)!important}#drawerOverlay .drawer-head{padding-left:14px!important;padding-right:12px!important}#drawerOverlay .drawer-scroll{padding-left:12px!important;padding-right:12px!important}#drawerOverlay .drawer-account{padding-left:12px!important;padding-right:12px!important}}
 </style>
 
-<style id="mg-step-indicator-row-v437">
-/* Center the active estimate step on the same control row, below the iPhone safe-area inset. */
-#mgFixedTopNav .mg-editor-step-indicator{top:calc(env(safe-area-inset-top,0px) + 34px)!important}
-</style>
 
 <style id="mg-settings-hub-polish-v438">
 /* Settings landing page: lower the local header and make each section scannable at a glance. */
@@ -1316,15 +1437,8 @@
 @media(max-width:600px){#settingsScreen .settings-hub-grid{grid-template-columns:1fr!important;gap:9px!important}#settingsScreen .settings-hub-card{height:66px!important;min-height:66px!important;border-radius:15px!important}}
 @media(max-width:360px){#settingsScreen .settings-topbar-title{font-size:19px!important}#settingsScreen .settings-hub-card{grid-template-columns:38px minmax(0,1fr) 12px!important;gap:9px!important;padding:0 10px!important}#settingsScreen .settings-hub-copy small{font-size:10px!important}}
 </style>
-<link rel="stylesheet" href="css/desktop-layout-v465.css?v=465">
-<link rel="stylesheet" href="css/desktop-layout-v467.css?v=467">
-<link rel="stylesheet" href="css/desktop-layout-v469.css?v=469">
-<link rel="stylesheet" href="css/desktop-master-detail-v470.css?v=470">
-<link rel="stylesheet" href="css/desktop-home-v471.css?v=471">
-<link rel="stylesheet" href="css/desktop-editor-v472.css?v=472">
-<link rel="stylesheet" href="css/desktop-pages-v473.css?v=473">
-<link rel="stylesheet" href="css/desktop-flow-v475.css?v=475">
-<link rel="stylesheet" href="css/desktop-wizard-v476.css?v=476">
-<link rel="stylesheet" href="css/desktop-catalog-v477.css?v=477">
-<link rel="stylesheet" href="css/fix-hidden-screens-v478.css?v=478">
+
+<script src="js/admin-monitor-v500.js?v=509"></script>
+  <script src="js/team-workflow-v512.js?v=512"></script>
+  <script src="js/wizard-v518.js?v=562"></script>
 </body></html>

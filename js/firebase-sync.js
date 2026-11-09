@@ -10,15 +10,105 @@
   const KEY='master_group_estimates_v8',CAT='master_group_catalog_v1',COMP='master_group_company_v1';
   const DEL='master_group_cloud_deleted_v1',DIRTY='master_group_cloud_dirty_v3',CATDIRTY='master_group_cloud_catalog_dirty_v2',PROFDIRTY='master_group_cloud_profile_dirty_v2';
   const CAT_LOCAL_UPDATED='master_group_catalog_local_updated_at',CAT_SYNC_AT='master_group_catalog_sync_at';
-  const SYNC_VER='master_group_firebase_v22';
+  const SYNC_VER='master_group_acer_v1';
   const $=id=>document.getElementById(id);
-  const read=(k,fb)=>{try{const x=JSON.parse(localStorage.getItem(k)||'null');return x==null?fb:x}catch(e){return fb}};
-  const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+  const scoped=k=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(k):k}catch(_){return k}};
+  const read=(k,fb)=>{try{const x=JSON.parse(localStorage.getItem(scoped(k))||'null');return x==null?fb:x}catch(e){return fb}};
+  const write=(k,v)=>{try{localStorage.setItem(scoped(k),JSON.stringify(v));return true}catch(e){return false}};
   const uid=()=>{try{if(window.crypto?.randomUUID)return window.crypto.randomUUID()}catch(e){}return 'mg_'+Date.now()+'_'+Math.random().toString(36).slice(2)};
+  const FIREBASE_CLIENT_KEY='master_group_firebase_client_id_v1';
+  let clientId=read(FIREBASE_CLIENT_KEY,'');
+  if(!clientId){clientId=uid();write(FIREBASE_CLIENT_KEY,clientId)}
   const newId=uid;
   const toast=(t)=>{try{if(typeof window.__mgToast==='function')return window.__mgToast(t)}catch(e){}try{const x=$('toast');if(x){x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1700)}}catch(e){}};
   let user=null,cloudMode=false,busy=false,pending=false,db=null,auth=null,root=null,estimateListener=null,catalogListener=null,companyListener=null,metaListener=null,starting=false,authAttempt=false,explicitLogout=false;
+  const MG_ADMIN_EMAIL='berjan608@gmail.com';
+  const MG_MONITOR_QUEUE_KEY='mg_user_audit_queue_v500';
+  const monitorSessionId=uid();
+  let monitorPresenceRef=null,monitorConnectedRef=null,monitorConnectedHandler=null,monitorHeartbeat=null,monitorQueueBusy=false;
+  const monitorServerTimestamp=()=>window.firebase?.database?.ServerValue?.TIMESTAMP||Date.now();
+  const monitorActionLabel=action=>({created:'Создал смету',updated:'Изменил смету',deleted:'Удалил смету'}[action]||'Изменил данные');
+  const monitorDevice=()=>{const ua=navigator.userAgent||'';if(/iPhone|iPad|iPod/i.test(ua))return 'iPhone / iPad';if(/Android/i.test(ua))return 'Android';if(/Macintosh|Mac OS X/i.test(ua))return 'Mac';if(/Windows/i.test(ua))return 'Windows';if(/Linux/i.test(ua))return 'Linux';return 'Другое устройство'};
+  function monitorIsAdmin(u){const current=u||auth?.currentUser||user;return !!current&&String(current.email||'').toLowerCase()===MG_ADMIN_EMAIL&&current.emailVerified===true;}
+  function monitorQueueRead(){try{const q=JSON.parse(localStorage.getItem(scoped(MG_MONITOR_QUEUE_KEY))||'[]');return Array.isArray(q)?q:[]}catch(_){return[]}}
+  function monitorQueueWrite(q){try{localStorage.setItem(scoped(MG_MONITOR_QUEUE_KEY),JSON.stringify(q.slice(-500)))}catch(_){}}
+  function monitorRecordEvent(source){
+    try{
+      if(!user||user.offline||!source||!['created','updated','deleted'].includes(source.action))return;
+      const event={eventId:uid(),uid:user.uid,actorEmail:String(user.email||''),action:source.action,estimateId:String(source.estimateId||''),estimateNumber:String(source.estimateNumber||''),clientName:String(source.clientName||'').slice(0,120),total:Number(source.total)||0,clientAt:Date.now()};
+      const q=monitorQueueRead();q.push(event);monitorQueueWrite(q);
+      if(cloudMode)flushMonitorAuditQueue();
+    }catch(e){console.warn('MG monitor event queue:',e)}
+  }
+  async function flushMonitorAuditQueue(){
+    if(monitorQueueBusy||!user||!db||!cloudMode||!navigator.onLine)return;
+    monitorQueueBusy=true;
+    try{
+      const q=monitorQueueRead(),keep=[],completed=new Set();
+      for(const ev of q){
+        if(ev.uid!==user.uid){keep.push(ev);continue;}
+        try{
+          const ref=db.ref('userAudit/'+ev.uid+'/'+ev.eventId);
+          const exists=await ref.once('value');
+          if(!exists.exists())await ref.set({eventId:ev.eventId,actorUid:ev.uid,actorEmail:ev.actorEmail,action:ev.action,estimateId:ev.estimateId,estimateNumber:ev.estimateNumber,clientName:ev.clientName,total:ev.total,clientAt:ev.clientAt,at:monitorServerTimestamp(),appVersion:'v500'});
+          const profile=db.ref('userDirectory/'+ev.uid+'/profile');
+          await profile.update({lastSeenAt:monitorServerTimestamp(),lastActionAt:monitorServerTimestamp(),lastAction:monitorActionLabel(ev.action),appVersion:'v500'});
+          completed.add(ev.eventId);
+        }catch(err){keep.push(ev);console.warn('MG monitor audit upload:',err?.code||err)}
+      }
+      // Preserve events added while this batch was being uploaded.
+      const latest=monitorQueueRead().filter(ev=>!completed.has(ev.eventId));
+      monitorQueueWrite(latest.concat(keep.filter(ev=>!latest.some(x=>x.eventId===ev.eventId))));
+    }finally{monitorQueueBusy=false;}
+  }
+  async function monitorHeartbeatNow(){
+    if(!monitorPresenceRef||!user||!cloudMode||!navigator.onLine)return;
+    const stamp=monitorServerTimestamp();
+    try{
+      await monitorPresenceRef.update({online:true,lastSeenAt:stamp,device:monitorDevice(),appVersion:'v500'});
+      await db.ref('userDirectory/'+user.uid+'/profile').update({lastSeenAt:stamp,appVersion:'v500'});
+      flushMonitorAuditQueue();
+    }catch(e){console.warn('MG monitor heartbeat:',e?.code||e)}
+  }
+  function stopUserMonitoring(){
+    try{if(monitorConnectedRef&&monitorConnectedHandler)monitorConnectedRef.off('value',monitorConnectedHandler);}catch(_){ }
+    try{if(monitorPresenceRef){monitorPresenceRef.onDisconnect().cancel().catch(()=>{});monitorPresenceRef.update({online:false,lastSeenAt:monitorServerTimestamp()}).catch(()=>{});}}catch(_){ }
+    if(monitorHeartbeat)clearInterval(monitorHeartbeat);
+    monitorHeartbeat=null;monitorConnectedRef=null;monitorConnectedHandler=null;monitorPresenceRef=null;
+  }
+  async function startUserMonitoring(){
+    if(!user||!db||!cloudMode)return;
+    stopUserMonitoring();
+    const activeUser=user,base=db.ref('userDirectory/'+activeUser.uid),profile=base.child('profile');
+    const createdAt=Date.parse(activeUser.metadata?.creationTime||'')||Date.now();
+    try{
+      await profile.update({uid:activeUser.uid,email:String(activeUser.email||''),displayName:String(activeUser.displayName||''),createdAt,registeredAt:createdAt,lastSeenAt:monitorServerTimestamp(),lastLoginAt:Date.parse(activeUser.metadata?.lastSignInTime||'')||Date.now(),appVersion:'v500'});
+    }catch(e){console.warn('MG monitor profile registration:',e?.code||e);return;}
+    monitorPresenceRef=base.child('presence').child(monitorSessionId);
+    monitorConnectedRef=db.ref('.info/connected');
+    monitorConnectedHandler=snap=>{
+      if(snap.val()!==true||!user||user.uid!==activeUser.uid||!cloudMode)return;
+      const offline={online:false,lastSeenAt:monitorServerTimestamp(),device:monitorDevice(),appVersion:'v500'};
+      monitorPresenceRef.onDisconnect().set(offline).then(()=>monitorHeartbeatNow()).catch(e=>console.warn('MG monitor onDisconnect:',e?.code||e));
+    };
+    monitorConnectedRef.on('value',monitorConnectedHandler);
+    monitorHeartbeat=setInterval(monitorHeartbeatNow,35000);
+    flushMonitorAuditQueue();
+  }
+  window.__mgMonitorRecordEvent=monitorRecordEvent;
+  window.__mgMonitorIsAdmin=()=>monitorIsAdmin(auth?.currentUser||user);
+  window.__mgMonitorAdminEmail=MG_ADMIN_EMAIL;
   const cloudNumberPromises=new Map();
+  const estimateWriteQueues=new Map();
+  function withEstimateWriteLock(id,task){
+    id=String(id||'');
+    const previous=estimateWriteQueues.get(id)||Promise.resolve();
+    const current=previous.catch(()=>{}).then(task);
+    estimateWriteQueues.set(id,current);
+    return current.finally(()=>{
+      if(estimateWriteQueues.get(id)===current)estimateWriteQueues.delete(id);
+    });
+  }
   function msg(t,error){if(!$('mgCloudMsg'))return;$('mgCloudMsg').textContent=t||'';$('mgCloudMsg').classList.toggle('error',!!error)}
   const firebaseFriendlyError=(err,context)=>window.MGFirebaseClient?.friendlyError(err,context)||'Произошла ошибка облачного сервиса. Попробуйте ещё раз.';
   function cloudError(err,context){
@@ -40,6 +130,7 @@
     if($('mgCloudAccount'))$('mgCloudAccount').textContent=user?.email||'';
   }
   function showAuth(mode){
+    try{window.MGSplash?.finish?.()}catch(_){}
     const signup=mode==='signup';
     $('mgCloudAuth').hidden=false;
     $('mgCloudAuth').style.display='flex';
@@ -59,13 +150,50 @@
   function hideAuth(){ const el=$('mgCloudAuth'); if(!el)return; el.hidden=true; el.style.display='none'; authAttempt=false }
   function keepAuthVisible(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
   function lockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
-  function unlockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=true;el.style.display='none'} authAttempt=false }
+  function unlockAuthGate(){ try{window.MGSplash?.finish?.()}catch(_){} const el=$('mgCloudAuth'); if(el){el.hidden=true;el.style.display='none'} authAttempt=false }
   function localEstimates(){const a=read(KEY,[]);return Array.isArray(a)?a:[]}
   function localCatalog(){const a=read(CAT,[]);return Array.isArray(a)?a:[]}
   function dirtyIds(){const a=read(DIRTY,[]);return new Set(Array.isArray(a)?a.map(String):[])}
   function setDirty(ids){const clean=Array.from(new Set(ids.map(String)));write(DIRTY,clean);if(SYNC_ENGINE)clean.forEach(id=>SYNC_ENGINE.enqueue('estimate',id))}
   function markDirty(ids){const s=dirtyIds();ids.forEach(id=>{id=String(id);s.add(id);if(SYNC_ENGINE)SYNC_ENGINE.enqueue('estimate',id)});setDirty(Array.from(s))}
   function clearDirty(id){const s=dirtyIds();s.delete(String(id));setDirty(Array.from(s));if(SYNC_ENGINE)SYNC_ENGINE.remove('estimate',id)}
+  function captureEstimateConflict(estimate,error){
+    if(!SYNC_ENGINE||!estimate?.id||error?.code!=='database/conflict')return false;
+    const local=JSON.parse(JSON.stringify(estimate));
+    const remote=error.currentEstimate&&typeof error.currentEstimate==='object'?JSON.parse(JSON.stringify(error.currentEstimate)):null;
+    SYNC_ENGINE.putConflict({id:String(estimate.id),local,remote,remoteRevision:Number(error.currentRevision??remote?._serverRevision)||0,localRevision:Number(estimate._serverRevision)||0,capturedAt:Date.now()});
+    const dirty=dirtyIds();dirty.delete(String(estimate.id));write(DIRTY,Array.from(dirty));SYNC_ENGINE.remove('estimate',estimate.id);
+    renderConflictPanel();
+    return true;
+  }
+  function renderConflictPanel(){
+    if(!SYNC_ENGINE)return;
+    const conflicts=SYNC_ENGINE.conflicts();let host=$('mgSyncConflictPanel');
+    if(!conflicts.length){if(host)host.remove();return;}
+    if(!host){host=document.createElement('section');host.id='mgSyncConflictPanel';host.setAttribute('role','region');host.setAttribute('aria-label','Конфликты синхронизации');host.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:400000;max-width:620px;margin:auto;background:#fff;color:#20242b;border:1px solid #d9dee7;border-radius:16px;padding:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);font:14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif,sans-serif;';document.body.appendChild(host);}
+    host.innerHTML='<div style="font-weight:800;font-size:16px;margin-bottom:6px">Нужно разрешить конфликт синхронизации</div><div style="color:#596273;margin-bottom:12px">Одна из смет была изменена на другом устройстве. Обе версии сохранены. Выберите, какую оставить основной.</div>'+conflicts.map(c=>{const label=escapeHtml(c.local?.number||('Смета '+String(c.id).slice(0,8)));return '<article style="border-top:1px solid #e7eaf0;padding:12px 0"><b>'+label+'</b><div style="font-size:12px;color:#657083;margin:4px 0 10px">Локальная версия и версия сервера сохранены отдельно.</div><div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" data-mg-conflict="local" data-id="'+escapeHtml(c.id)+'">Оставить мою версию</button><button type="button" data-mg-conflict="remote" data-id="'+escapeHtml(c.id)+'">Взять версию сервера</button><button type="button" data-mg-conflict="copy" data-id="'+escapeHtml(c.id)+'">Сохранить обе версии</button></div></article>';}).join('');
+    host.querySelectorAll('button').forEach(b=>{b.style.cssText='border:1px solid #cbd3df;border-radius:9px;background:#f7f8fa;padding:9px 11px;font-weight:650;color:#20242b;';b.addEventListener('click',()=>resolveEstimateConflict(b.dataset.id,b.dataset.mgConflict));});
+  }
+  async function resolveEstimateConflict(id,choice){
+    const conflict=SYNC_ENGINE?.getConflict(id);if(!conflict)return false;
+    const all=localEstimates();const index=all.findIndex(e=>String(e.id)===String(id));
+    if(choice==='remote'){
+      if(conflict.remote){if(index>=0)all[index]=conflict.remote;else all.push(conflict.remote);}else if(index>=0)all.splice(index,1);
+      write(KEY,all);clearDirty(id);SYNC_ENGINE.removeConflict(id);refreshUi();toast('Принята версия сервера');renderConflictPanel();return true;
+    }
+    if(choice==='local'){
+      if(index<0)return false;
+      const kept={...all[index],_serverRevision:Number(conflict.remoteRevision)||0,_syncUpdatedAt:Date.now()};all[index]=kept;write(KEY,all);SYNC_ENGINE.removeConflict(id);markDirty([id]);renderConflictPanel();if(cloudMode)scheduleUpload(100);toast('Локальная версия поставлена на синхронизацию');return true;
+    }
+    if(choice==='copy'){
+      if(index<0)return false;
+      const localCopy={...all[index],id:newId(),_serverRevision:0,_syncUpdatedAt:Date.now(),_localNumberPending:true};
+      if(conflict.remote)all[index]=conflict.remote;
+      all.push(localCopy);write(KEY,all);clearDirty(id);SYNC_ENGINE.removeConflict(id);markDirty([localCopy.id]);renderConflictPanel();refreshUi();if(cloudMode)scheduleUpload(100);toast('Обе версии сохранены как отдельные сметы');return true;
+    }
+    return false;
+  }
+  window.MGSyncConflicts={list:()=>SYNC_ENGINE?.conflicts()||[],resolve:resolveEstimateConflict,open:renderConflictPanel};
   function tombstones(){const raw=read(DEL,[]),out=new Map();if(Array.isArray(raw))raw.forEach(x=>{if(typeof x==='string')out.set(x,0);else if(x?.id)out.set(String(x.id),Number(x.at)||0)});return out}
   function clearDeleted(id){const a=Array.from(tombstones().entries()).filter(x=>String(x[0])!==String(id)).map(([i,at])=>({id:i,at}));write(DEL,a);if(SYNC_ENGINE)SYNC_ENGINE.remove('delete',id)}
   function normalizeLocalIds(){const a=localEstimates();let changed=false;a.forEach(e=>{if(!e.id){e.id=newId();changed=true}if(Array.isArray(e.payments))e.payments.forEach(p=>{if(!p.id){p.id=newId();changed=true}});(e.directions||[]).forEach(d=>(d.items||[]).forEach(x=>{if(!x.id){x.id=newId();changed=true}}))});if(changed)write(KEY,a);return a}
@@ -126,15 +254,15 @@
   function notify(title,body){
     try{
       let host=$('mgCloudNotify');if(!host){host=document.createElement('div');host.id='mgCloudNotify';host.style.cssText='position:fixed;top:18px;right:18px;z-index:300000;max-width:380px;display:grid;gap:10px';document.body.appendChild(host)}
-      const n=document.createElement('div');n.style.cssText='background:rgba(24,26,31,.96);color:#fff;padding:14px 16px;border-radius:16px;box-shadow:0 12px 35px rgba(0,0,0,.25);font:600 14px -apple-system,BlinkMacSystemFont,sans-serif';n.innerHTML='<div style="font-weight:800;margin-bottom:4px">🔔 '+String(title).replace(/[<>]/g,'')+'</div><div style="font-weight:500;opacity:.86">'+String(body).replace(/[<>]/g,'')+'</div>';host.appendChild(n);setTimeout(()=>n.remove(),4200)
+      const n=document.createElement('div');n.style.cssText='background:rgba(24,26,31,.96);color:#fff;padding:14px 16px;border-radius:16px;box-shadow:0 12px 35px rgba(0,0,0,.25);font:600 14px -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif,sans-serif';n.innerHTML='<div style="font-weight:800;margin-bottom:4px">🔔 '+String(title).replace(/[<>]/g,'')+'</div><div style="font-weight:500;opacity:.86">'+String(body).replace(/[<>]/g,'')+'</div>';host.appendChild(n);setTimeout(()=>n.remove(),4200)
     }catch(e){}
   }
   function refreshUi(){try{const F=window.MGAppFinance||{},C=window.MGAppCore||{};if(typeof F.v58RenderEstimates==='function')F.v58RenderEstimates();else if(typeof C.renderEstimates==='function')C.renderEstimates();if(typeof F.dashboard==='function')F.dashboard();else if(typeof C.dashboard==='function')C.dashboard();}catch(e){console.warn('Firebase UI refresh:',e)}}
   function configReady(){return FIREBASE_CONFIG.apiKey&&!FIREBASE_CONFIG.apiKey.startsWith('PASTE_')&&FIREBASE_CONFIG.projectId&&!FIREBASE_CONFIG.projectId.startsWith('PASTE_')&&FIREBASE_CONFIG.databaseURL&&!FIREBASE_CONFIG.databaseURL.includes('PASTE_FIREBASE')}
   function initFirebase(){try{
-    if(!window.MGFirebaseClient?.ready()){status('Firebase не настроен',true);msg('Облачное хранение пока не настроено. Можно продолжить без облака.',true);return false}
+    if(!window.MGFirebaseClient?.ready()){status('Вход не настроен',true);msg('Вход через Firebase Authentication пока не настроен.',true);return false}
     if(!window.MGFirebaseClient.init()){throw Object.assign(new Error('Firebase initialization failed'),{code:'database/unavailable'})}
-    auth=window.MGFirebaseClient.getAuth();db=window.MGFirebaseClient.getDb();return true;
+    auth=window.MGFirebaseClient.getAuth();db=window.MGFirebaseClient.getDb();if(!db)throw Object.assign(new Error('Firebase Realtime Database client is missing'),{code:'database/unavailable'});return true;
   }catch(e){cloudError(e,'startup');return false}}
   window.__mgCloudMarkDirty=function(ids){const a=Array.isArray(ids)?ids:[];if(a.length)markDirty(a);if(cloudMode)scheduleUpload()};
   window.__mgCloudMarkCatalogDirty=function(){write(CATDIRTY,true);if(cloudMode)scheduleUpload()};
@@ -177,7 +305,7 @@
       delete updated._localNumberPending;
       const all=localEstimates(),i=all.findIndex(x=>String(x.id)===id);
       if(i>=0){all[i]=updated;if(!write(KEY,all))throw Object.assign(new Error('Could not persist cloud estimate number locally'),{code:'storage/unavailable'});}
-      try{localStorage.setItem('mg_counter',String(Number(n)))}catch(_){ }
+      try{localStorage.setItem(scoped('mg_counter'),String(Number(n)))}catch(_){ }
       try{
         const st=window.MGState;
         if(st&&String(st.id||'')===id&&st.estimate){st.estimate.number=updated.number;delete st.estimate._localNumberPending;}
@@ -190,18 +318,50 @@
     finally{if(cloudNumberPromises.get(id)===task)cloudNumberPromises.delete(id)}
   }
   async function uploadEstimate(id){
-    let e=localEstimates().find(x=>String(x.id)===String(id));
-    if(e&&window.MGFinance?.normalize){e=window.MGFinance.normalize(e);const all=localEstimates();const i=all.findIndex(x=>String(x.id)===String(id));if(i>=0){all[i]=e;write(KEY,all)}}
-    if(!e){clearDirty(id);return;}
-    if(!root||!user) throw Object.assign(new Error('Cloud not ready'),{code:'database/unavailable'});
-    e=await ensureCloudNumber(e);
-    const payload=FIREBASE_REPO.sanitize(JSON.parse(JSON.stringify(e)));
-    payload._cloudUpdatedAt=window.MGFirebaseClient.serverTimestamp();
-    payload._clientUpdatedAt=Number(e._syncUpdatedAt)||Date.now();
-    payload._deleted=false;
-    await FIREBASE_REPO.writeEstimate(user.uid,payload);
-    const saved=await FIREBASE_REPO.confirmEstimate(user.uid,id);
-    clearDirty(id);return saved;
+    id=String(id||'');
+    if(!id)throw Object.assign(new Error('Estimate has no id'),{code:'database/invalid-estimate'});
+    return withEstimateWriteLock(id,async()=>{
+      if(!root||!user)throw Object.assign(new Error('Cloud not ready'),{code:'database/unavailable'});
+      let saved=null;
+      for(let attempt=0;attempt<10;attempt++){
+        let e=localEstimates().find(x=>String(x.id)===id);
+        if(!e){clearDirty(id);return null;}
+        if(e._ownerUid&&String(e._ownerUid)!==String(user.uid)){
+          clearDirty(id);
+          if(SYNC_ENGINE)SYNC_ENGINE.remove('estimate',id);
+          console.warn('MG blocked estimate upload for a different account:',id);
+          return null;
+        }
+        if(!e._ownerUid){e={...e,_ownerUid:String(user.uid)};const ownerList=localEstimates(),ownerIndex=ownerList.findIndex(x=>String(x.id)===id);if(ownerIndex>=0){ownerList[ownerIndex]=e;write(KEY,ownerList);}}
+        if(window.MGFinance?.normalize){
+          e=window.MGFinance.normalize(e);
+          const all=localEstimates(),index=all.findIndex(x=>String(x.id)===id);
+          if(index>=0){all[index]=e;write(KEY,all);}
+        }
+        e=await ensureCloudNumber(e);
+        const payload=FIREBASE_REPO.sanitize(JSON.parse(JSON.stringify(e)));
+        payload._cloudUpdatedAt=window.MGFirebaseClient.serverTimestamp();
+        payload._clientUpdatedAt=Number(e._syncUpdatedAt)||Date.now();
+        payload._clientId=clientId;
+        payload._deleted=false;
+        let written;
+        try{written=await FIREBASE_REPO.writeEstimate(user.uid,payload)}
+        catch(error){captureEstimateConflict(e,error);throw error;}
+        saved=await FIREBASE_REPO.confirmEstimate(user.uid,id);
+        const current=localEstimates(),index=current.findIndex(x=>String(x.id)===id);
+        if(index<0){clearDirty(id);return saved;}
+        const latest=current[index];
+        latest._serverRevision=Number(saved?._serverRevision)||Number(written?._serverRevision)||0;
+        write(KEY,current);
+        if(Number(latest._syncUpdatedAt||0)===Number(e._syncUpdatedAt||0)){
+          clearDirty(id);
+          return saved;
+        }
+        markDirty([id]);
+      }
+      markDirty([id]);
+      throw Object.assign(new Error('Estimate kept changing during synchronization; retry queued'),{code:'database/unavailable'});
+    });
   }
   window.__mgCloudHardDelete=async function(id){
     try{
@@ -227,17 +387,23 @@
   };
   window.__mgCloudSaveEstimate=async function(estimate){
     try{
-      if(!estimate||!estimate.id) throw Object.assign(new Error('Estimate has no id'),{code:'database/invalid-estimate'});
-      if(!user||!root||!cloudMode) { markDirty([String(estimate.id)]); return false; }
-      estimate=await ensureCloudNumber(estimate);
-      const payload=FIREBASE_REPO.sanitize(JSON.parse(JSON.stringify(estimate)));
-      payload._cloudUpdatedAt=window.MGFirebaseClient.serverTimestamp();
-      payload._clientUpdatedAt=Number(estimate._syncUpdatedAt)||Date.now();
-      payload._deleted=false;
-      await FIREBASE_REPO.writeEstimate(user.uid,payload);
-      await FIREBASE_REPO.confirmEstimate(user.uid,estimate.id);
-      clearDirty(estimate.id);status('Firebase подключён • Смета сохранена',false);msg('Смета сохранена в облаке.');return true;
-    }catch(e){if(estimate?.id)markDirty([String(estimate.id)]);cloudError(e,'sync');status('Облако недоступно — смета сохранена на устройстве',true);return false}
+      if(!estimate||!estimate.id)throw Object.assign(new Error('Estimate has no id'),{code:'database/invalid-estimate'});
+      if(!user||!root||!cloudMode){markDirty([String(estimate.id)]);return false;}
+      const saved=await uploadEstimate(String(estimate.id));
+      if(!saved)throw Object.assign(new Error('Estimate was not found locally'),{code:'database/invalid-estimate'});
+      status('Firebase подключён • Смета сохранена',false);
+      msg('Смета сохранена в Firebase.');
+      return true;
+    }catch(e){
+      if(estimate?.id){
+        if(e?.code==='database/conflict'){
+          if(!SYNC_ENGINE?.getConflict(String(estimate.id)))captureEstimateConflict(estimate,e);
+        }else markDirty([String(estimate.id)]);
+      }
+      cloudError(e,'sync');
+      status('Облако недоступно — смета сохранена на устройстве',true);
+      return false;
+    }
   };
   function adoptRemoteCatalog(data,cloudAt,force=false){
     if(!Array.isArray(data))return false;
@@ -298,8 +464,30 @@
     await FIREBASE_REPO.acknowledge(user.uid,{appVersion:SYNC_VER})
   }
   async function verifyCloudAccess(){if(!root||!user)throw Object.assign(new Error('Cloud access unavailable'),{code:'database/permission-denied'});return FIREBASE_REPO.verify(user.uid)}
-  function applyRemoteEstimate(id,v){id=String(id||'');if(!id||!v)return;const local=localEstimates();const idx=local.findIndex(x=>String(x.id)===id);if(v._deleted===true){if(v._purged===true){if(idx>=0){local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);}try{const tk='master_group_deleted_estimates_v1';write(tk,read(tk,[]).filter(x=>String(x?.id)!==id));}catch(_){}try{window.__mgRenderTrash?.()}catch(_){}refreshUi();return;}if(idx>=0&&dirtyIds().has(id))return;try{const tk='master_group_deleted_estimates_v1';const ta=JSON.parse(localStorage.getItem(tk)||'[]').filter(x=>x&&String(x.id)!==id);const tomb=JSON.parse(JSON.stringify(v));tomb.id=tomb.id||id;tomb._deletedAt=Number(v._deletedAt)||Date.now();tomb._deletedFrom='estimates';delete tomb._deleted;delete tomb._cloudUpdatedAt;ta.unshift(tomb);localStorage.setItem(tk,JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}}catch(err){console.warn('MG remote trash save failed',err)}if(idx>=0){const before=local[idx];local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);refreshUi();if(!starting)addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'deleted',title:estimateDisplay(before)+' удалена',body:'Смета удалена на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}return}const remoteAt=Number(v._cloudUpdatedAt)||0;const remoteClientAt=Number(v._clientUpdatedAt)||0;const oldAt=Math.max(Number(idx>=0?local[idx]._syncUpdatedAt:0)||0,Number(idx>=0?local[idx]._clientUpdatedAt:0)||0);if(idx>=0&&dirtyIds().has(id)){if(remoteAt>oldAt||remoteClientAt>oldAt){addNotification({id:'n_conflict_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'change',title:estimateDisplay(local[idx])+' — конфликт синхронизации',body:'Локальные изменения сохранены на устройстве и будут отправлены в облако. Облачная версия не перезаписала их.',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true});}return;}if(idx>=0&&remoteAt<=oldAt&&remoteClientAt<=oldAt)return;const before=idx>=0?JSON.parse(JSON.stringify(local[idx])):null;let copy=JSON.parse(JSON.stringify(v));delete copy._cloudUpdatedAt;delete copy._deleted;delete copy._deletedAt;if(window.MGDataModel?.normalizeEstimate)copy=window.MGDataModel.normalizeEstimate(copy);copy._syncUpdatedAt=Math.max(remoteAt,remoteClientAt);if(idx>=0)local[idx]=copy;else local.unshift(copy);write(KEY,local);refreshUi();if(!starting){const changes=estimateChanges(before,copy);if(changes.length){const details=changes.map(c=>c.body).filter(Boolean);const kind=changes.some(c=>c.type==='payment')?'payment':changes.some(c=>c.type==='expense')?'expense':changes.some(c=>c.type==='status')?'status':'change';addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:kind,title:estimateDisplay(copy)+' изменена',body:details.length===1?details[0]:(details.length+' изменений: '+details.slice(0,4).join(' • ')+(details.length>4?' • и ещё '+(details.length-4):'')),at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}else if(idx<0){addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:'created',title:estimateDisplay(copy)+' создана',body:'Новая смета создана на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}}}
-function listen(){stopListeners();if(!root)return;const onListenerError=e=>cloudError(e,'sync');const er=root.child('estimates');const onAdded=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onChanged=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onRemoved=s=>{try{const id=String(s.key);if(!starting&&!dirtyIds().has(id)){const a=localEstimates().filter(x=>String(x.id)!==id);write(KEY,a);}const tk='master_group_deleted_estimates_v1';const trash=read(tk,[]).filter(x=>String(x?.id)!==id);write(tk,trash);try{window.__mgRenderTrash?.()}catch(_){}refreshUi();if(!starting)notify('Смета удалена навсегда','Изменение пришло с другого устройства')}catch(e){onListenerError(e)}};estimateListener={er,onAdded,onChanged,onRemoved};er.on('child_added',onAdded,onListenerError);er.on('child_changed',onChanged,onListenerError);er.on('child_removed',onRemoved,onListenerError);catalogListener=root.child('catalog').on('value',s=>{const v=s.val();if(!v||!Array.isArray(v.data))return;const at=Number(v._cloudUpdatedAt)||0;if(adoptRemoteCatalog(v.data,at,false)){refreshUi();notify('Каталог обновлён','Направления и услуги синхронизированы')}},onListenerError);companyListener=root.child('company').on('value',s=>{const v=s.val();if(!v||read(PROFDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem('master_group_company_sync_at')||0);if(at>localAt&&v.data){write(COMP,v.data);localStorage.setItem('master_group_company_sync_at',String(at));refreshUi();notify('Профиль обновлён','Данные компании синхронизированы')}},onListenerError);notificationListener=root.child('notifications').on('child_added',s=>{const n=s.val();if(!n||String(n.sourceClientId||'')===notificationClientId())return;addNotification(n,{cloud:false,toastIt:true})},onListenerError)}
+  function estimateContentSignature(value){
+    // Compare the representation that Firebase Realtime Database actually stores.
+    // The repository sanitizer converts undefined to null and drops invalid keys;
+    // RTDB omits null-valued object children. Normalize both sides identically.
+    let copy=FIREBASE_REPO?.sanitize?FIREBASE_REPO.sanitize(value||{}):JSON.parse(JSON.stringify(value||{}));
+    if(copy&&typeof copy==='object'&&!Array.isArray(copy)){
+      ['_cloudUpdatedAt','_clientUpdatedAt','_serverRevision','_syncUpdatedAt','_deleted','_deletedAt','_purged','_localNumberPending','_clientId'].forEach(k=>delete copy[k]);
+    }
+    const sort=value=>Array.isArray(value)?value.map(v=>v===undefined?null:sort(v)):(value&&typeof value==='object'?Object.keys(value).sort().reduce((out,k)=>{if(value[k]!==undefined&&value[k]!==null&&!/[.#$\[\]\/]/.test(k))out[k]=sort(value[k]);return out},{}):(typeof value==='number'&&!Number.isFinite(value)?0:value));
+    return JSON.stringify(sort(copy));
+  }
+  function applyRemoteEstimate(id,v){id=String(id||'');if(!id||!v)return;if(user&&v._ownerUid&&String(v._ownerUid)!==String(user.uid)){console.warn('MG ignored estimate owned by another account:',id);return;}const local=localEstimates();const idx=local.findIndex(x=>String(x.id)===id);if(v._deleted===true){if(v._purged===true){if(idx>=0){local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);}try{const tk='master_group_deleted_estimates_v1';write(tk,read(tk,[]).filter(x=>String(x?.id)!==id));}catch(_){}try{window.__mgRenderTrash?.()}catch(_){}refreshUi();return;}if(idx>=0&&dirtyIds().has(id))return;try{const tk='master_group_deleted_estimates_v1';const ta=JSON.parse(localStorage.getItem(scoped(tk))||'[]').filter(x=>x&&String(x.id)!==id);const tomb=JSON.parse(JSON.stringify(v));tomb.id=tomb.id||id;tomb._deletedAt=Number(v._deletedAt)||Date.now();tomb._deletedFrom='estimates';delete tomb._deleted;delete tomb._cloudUpdatedAt;ta.unshift(tomb);localStorage.setItem(scoped(tk),JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}}catch(err){console.warn('MG remote trash save failed',err)}if(idx>=0){const before=local[idx];local.splice(idx,1);write(KEY,local);clearDirty(id);clearDeleted(id);refreshUi();if(!starting)addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:id,type:'deleted',title:estimateDisplay(before)+' удалена',body:'Смета удалена на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}return}const remoteAt=Number(v._cloudUpdatedAt)||0;const remoteClientAt=Number(v._clientUpdatedAt)||0;const oldAt=Math.max(Number(idx>=0?local[idx]._syncUpdatedAt:0)||0,Number(idx>=0?local[idx]._clientUpdatedAt:0)||0);if(idx>=0&&dirtyIds().has(id)){
+      // Firebase echoes the estimate we just uploaded to the same device. A dirty
+      // local queue entry alone is not evidence of a second-device conflict.
+      const sameContent=estimateContentSignature(local[idx])===estimateContentSignature(v);
+      const sameDevice=String(v._clientId||'')===String(clientId);
+      if(sameDevice||sameContent)return;
+      if(remoteAt>oldAt||remoteClientAt>oldAt){
+        const revision=Math.max(remoteAt,remoteClientAt)||0;
+        addNotification({id:'n_conflict_'+id+'_'+revision,estimateId:id,type:'change',title:estimateDisplay(local[idx])+' — конфликт синхронизации',body:'Облачная версия отличается от локальной. Локальные изменения сохранены на устройстве.',at:revision||Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true});
+      }
+      return;
+    }if(idx>=0&&remoteAt<=oldAt&&remoteClientAt<=oldAt)return;const before=idx>=0?JSON.parse(JSON.stringify(local[idx])):null;let copy=JSON.parse(JSON.stringify(v));delete copy._cloudUpdatedAt;delete copy._deleted;delete copy._deletedAt;if(window.MGDataModel?.normalizeEstimate)copy=window.MGDataModel.normalizeEstimate(copy);copy._syncUpdatedAt=Math.max(remoteAt,remoteClientAt);if(idx>=0)local[idx]=copy;else local.unshift(copy);write(KEY,local);refreshUi();if(!starting){const changes=estimateChanges(before,copy);if(changes.length){const details=changes.map(c=>c.body).filter(Boolean);const kind=changes.some(c=>c.type==='payment')?'payment':changes.some(c=>c.type==='expense')?'expense':changes.some(c=>c.type==='status')?'status':'change';addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:kind,title:estimateDisplay(copy)+' изменена',body:details.length===1?details[0]:(details.length+' изменений: '+details.slice(0,4).join(' • ')+(details.length>4?' • и ещё '+(details.length-4):'')),at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}else if(idx<0){addNotification({id:'n_remote_'+Date.now()+'_'+Math.random().toString(36).slice(2),estimateId:copy.id,type:'created',title:estimateDisplay(copy)+' создана',body:'Новая смета создана на другом устройстве',at:Date.now(),sourceClientId:'remote'},{cloud:false,toastIt:true})}}}
+function listen(){stopListeners();if(!root)return;const onListenerError=e=>cloudError(e,'sync');const er=root.child('estimates');const onAdded=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onChanged=s=>{try{applyRemoteEstimate(s.key,s.val())}catch(e){onListenerError(e)}};const onRemoved=s=>{try{const id=String(s.key);if(!starting&&!dirtyIds().has(id)){const a=localEstimates().filter(x=>String(x.id)!==id);write(KEY,a);}const tk='master_group_deleted_estimates_v1';const trash=read(tk,[]).filter(x=>String(x?.id)!==id);write(tk,trash);try{window.__mgRenderTrash?.()}catch(_){}refreshUi();if(!starting)notify('Смета удалена навсегда','Изменение пришло с другого устройства')}catch(e){onListenerError(e)}};estimateListener={er,onAdded,onChanged,onRemoved};er.on('child_added',onAdded,onListenerError);er.on('child_changed',onChanged,onListenerError);er.on('child_removed',onRemoved,onListenerError);catalogListener=root.child('catalog').on('value',s=>{const v=s.val();if(!v||!Array.isArray(v.data))return;const at=Number(v._cloudUpdatedAt)||0;if(adoptRemoteCatalog(v.data,at,false)){refreshUi();notify('Каталог обновлён','Направления и услуги синхронизированы')}},onListenerError);companyListener=root.child('company').on('value',s=>{const v=s.val();if(!v||read(PROFDIRTY,false)===true)return;const at=Number(v._cloudUpdatedAt)||0;const localAt=Number(localStorage.getItem(scoped('master_group_company_sync_at'))||0);if(at>localAt&&v.data){write(COMP,v.data);localStorage.setItem(scoped('master_group_company_sync_at'),String(at));refreshUi();notify('Профиль обновлён','Данные компании синхронизированы')}},onListenerError);notificationListener=root.child('notifications').on('child_added',s=>{const n=s.val();if(!n||String(n.sourceClientId||'')===notificationClientId())return;addNotification(n,{cloud:false,toastIt:true})},onListenerError)}
 function stopListeners(){try{if(root){if(estimateListener){const er=estimateListener.er;er.off('child_added',estimateListener.onAdded);er.off('child_changed',estimateListener.onChanged);er.off('child_removed',estimateListener.onRemoved)}if(catalogListener)root.child('catalog').off('value',catalogListener);if(companyListener)root.child('company').off('value',companyListener);if(notificationListener)root.child('notifications').off('child_added',notificationListener)}}catch(e){}estimateListener=catalogListener=companyListener=notificationListener=null}
   async function syncNow(){
     if(!cloudMode||busy||!root||!user)return;
@@ -312,7 +500,13 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       const ids=Array.from(new Set([...Array.from(dirtyIds()),...queued.filter(x=>x.kind==='estimate').map(x=>String(x.id))]));
       for(const id of ids){
         try{await uploadEstimate(id);if(SYNC_ENGINE)SYNC_ENGINE.remove('estimate',id)}
-        catch(err){markDirty([id]);if(SYNC_ENGINE)SYNC_ENGINE.fail('estimate',id,err);throw err}
+        catch(err){
+          if(err?.code==='database/conflict'){
+            const dirty=dirtyIds();dirty.delete(String(id));write(DIRTY,Array.from(dirty));
+            if(SYNC_ENGINE)SYNC_ENGINE.remove('estimate',id);
+          } else {markDirty([id]);if(SYNC_ENGINE)SYNC_ENGINE.fail('estimate',id,err);}
+          throw err
+        }
       }
       const ts=tombstones();
       for(const [id,at] of ts){
@@ -327,12 +521,12 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       }
       await FIREBASE_REPO.acknowledge(user.uid,{appVersion:SYNC_VER,lastClientCheck:window.MGFirebaseClient.serverTimestamp()});
       status('Firebase подключён • Все данные сохранены',false);
-      msg('Все данные сохранены в облаке.');
+      msg('Все данные сохранены в Firebase.');
       return true;
     }catch(e){
       cloudError(e,'sync');
       status('Облако недоступно — данные сохранены на устройстве',true);
-      try{if(user)setTimeout(()=>{if(user&&cloudMode&&!busy)syncNow();else if(user&&!cloudMode)initialSync()},3000)}catch(_){}
+      try{if(user&&e?.code!=='database/conflict')setTimeout(()=>{if(user&&cloudMode&&!busy)syncNow();else if(user&&!cloudMode)initialSync()},3000)}catch(_){}
       return false;
     }finally{
       busy=false;
@@ -344,18 +538,18 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     await verifyCloudAccess();
     const snap=await root.child('estimates').once('value');const remote=snap.val()||{};const local=localEstimates();
     for(const e of local){if(!remote[e.id]||Number(e._syncUpdatedAt||0)>Number(remote[e.id]?._cloudUpdatedAt||0))markDirty([e.id])}
-    for(const id of Object.keys(remote)){const v=remote[id];if(v?._deleted&&v?._purged){const a=localEstimates().filter(e=>String(e.id)!==String(id));write(KEY,a);clearDirty(id);clearDeleted(id);try{const tk='master_group_deleted_estimates_v1';write(tk,read(tk,[]).filter(x=>String(x?.id)!==String(id)));}catch(_){}try{window.__mgRenderTrash?.()}catch(_){}continue;}if(v?._deleted){
+    for(const id of Object.keys(remote)){const v=remote[id];if(v?._ownerUid&&String(v._ownerUid)!==String(user.uid))continue;if(v?._deleted&&v?._purged){const a=localEstimates().filter(e=>String(e.id)!==String(id));write(KEY,a);clearDirty(id);clearDeleted(id);try{const tk='master_group_deleted_estimates_v1';write(tk,read(tk,[]).filter(x=>String(x?.id)!==String(id)));}catch(_){}try{window.__mgRenderTrash?.()}catch(_){}continue;}if(v?._deleted){
         const localMatch=localEstimates().find(e=>String(e.id)===String(id));
         const remoteAt=Number(v._cloudUpdatedAt)||Number(v._deletedAt)||0;
         const localAt=Number(localMatch?._syncUpdatedAt||0);
         if(!localMatch || remoteAt>=localAt){
           try{
             const tk='master_group_deleted_estimates_v1';
-            const ta=JSON.parse(localStorage.getItem(tk)||'[]').filter(x=>x&&String(x.id)!==String(id));
+            const ta=JSON.parse(localStorage.getItem(scoped(tk))||'[]').filter(x=>x&&String(x.id)!==String(id));
             const tomb=JSON.parse(JSON.stringify(v));
             tomb.id=tomb.id||id; tomb._deletedAt=Number(v._deletedAt)||Date.now(); tomb._deletedFrom='estimates';
             delete tomb._deleted; delete tomb._cloudUpdatedAt;
-            ta.unshift(tomb); localStorage.setItem(tk,JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}
+            ta.unshift(tomb); localStorage.setItem(scoped(tk),JSON.stringify(ta.slice(0,100)));try{window.__mgRenderTrash?.()}catch(_){}
           }catch(err){console.warn('MG startup trash save failed',err)}
           const a=localEstimates().filter(e=>String(e.id)!==String(id));write(KEY,a);clearDirty(id);clearDeleted(id);
         }
@@ -384,11 +578,14 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     busy=false;
     const ok=await syncNow();
     if(!ok)throw Object.assign(new Error('Initial cloud sync failed'),{code:'database/unavailable'});
+    await startUserMonitoring();
     status('Firebase подключён • Все данные сохранены',false);
-    msg('Аккаунт подключён. Данные загружены и проверены в облаке.');
+    msg(user.migrationWarning||'Аккаунт Firebase подключён. Данные синхронизированы.',!!user.migrationWarning);
     unlockAuthGate();
     refreshUi();
   }catch(e){cloudMode=false;stopListeners();const code=String(e?.code||'').toLowerCase(),text=String(e?.message||'').toLowerCase();const denied=code.includes('permission-denied')||text.includes('permission_denied')||text.includes('permission denied');const friendly=firebaseFriendlyError(e,'startup');console.error('Firebase sync:',e?.code||'unknown',e);if(denied){status('Облако не подключено',true);msg('Не удалось подключить облако. Откройте «Диагностика Firebase» — там будет точный этап и код ошибки.',true);keepAuthVisible();try{if(typeof toast==='function')toast('Облако не подключено — проверьте правила Firebase.')}catch(x){}return}msg(friendly,true);status('Облако не подключено',true);keepAuthVisible()}finally{starting=false;busy=false}}
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderConflictPanel,{once:true});else renderConflictPanel();
 
   /* Firebase Diagnostic Center: deterministic, non-destructive cloud test. */
   let mgFdLastReport='';
@@ -422,7 +619,7 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     addLog('Diagnostic started');
     let authUser=null, diagnosticPath='', diagnosticWritten=false, diagnosticRead=false, diagnosticDeleted=false;
     try{
-      const sdkOk=!!(window.firebase&&typeof firebase.initializeApp==='function'&&typeof firebase.auth==='function'&&typeof firebase.database==='function');
+      const sdkOk=!!(window.firebase&&typeof window.firebase.initializeApp==='function'&&typeof window.firebase.auth==='function'&&typeof window.firebase.database==='function');
       rows.push(mgFdRow('Firebase SDK',sdkOk,sdkOk?'Compat SDK загружен: app + auth + database.':'Firebase SDK не загружен. Проверьте интернет, CSP и загрузку gstatic.com.'));
       addLog('SDK: '+sdkOk);
       if(!sdkOk)throw Object.assign(new Error('Firebase SDK is not available'),{code:'sdk/not-loaded'});
@@ -437,27 +634,27 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
         addLog('initFirebase() => '+ok);
       }
       const authOk=!!auth;
-      rows.push(mgFdRow('Firebase Auth SDK',authOk,authOk?'Auth instance создан.':'Auth instance отсутствует.'));
+      rows.push(mgFdRow('Локальная авторизация',authOk,authOk?'Клиент Firebase Authentication создан.':'Клиент Firebase Authentication отсутствует.'));
       addLog('Auth instance: '+authOk);
       if(!authOk)throw Object.assign(new Error('Firebase Auth is not initialized'),{code:'auth/not-initialized'});
 
       authUser=auth.currentUser||user||null;
       if(!authUser){
-        rows.push(mgFdRow('Firebase Auth user',false,'Firebase Authentication не видит вошедшего пользователя. Интерфейс приложения и Firebase Auth могут быть в разных состояниях.','НЕТ USER'));
+        rows.push(mgFdRow('Аккаунт Firebase',false,'В приложении нет активного локального аккаунта.','НЕТ USER'));
         throw Object.assign(new Error('No Firebase Auth user'),{code:'auth/no-current-user'});
       }
-      rows.push(mgFdRow('Firebase Auth user',true,'Firebase UID: '+authUser.uid+' • email: '+(authUser.email||'не указан'),'UID OK'));
+      rows.push(mgFdRow('Аккаунт Firebase',true,'Firebase UID: '+authUser.uid+' • email: '+(authUser.email||'не указан'),'UID OK'));
       addLog('Auth UID: '+authUser.uid);
 
       const dbOk=!!db;
-      rows.push(mgFdRow('Realtime Database SDK',dbOk,dbOk?'Database instance создан.':'Database instance отсутствует.'));
+      rows.push(mgFdRow('Firebase Realtime Database',dbOk,dbOk?'Клиент Realtime Database создан.':'Клиент Realtime Database отсутствует.'));
       if(!dbOk)throw Object.assign(new Error('Realtime Database is not initialized'),{code:'database/not-initialized'});
 
       const testRoot=db.ref('users/'+authUser.uid);
       const connectedRef=db.ref('.info/connected');
       let connected=null;
       try{connected=(await connectedRef.once('value')).val();}catch(e){addLog('Connection probe error: '+(e.code||e.message));}
-      rows.push(mgFdRow('Database connection',connected===true,connected===true?'Firebase сообщает, что клиент подключён к Realtime Database.':connected===false?'Firebase сообщает, что соединение сейчас не установлено. Запись ниже даст точную причину.':'Не удалось определить состояние .info/connected.','CONNECTED='+String(connected)));
+      rows.push(mgFdRow('Связь с сервером',connected===true,connected===true?'Firebase Realtime Database отвечает через приложение.':'Нет ответа от Firebase.','CONNECTED='+String(connected)));
       addLog('.info/connected='+String(connected));
 
       const metaRef=testRoot.child('_meta/diagnosticCheck');
@@ -465,7 +662,7 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
         await metaRef.set(firebase.database.ServerValue.TIMESTAMP);
         const metaSnap=await metaRef.once('value');
         const metaOk=metaSnap.exists();
-        rows.push(mgFdRow('User branch read/write',metaOk,metaOk?'Запись и чтение /users/{uid}/_meta работают.':'Firebase не подтвердил запись в _meta.'));
+        rows.push(mgFdRow('Проверка записи',metaOk,metaOk?'Запись и чтение в Firebase работают.':'Firebase Realtime Database не подтвердил тестовую запись.'));
         addLog('Meta write/read: '+metaOk);
         try{await metaRef.remove()}catch(e){addLog('Meta cleanup: '+(e.code||e.message))}
         if(!metaOk)throw Object.assign(new Error('Meta write was not confirmed'),{code:'database/meta-not-confirmed'});
@@ -486,7 +683,7 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       }
       try{
         const snap=await diagnosticRef.once('value');diagnosticRead=snap.exists()&&snap.val()?._diagnostic===true;
-        rows.push(mgFdRow('ESTIMATES read-back',diagnosticRead,diagnosticRead?'Тестовая запись прочитана обратно из Firebase.':'Запись создана, но не была подтверждена чтением.'));
+        rows.push(mgFdRow('Проверка чтения',diagnosticRead,diagnosticRead?'Тестовая запись прочитана обратно из Firebase.':'Запись создана, но не была подтверждена чтением.'));
         addLog('Estimate read-back: '+diagnosticRead);
       }catch(e){
         const er=mgFdErr(e);rows.push(mgFdRow('ESTIMATES read-back',false,er.code+' — '+er.message,'ОШИБКА '+er.code));addLog('Estimate read error: '+er.code+' '+er.message);
@@ -503,21 +700,21 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
       const allGood=rows.filter(r=>r.includes('class="mg-fd-row fail"')).length===0 && diagnosticWritten && diagnosticRead;
       const elapsed=Date.now()-started;
       const summary=allGood
-        ? `<strong>✓ Firebase подключён и путь estimates работает.</strong><br>Auth, UID, Database, запись и чтение сметы подтверждены за ${elapsed} мс.`
-        : `<strong>⚠ Диагностика завершена с проблемой.</strong><br>Смотрите красную строку ниже — там указан точный Firebase code и сообщение.`;
+        ? `<strong>✓ Сервер Firebase подключён и хранение работает.</strong><br>Вход, запись и чтение подтверждены за ${elapsed} мс.`
+        : `<strong>⚠ Диагностика завершена с проблемой.</strong><br>Смотрите красную строку ниже — там указана причина.`;
       mgFdSet(summary,rows,log.join('\n'));
       mgFdLastReport='Master Group Firebase Diagnostic\n'+summary.replace(/<[^>]+>/g,'')+'\n\n'+rows.map(x=>x.replace(/<[^>]+>/g,' ')).join('\n')+'\n\n'+log.join('\n');
       if(copy)copy.disabled=false;
-      if(allGood){status('Firebase подключён • Диагностика OK',false);msg('Firebase Diagnostic Center: запись в estimates подтверждена.');}
-      else status('Firebase: найдена проблема',true);
+      if(allGood){status('Firebase подключён • Диагностика OK',false);msg('Проверочная запись в Firebase подтверждена.');}
+      else status('Acer: найдена проблема',true);
       return allGood;
     }catch(e){
       const er=mgFdErr(e);addLog('Fatal: '+er.code+' '+er.message);
-      const summary=`<strong>✕ Firebase не прошёл проверку.</strong><br>Причина: <span class="mg-fd-status">${mgFdEsc(er.code)}</span> — ${mgFdEsc(er.message)}`;
+      const summary=`<strong>✕ Проверка сервера Acer не пройдена.</strong><br>Причина: <span class="mg-fd-status">${mgFdEsc(er.code)}</span> — ${mgFdEsc(er.message)}`;
       mgFdSet(summary,rows,log.join('\n'));
       mgFdLastReport='Master Group Firebase Diagnostic\n'+summary.replace(/<[^>]+>/g,'')+'\n\n'+rows.map(x=>x.replace(/<[^>]+>/g,' ')).join('\n')+'\n\n'+log.join('\n');
       if(copy)copy.disabled=false;
-      status('Firebase: '+er.code,true);
+      status('Acer: '+er.code,true);
       return false;
     }finally{
       if(run)run.disabled=false;
@@ -546,8 +743,41 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     const gate=$('mgCloudAuth');
     if(gate){gate.hidden=true;gate.style.display='none'}
     if(!initFirebase()){showAuth('login');return}
+    window.addEventListener('mg:auth-offline-available',event=>{
+      if(!user&&event?.detail?.available){
+        showAuth('login');
+        msg('Firebase недоступен. Проверьте интернет и повторите вход; локальные данные останутся на устройстве.',false);
+      }
+    });
+    window.addEventListener('mg:auth-online-login-required',()=>{
+      if(user?.offlineLogin){showAuth('login');msg('Для синхронизации повторно войдите в Firebase после восстановления связи.',true);}
+    });
     auth.onAuthStateChanged(async u=>{
+      const previousUid=user?.uid||'';
+      const nextScope=u?.uid||(u?.offline?('offline-'+String(u.email||'local').toLowerCase()):'guest');
+      const changingAccount=previousUid!==String(u?.uid||'');
+      if(changingAccount&&previousUid){try{window.MGAppCore?.saveRecoveryNow?.()}catch(_){}}
+      if(!u||(user&&u.uid!==user.uid))stopUserMonitoring();
+      if(changingAccount){
+        cloudMode=false;busy=false;starting=false;pending=false;root=null;stopListeners();
+      }
       user=u||null;
+      const scopeChanged=window.__mgSetDataAccountScope?.(nextScope)||false;
+      if(scopeChanged){
+        try{window.MGAppCore?.reset?.()}catch(e){console.warn('MG account editor reset:',e)}
+        try{window.MGAppCore?.restoreRecovery?.()}catch(e){console.warn('MG account recovery restore:',e)}
+        try{window.MGCatalog?.applyStored?.()}catch(e){console.warn('MG account catalog switch:',e)}
+        try{refreshUi()}catch(e){console.warn('MG account UI refresh:',e)}
+      }
+      try{window.dispatchEvent(new CustomEvent('mg:auth-state',{detail:{email:user?.email||'',emailVerified:!!user?.emailVerified,uid:user?.uid||''}}));}catch(_){ }
+      if(u?.offline){
+        stopUserMonitoring();cloudMode=false;busy=false;starting=false;stopListeners();root=null;
+        status('Офлайн-доступ • данные сохранены на устройстве',true);
+        msg('Вы вошли в локальный режим. Сметы и изменения сохраняются на этом устройстве; для синхронизации нужен сервер.',false);
+        unlockAuthGate();
+        refreshUi();
+        return;
+      }
       if(!u){
         cloudMode=false;
         stopListeners();
@@ -581,10 +811,8 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
   if($('mgCloudLoginButton'))$('mgCloudLoginButton').onclick=openCloudLogin;
   window.__mgOpenCloudLogin=openCloudLogin;
   $('mgCloudLoginTab').onclick=()=>showAuth('login');
-  // This deployment is intended for one administrator account. Keep the existing
-  // controls in place, but do not permit public self-registration from the client.
-  $('mgCloudSignupTab').onclick=()=>msg('Регистрация через приложение отключена. Войдите в существующий аккаунт администратора.',true);
-  $('mgCloudCreate').onclick=()=>msg('Создание новых аккаунтов отключено. Сначала создайте аккаунт владельца в Firebase Console.',true);
+  $('mgCloudSignupTab').onclick=()=>showAuth('signup');
+  $('mgCloudCreate').onclick=()=>showAuth($('mgCloudSignupTab').classList.contains('active')?'login':'signup');
   $('mgCloudLocal').onclick=()=>{hideAuth();status('Локальный режим',true)};
   $('mgCloudPasswordToggle').onclick=()=>{
     const input=$('mgCloudPassword'),show=input.type==='password';
@@ -603,27 +831,41 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     }catch(err){cloudError(err,'auth')}
     finally{setTimeout(()=>{if($('mgCloudSignupTab').classList.contains('active'))$('mgCloudForgot').disabled=true;else $('mgCloudForgot').disabled=false},800)}
   };
-  $('mgCloudLogout').onclick=async()=>{if(!auth||!user)return;if(!confirm('Выйти из Firebase аккаунта?'))return;explicitLogout=true;try{await auth.signOut();unlockAuthGate();status('Локальный режим',true)}catch(err){explicitLogout=false;cloudError(err,'auth')}};
+  $('mgCloudLogout').onclick=async()=>{if(!auth||!user)return;if(!confirm('Выйти из аккаунта Firebase?'))return;explicitLogout=true;try{await auth.signOut();unlockAuthGate();status('Локальный режим',true)}catch(err){explicitLogout=false;cloudError(err,'auth')}};
   $('mgCloudAuthForm').addEventListener('submit',async e=>{
     e.preventDefault();
     if(!auth||busy||authAttempt)return;
     const signup=$('mgCloudSignupTab').classList.contains('active');
-    if(signup){msg('Регистрация через приложение отключена. Войдите в существующий аккаунт администратора.',true);return;}
     const email=$('mgCloudEmail').value.trim(),password=$('mgCloudPassword').value;
     authAttempt=true;keepAuthVisible();msg('Подключение…');$('mgCloudSubmit').disabled=true;
     try{
-      const persistence=firebase?.auth?.Auth?.Persistence;
-      if(typeof auth.setPersistence==='function'&&persistence){
-        await auth.setPersistence($('mgCloudRemember')?.checked===false?persistence.SESSION:persistence.LOCAL);
+      if(signup){
+        await auth.createUserWithEmailAndPassword(email,password,{remember:$('mgCloudRemember')?.checked!==false});
+      }else{
+        const persistence=window.firebase?.auth?.Auth?.Persistence;
+        if(typeof auth.setPersistence==='function'&&persistence){
+          await auth.setPersistence($('mgCloudRemember')?.checked===false?persistence.SESSION:persistence.LOCAL);
+        }
+        await auth.signInWithEmailAndPassword(email,password,{remember:$('mgCloudRemember')?.checked!==false});
       }
-      await auth.signInWithEmailAndPassword(email,password);
     }catch(err){authAttempt=false;keepAuthVisible();cloudError(err,'auth')}
     finally{$('mgCloudSubmit').disabled=false}
   });
   window.__mgFirebaseSyncNow=syncNow;
   window.__mgFirebaseRetry=async function(){if(!user){showAuth('login');return false}return await initialSync()};
-  window.addEventListener('online',()=>{if(user&&!cloudMode){setTimeout(()=>initialSync(),500)}else if(user&&cloudMode)scheduleUpload();if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOnlineAt:Date.now()})});
+  window.addEventListener('online',async()=>{
+    if(user?.offlineLogin&&auth?.reconnectOnline){
+      try{const ok=await auth.reconnectOnline();if(!ok)return;}catch(error){if(error?.code==='auth/invalid-credential'){showAuth('login');msg('Не удалось войти в Firebase. Проверьте пароль и повторите вход; локальные данные сохранены.',true);}else status('Firebase пока недоступен — локальные изменения сохранены',true);console.warn('Master Group reconnect:',error?.code||error);return;}
+      return; // reconnectOnline emits an authenticated user; the auth listener starts initialSync.
+    }
+    if(user&&!cloudMode){setTimeout(()=>initialSync(),500)}else if(user&&cloudMode)scheduleUpload();
+    if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOnlineAt:Date.now()});
+  });
   window.addEventListener('offline',()=>{if(SYNC_ENGINE)SYNC_ENGINE.setMeta({lastOfflineAt:Date.now()});status('Нет интернета — данные сохраняются на устройстве',true)});
+  window.addEventListener('pageshow',()=>{if(user&&cloudMode&&navigator.onLine)scheduleUpload(250)});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user&&cloudMode&&navigator.onLine){scheduleUpload(250);monitorHeartbeatNow();}});
+  window.addEventListener('focus',()=>{if(user&&cloudMode&&navigator.onLine)scheduleUpload(500)});
+  setInterval(()=>{if(user&&cloudMode&&navigator.onLine&&SYNC_ENGINE?.pending())scheduleUpload(0)},30000);
   window.__mgFirebaseVersion=SYNC_VER;try{renderNotifications();updateNotificationBadge()}catch(e){}boot();
   /* Global estimate-number allocator. It intentionally lives inside the Firebase
      closure so it uses the authenticated account and the shared transactional counter. */
@@ -632,7 +874,7 @@ function stopListeners(){try{if(root){if(estimateListener){const er=estimateList
     const n=await FIREBASE_REPO.nextEstimateNumber(user.uid);
     if(!Number.isFinite(Number(n))||Number(n)<1) throw new Error('Некорректный номер сметы');
     const out='MG-'+String(n).padStart(4,'0');
-    try{localStorage.setItem('mg_counter',String(n))}catch(_){ }
+    try{localStorage.setItem(scoped('mg_counter'),String(n))}catch(_){ }
     return out;
   };
 

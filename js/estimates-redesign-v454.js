@@ -2,6 +2,10 @@
 (function () {
   'use strict';
 
+  const mgScopedKey = key => {
+    try { return window.__mgAccountStorageKey ? window.__mgAccountStorageKey(key) : key; } catch (_) { return key; }
+  };
+
   const panel = document.getElementById('mgEstimateEditPanel');
   const filterCard = document.querySelector('#estimatesScreen .status-filter-card');
   const list = document.getElementById('estimatesList');
@@ -17,6 +21,12 @@
   let originContext = null;
   let nativeEditWorkflowActive = false;
   let nativeEditBackup = null;
+  // External editor mode is used by the administrator team workspace. It reuses
+  // this exact editor UI but delegates persistence to the selected employee UID.
+  let externalMode = false;
+  let externalSaveHandler = null;
+  let externalFinanceHandler = null;
+  let externalCloseHandler = null;
   const collapsedSections = { finance: false, payments: false, expenses: false };
   const flow = { open: false, step: 'directions', mode: 'add-direction', directionName: '', selected: new Set(), search: '' };
 
@@ -429,7 +439,7 @@
     const homeButtons = [...(editor?.querySelectorAll('[data-action="home"]') || [])].map(node => ({ text: node.textContent, hidden: node.hidden, ariaHidden: node.getAttribute('aria-hidden') }));
     const nextButton = editor?.querySelector('#step3 .calc-nav-actions [data-action="step3"]');
     let recovery = null;
-    try { recovery = localStorage.getItem('master_group_session_recovery_v1'); } catch (_) {}
+    try { recovery = localStorage.getItem(mgScopedKey('master_group_session_recovery_v1')); } catch (_) {}
     return {
       state: appState ? clone(appState) : null,
       controls,
@@ -552,12 +562,12 @@
     if (note) { note.textContent = backup.flowNoteText; note.hidden = !!backup.flowNoteHidden; }
     backup.screenStates.forEach(previous => { const node = document.getElementById(previous.id); if (node) node.hidden = previous.hidden; });
     try {
-      if (backup.recovery == null) localStorage.removeItem('master_group_session_recovery_v1');
-      else localStorage.setItem('master_group_session_recovery_v1', backup.recovery);
+      if (backup.recovery == null) localStorage.removeItem(mgScopedKey('master_group_session_recovery_v1'));
+      else localStorage.setItem(mgScopedKey('master_group_session_recovery_v1'), backup.recovery);
       setTimeout(() => {
         try {
-          if (backup.recovery == null) localStorage.removeItem('master_group_session_recovery_v1');
-          else localStorage.setItem('master_group_session_recovery_v1', backup.recovery);
+          if (backup.recovery == null) localStorage.removeItem(mgScopedKey('master_group_session_recovery_v1'));
+          else localStorage.setItem(mgScopedKey('master_group_session_recovery_v1'), backup.recovery);
         } catch (_) {}
       }, 250);
     } catch (_) {}
@@ -574,7 +584,8 @@
     panel.hidden = false;
     filterCard.hidden = false;
     list.hidden = false;
-    document.getElementById('estimatesScreen')?.classList.add('mge-editing');
+    const editorRoot = externalMode ? document.getElementById('teamScreen') : document.getElementById('estimatesScreen');
+    editorRoot?.classList.add('mge-editing');
     updateLiveTotals();
     if (flow.open) renderFlowModal();
   }
@@ -582,7 +593,7 @@
     const e = saved().find(item => String(item.id) === String(id));
     if (!e) { notify('Смета не найдена в сохранённых данных.'); return; }
     originContext = {
-      filter: localStorage.getItem('master_group_status_filter_v1') || document.querySelector('#statusFilters [data-status-filter].active')?.dataset.statusFilter || 'Все',
+      filter: localStorage.getItem(mgScopedKey('master_group_status_filter_v1')) || document.querySelector('#statusFilters [data-status-filter].active')?.dataset.statusFilter || 'Все',
       scrollY: Number(window.scrollY) || 0,
       listScrollTop: Number(list.scrollTop) || 0
     };
@@ -596,12 +607,42 @@
     panel.scrollTop = 0;
     window.scrollTo(0, 0);
   }
+  function openExternalEditor(estimate, options = {}) {
+    if (!estimate || estimate.id == null || typeof options.onSave !== 'function') {
+      notify('Не удалось открыть редактор сметы сотрудника.');
+      return false;
+    }
+    if (draft && !panel.hidden) {
+      notify('Сначала закройте уже открытый редактор.');
+      return false;
+    }
+    externalMode = true;
+    externalSaveHandler = options.onSave;
+    externalFinanceHandler = typeof options.onFinance === 'function' ? options.onFinance : null;
+    externalCloseHandler = typeof options.onClose === 'function' ? options.onClose : null;
+    originContext = null;
+    draft = window.MGDataModel.normalizeEstimate(clone(estimate));
+    lineItemsTouched = false;
+    activeId = String(estimate.id);
+    editStep = 'overview';
+    selectedDirections = new Set((draft.directions || []).map(direction => String(direction?.name || '').trim().toLocaleLowerCase()).filter(Boolean));
+    originalJSON = JSON.stringify(draft);
+    if (options.mount && panel.parentElement !== options.mount) options.mount.appendChild(panel);
+    renderEditor();
+    panel.scrollTop = 0;
+    try { panel.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch (_) {}
+    return true;
+  }
+
   function closeEditor() {
+    const wasExternal = externalMode;
+    const afterExternalClose = externalCloseHandler;
     flow.open = false;
     flow.selected = new Set();
     panel.hidden = true;
     panel.innerHTML = '';
     document.getElementById('estimatesScreen')?.classList.remove('mge-editing');
+    document.getElementById('teamScreen')?.classList.remove('mge-editing');
     filterCard.hidden = false;
     list.hidden = false;
     draft = null;
@@ -612,8 +653,16 @@
     selectedDirections = new Set();
     const origin = originContext;
     originContext = null;
+    externalMode = false;
+    externalSaveHandler = null;
+    externalFinanceHandler = null;
+    externalCloseHandler = null;
+    if (wasExternal) {
+      try { afterExternalClose?.(); } catch (error) { console.warn('External editor close callback failed:', error); }
+      return;
+    }
     if (origin?.filter) {
-      try { localStorage.setItem('master_group_status_filter_v1', origin.filter); } catch (_) {}
+      try { localStorage.setItem(mgScopedKey('master_group_status_filter_v1'), origin.filter); } catch (_) {}
     }
     try { window.MGAppFinance?.v58RenderEstimates?.(); } catch (_) {}
     const restore = () => {
@@ -740,14 +789,10 @@
     if (!draft) return false;
     syncFieldsToDraft();
     if (!validateDraft()) return false;
-    const old = saved();
-    const index = old.findIndex(item => String(item.id) === activeId);
-    if (index < 0) { notify('Смета не найдена. Обновите список и попробуйте снова.'); return false; }
-    const before = clone(old[index]);
     const updated = window.MGDataModel.normalizeEstimate({
       ...clone(draft),
-      id: before.id,
-      number: before.number,
+      id: draft.id || activeId,
+      number: draft.number,
       status: STATUS.includes(draft.status) ? draft.status : 'Черновик',
       object: draft.object || draft.address || '',
       address: draft.object || draft.address || '',
@@ -755,6 +800,40 @@
       directions: clone(draft.directions || []),
       items: (draft.directions || []).flatMap(direction => (direction.items || []).map(item => ({ ...item, direction: direction.name })))
     });
+
+    // Team editing must never touch the administrator's local estimate list or
+    // cloud-save queue. The employee-specific callback writes to users/{uid}. 
+    if (externalMode) {
+      if (typeof externalSaveHandler !== 'function') {
+        notify('Не настроено сохранение оригинала сотрудника.');
+        return false;
+      }
+      try {
+        const result = await externalSaveHandler(clone(updated));
+        if (!result) return false;
+        draft = window.MGDataModel.normalizeEstimate(clone(result === true ? updated : result));
+        originalJSON = JSON.stringify(draft);
+        if (!keepOpen) {
+          closeEditor();
+          notify('Оригинальная смета сотрудника сохранена.');
+        } else {
+          updateLiveTotals();
+          notify('Изменения сохранены в аккаунте сотрудника.');
+        }
+        return true;
+      } catch (error) {
+        console.error('External estimate save failed:', error);
+        notify(error?.message || 'Не удалось сохранить оригинал сметы сотрудника.');
+        return false;
+      }
+    }
+
+    const old = saved();
+    const index = old.findIndex(item => String(item.id) === activeId);
+    if (index < 0) { notify('Смета не найдена. Обновите список и попробуйте снова.'); return false; }
+    const before = clone(old[index]);
+    updated.id = before.id;
+    updated.number = before.number;
     old[index] = updated;
     if (window.MGStorage.persist(old) === false) {
       notify('Не удалось сохранить изменения. Проверьте доступное место и повторите попытку.');
@@ -768,9 +847,6 @@
       state.estimate = clone(updated);
       state.directions = window.MGEstimate?.normalizeDirections ? window.MGEstimate.normalizeDirections(updated) : clone(updated.directions);
     }
-    // Local persistence queues this estimate for Firebase; the direct save keeps
-    // the existing immediate-cloud-save path. A failed cloud attempt remains dirty
-    // and is retried by the existing sync queue.
     try {
       const cloudSave = window.__mgCloudSaveEstimate;
       if (typeof cloudSave === 'function') Promise.resolve(cloudSave(clone(updated))).catch(() => {});
@@ -802,6 +878,21 @@
   }
   async function runFinanceAction(kind) {
     if (!await commitDraft(true)) return;
+    if (externalMode) {
+      if (typeof externalFinanceHandler !== 'function') { notify('Финансовые действия для сметы сотрудника недоступны.'); return; }
+      try {
+        const updated = await externalFinanceHandler(kind, clone(draft));
+        if (updated) {
+          draft = window.MGDataModel.normalizeEstimate(clone(updated));
+          originalJSON = JSON.stringify(draft);
+          renderEditor();
+        }
+      } catch (error) {
+        console.error('External estimate finance action failed:', error);
+        notify(error?.message || 'Не удалось обновить финансы сметы сотрудника.');
+      }
+      return;
+    }
     const action = kind === 'payment' ? window.__mgDirectAddPayment : window.__mgDirectEditExpenses;
     if (typeof action !== 'function') { notify('Финансовое действие сейчас недоступно.'); return; }
     try { await action(activeId); } catch (_) {}
@@ -1056,7 +1147,7 @@
   });
   window.addEventListener('scroll', repositionItemMenus, true);
   window.addEventListener('resize', repositionItemMenus, { passive: true });
-  window.MGEstimateEditorV453 = { open: openEditor, close: closeEditor, addDirection: openNativeDirectionWorkflow, addService: openNativeDirectionWorkflow };
+  window.MGEstimateEditorV453 = { open: openEditor, openExternal: openExternalEditor, close: closeEditor, addDirection: openNativeDirectionWorkflow, addService: openNativeDirectionWorkflow };
   window.MGEstimateEditorV452 = window.MGEstimateEditorV453;
   window.MGEstimateEditorV451 = window.MGEstimateEditorV453;
   window.MGEstimateEditorV450 = window.MGEstimateEditorV453;

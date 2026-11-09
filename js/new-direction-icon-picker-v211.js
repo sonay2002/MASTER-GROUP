@@ -5,15 +5,33 @@
 (()=>{
   'use strict';
   const icons=[
-    ['clean','Клининг участка'],['camera','Видеонаблюдение'],['plumbing','Сантехника'],['electrical','Электрика'],
-    ['construction','Строительство'],['masonry','Кладочные работы'],['welding','Сварка'],['metal','Металлоконструкции'],
-    ['paint','Покраска'],['aircon','Кондиционирование'],['heating','Отопление'],['ventilation','Вентиляция'],
-    ['window','Окна и двери'],['roof','Кровля'],['finishing','Отделочные работы'],['landscape','Ландшафт'],
-    ['excavator','Земляные работы'],['transport','Вывоз мусора'],['sewer','Канализация'],['water','Водоснабжение'],
-    ['fence','Заборы'],['flooring','Напольные покрытия'],['tools','Ремонт техники'],['other','Другие работы']
+    ["clean","Клининг и уборка"],
+    ["welding","Сварочные работы"],
+    ["camera","Видеонаблюдение"],
+    ["plumbing","Сантехника"],
+    ["construction","Строительство"],
+    ["paint","Малярные работы"],
+    ["electrical","Электрика"],
+    ["tools","Инструмент и оборудование"],
+    ["roof","Кровельные работы"],
+    ["window","Окна и двери"],
+    ["aircon","Кондиционирование"],
+    ["ventilation","Вентиляция"],
+    ["masonry","Кладочные работы"],
+    ["flooring","Напольные покрытия"],
+    ["finishing","Отделочные работы"],
+    ["heating","Отопление"],
+    ["excavator","Земляные работы"],
+    ["transport","Перевозки и вывоз"],
+    ["metal","Металлоконструкции"],
+    ["landscape","Благоустройство и ландшафт"],
+    ["sewer","Канализация"],
+    ["fence","Заборы и ограждения"],
+    ["water","Водоснабжение"],
+    ["other","Прочие работы и услуги"]
   ];
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  const iconPath=ic=>`./icons/direction-approved/${ic==='drill'?'tools':ic}.png`;
+  const iconPath=ic=>`./icons/direction-approved/${ic==='drill'?'tools':ic}.png?v=${['clean','landscape','flooring','roof'].includes(ic)?561:560}`;
 
   function build(){
     const wrap=document.querySelector('.new-direction-icon-picker');
@@ -30,8 +48,8 @@
         <span class="mg211-chevron" aria-hidden="true">⌄</span>
       </button>
       <div class="mg211-icon-list" data-mg211-list hidden>
-        ${icons.map(([ic,name])=>`<button type="button" class="mg211-icon-choice${current===ic?' active':''}" data-mg211-icon="${ic}" aria-label="Выбрать иконку: ${esc(name)}">
-          <span class="mg211-icon-box"><img src="${iconPath(ic)}" alt="" draggable="false"></span><span>${esc(name)}</span>
+        ${icons.map(([ic,name])=>`<button type="button" class="mg211-icon-choice${current===ic?' active':''}" data-mg211-icon="${ic}" aria-label="Выбрать направление: ${esc(name)}" title="${esc(name)}">
+          <span class="mg211-icon-box"><img src="${iconPath(ic)}" alt="${esc(name)}" draggable="false"></span><span class="mg211-icon-choice-label">${esc(name)}</span>
         </button>`).join('')}
       </div>`;
   }

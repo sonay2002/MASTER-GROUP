@@ -17,6 +17,8 @@
   }
 
   function settingsIsVisible() {
+    // Desktop and tablet keep the workspace navigation visible on every page.
+    if (window.matchMedia('(min-width:700px)').matches) return false;
     const el = document.getElementById('settingsScreen');
     return !!el && !el.hidden;
   }

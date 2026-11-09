@@ -19,7 +19,7 @@
       if(st) st.screen='settingsScreen';
       window.scrollTo(0,0);
       try{ if(typeof window.MGAppCore?.renderSettings==='function') window.MGAppCore.renderSettings(); }catch(err){ console.warn('MG settings render:',err); }
-      try{ if(typeof window.MGAppFinance?.v59SetSettingsTab==='function') window.MGAppFinance.v59SetSettingsTab(localStorage.getItem('master_group_settings_tab_v1')||'catalog'); }catch(err){ console.warn('MG settings tab:',err); }
+      try{ if(typeof window.MGAppFinance?.v59SetSettingsTab==='function') window.MGAppFinance.v59SetSettingsTab(localStorage.getItem(window.__mgAccountStorageKey?window.__mgAccountStorageKey('master_group_settings_tab_v1'):'master_group_settings_tab_v1')||'catalog'); }catch(err){ console.warn('MG settings tab:',err); }
     }catch(err){ console.warn('MG force settings:',err); }
     return false;
   };

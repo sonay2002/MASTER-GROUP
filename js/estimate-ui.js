@@ -22,7 +22,7 @@
      key=(rules.find(([re])=>re.test(n))||[])[1]||'other';
    }
    const label=String(name||key).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-   return `<img src="./icons/direction-approved/${key}.png" class="mg-work-icon-image" alt="${label}" draggable="false" decoding="async">`;
+   return `<img src="./icons/direction-approved/${key}.png?v=${['clean','landscape','flooring','roof'].includes(key)?561:560}" class="mg-work-icon-image" alt="${label}" draggable="false" decoding="async">`;
  };
  ctx.$('categories').innerHTML=ctx.cats.map(([n,ic],i)=>{
    const d=ctx.state.directions.find(x=>x.name===n), selected=!!d;
@@ -164,7 +164,7 @@
     if(aliases[key]) key=aliases[key];
     if(!known.has(key)) key='other';
     const alt=String(name||key).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return `<img src="./icons/direction-approved/${key}.png" class="mg-work-icon-image" alt="${alt}" draggable="false" decoding="async">`;
+    return `<img src="./icons/direction-approved/${key}.png?v=${['clean','landscape','flooring','roof'].includes(key)?561:560}" class="mg-work-icon-image" alt="${alt}" draggable="false" decoding="async">`;
   }
   function directionIcon(d){ return approvedDirectionIcon(d?.icon||'', d?.name||''); }
 

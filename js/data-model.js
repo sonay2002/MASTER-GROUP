@@ -5,6 +5,7 @@
   const OLD='master_group_estimates_v5';
   const DRAFTS='master_group_estimate_drafts_v1';
   const VERSION_KEY='master_group_data_model_version_v2';
+  const scoped=key=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(key):key}catch(_){return key}};
   const n=v=>Math.max(0,Number(String(v??'').replace(',','.'))||0);
   const text=v=>String(v??'').trim();
   const clone=v=>JSON.parse(JSON.stringify(v));
@@ -66,8 +67,8 @@
     const e=normalizeEstimate({...d,id:d?.id||stableId('draft','legacy',i)});
     return {...d,id:e.id,directions:e.directions,items:e.items,category:e.category,client:e.client,phone:e.phone,address:e.address,object:e.address,dataModelVersion:2};
   }
-  function readJson(key, fallback){try{const v=JSON.parse(localStorage.getItem(key)||'null');return v==null?fallback:v}catch{return fallback}}
-  function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch{return false}}
+  function readJson(key, fallback){try{const v=JSON.parse(localStorage.getItem(scoped(key))||'null');return v==null?fallback:v}catch{return fallback}}
+  function writeJson(key,value){try{localStorage.setItem(scoped(key),JSON.stringify(value));return true}catch{return false}}
   function migrate(){
     let estimates=readJson(KEY,null);
     if(!Array.isArray(estimates)||!estimates.length){const old=readJson(OLD,[]);estimates=Array.isArray(old)?old:[];}

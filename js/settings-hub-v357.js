@@ -2,6 +2,7 @@
 (()=>{
   'use strict';
   const $=id=>document.getElementById(id);
+  const scoped=key=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(key):key}catch(_){return key}};
   const titles={catalog:'Каталог',company:'Компания',trash:'Корзина',updates:'Обновления',estimates:'Сметы'};
   const tabs=()=>document.querySelector('.settings-tabs-v2');
   const hero=()=>document.querySelector('.settings-hero-v2');
@@ -38,7 +39,7 @@
     hidePanels();
     const panel=$(panels[tab]); if(panel)panel.hidden=false;
     const title=$('settingsSectionTitle');if(title)title.textContent=titles[tab];
-    localStorage.setItem('master_group_settings_tab_v1',tab);
+    localStorage.setItem(scoped('master_group_settings_tab_v1'),tab);
     document.querySelectorAll('[data-settings-tab]').forEach(b=>{
       const active=b.dataset.settingsTab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',active?'true':'false');
     });

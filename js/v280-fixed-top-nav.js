@@ -8,7 +8,8 @@
     if(!dot)return;
     var count=0;
     try{
-      var raw=localStorage.getItem('master_group_notifications_v1');
+      var notificationKey=window.__mgAccountStorageKey?window.__mgAccountStorageKey('master_group_notifications_v1'):'master_group_notifications_v1';
+      var raw=localStorage.getItem(notificationKey);
       var list=raw?JSON.parse(raw):[];
       if(Array.isArray(list)){
         for(var i=0;i<list.length;i++) if(list[i] && !list[i].read) count++;

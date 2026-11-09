@@ -1,6 +1,7 @@
 (() => {
   const KEY='master_group_estimate_template_v2';
   const allowed=['template1','template2'];
+  const scoped=k=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(k):k}catch(_){return k}};
   const designs=[
     {id:'template1',name:'Классическая',desc:'Все работы в одной таблице'},
     {id:'template2',name:'По разделам',desc:'Группы работ и подытог по каждому разделу'}
@@ -13,11 +14,11 @@
     'elegant':'template2','bordered':'template1','detailed':'template2'
   };
   const normalize=value=>{const v=String(value??'').trim().toLowerCase();return allowed.includes(v)?v:(legacy[v]||null)};
-  const get=()=>{try{return normalize(localStorage.getItem(KEY))||normalize(localStorage.getItem('master_group_estimate_template_v1'))||'template1'}catch(_){return 'template1'}};
-  const resolveForEstimate=estimate=>{try{const selected=normalize(localStorage.getItem(KEY))||normalize(localStorage.getItem('master_group_estimate_template_v1'));if(selected)return selected}catch(_){}return normalize(estimate?.template)||'template1'};
+  const get=()=>{try{return normalize(localStorage.getItem(scoped(KEY)))||normalize(localStorage.getItem(scoped('master_group_estimate_template_v1')))||'template1'}catch(_){return 'template1'}};
+  const resolveForEstimate=estimate=>{try{const selected=normalize(localStorage.getItem(scoped(KEY)))||normalize(localStorage.getItem(scoped('master_group_estimate_template_v1')));if(selected)return selected}catch(_){}return normalize(estimate?.template)||'template1'};
   const set=value=>{
     const v=normalize(value)||'template1';
-    try{localStorage.setItem(KEY,v);localStorage.removeItem('master_group_estimate_template_v1')}catch(_){}
+    try{localStorage.setItem(scoped(KEY),v);localStorage.removeItem(scoped('master_group_estimate_template_v1'))}catch(_){}
     render(v);
     try{const app=window.MGAppCore,current=app?.state?.estimate;if(current){const updated={...current,template:v};app.state.estimate=updated;if(current.id&&typeof app.saved==='function'&&typeof app.persist==='function'){const list=app.saved(),i=list.findIndex(x=>String(x?.id)===String(current.id));if(i>=0){list[i]={...list[i],template:v};app.persist(list);try{if(typeof window.__mgCloudSaveEstimate==='function')window.__mgCloudSaveEstimate(updated)}catch(_){}}}}}catch(_){}
     try{window.dispatchEvent(new CustomEvent('mg-estimate-template-changed',{detail:{template:v}}))}catch(_){}
@@ -52,5 +53,6 @@
   document.addEventListener('click',event=>{const button=event.target.closest('[data-select-estimate-template]');if(!button)return;event.preventDefault();event.stopPropagation();set(button.dataset.selectEstimateTemplate);const name=button.closest('[data-estimate-template]')?.querySelector('.estimate-template-card-head b')?.textContent||'Шаблон',toast=document.getElementById('toast');if(toast){toast.textContent=`Выбран шаблон: ${name}`;toast.classList.add('show');clearTimeout(window.__mgTemplateToastTimer);window.__mgTemplateToastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}},true);
   window.MGEstimateTemplates={KEY,get,set,render,openSettings,resolveForEstimate,allowed:allowed.slice()};
   render();
+  window.addEventListener('mg:data-scope-changed',()=>render());
 })();
 window.addEventListener('mg-estimate-template-changed',()=>{try{const core=window.MGAppCore,e=core?.state?.estimate;if(e&&core?.state?.screen==='documentScreen'&&typeof core.documentBody==='function')core.documentBody(e)}catch(err){console.warn('MG template refresh failed',err)}});

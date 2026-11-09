@@ -7,7 +7,8 @@
     const fn=api().v58SetStatus || window.MGAppFinance?.v58SetStatus;
     if(typeof fn==='function'){ fn(id,select.value); return; }
     try{
-      const key=window.MGStorage?.KEY||'master_group_estimates_v1';
+      const rawKey=window.MGStorage?.KEY||'master_group_estimates_v1';
+      const key=window.__mgAccountStorageKey?window.__mgAccountStorageKey(rawKey):rawKey;
       const a=JSON.parse(localStorage.getItem(key)||'[]');
       const i=a.findIndex(e=>String(e.id)===String(id));
       if(i<0)return;

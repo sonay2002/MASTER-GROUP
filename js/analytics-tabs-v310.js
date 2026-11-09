@@ -29,7 +29,8 @@
   }
 
   function restoreSelected(){
-    const value = localStorage.getItem('master_group_analytics_tab_v1') || localStorage.getItem('mg_analytics_tab') || localStorage.getItem('v59_analytics_tab') || 'overview';
+    const scoped=k=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(k):k}catch(_){return k}};
+    const value = localStorage.getItem(scoped('master_group_analytics_tab_v1')) || localStorage.getItem(scoped('mg_analytics_tab')) || localStorage.getItem(scoped('v59_analytics_tab')) || 'overview';
     document.querySelectorAll('[data-analytics-tab]').forEach(btn => {
       const active = btn.dataset.analyticsTab === value;
       btn.classList.toggle('active', active);

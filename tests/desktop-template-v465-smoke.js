@@ -3,7 +3,7 @@ const assert = require('assert');
 const html = fs.readFileSync('index.html', 'utf8');
 const css = fs.readFileSync('css/desktop-layout-v465.css', 'utf8');
 const sw = fs.readFileSync('sw.js', 'utf8');
-assert.match(html, /app-version" content="v468"/);
+assert.match(html, /app-version" content="v494"/);
 assert.match(html, /desktop-layout-v465\.css\?v=465/);
 assert.match(html, /desktop-layout-v467\.css\?v=467/);
 assert.match(html, /data-open-archives[^>]*aria-label="Открыть архив смет"/);
@@ -22,7 +22,7 @@ assert.match(css, /\.home-summary,html body #dashboard \.home-quick\{display:con
 assert.match(css, /\.mg-new-estimate-btn::after\{content:"Новая смета"/);
 assert.match(css, /@media screen and \(min-width:700px\) and \(max-width:899px\)/);
 assert.match(css, /@media screen and \(max-width:699px\).*mg-desktop-only-nav/s);
-assert.match(sw, /master-group-v478-desktop-variant-a/);
+assert.match(sw, /master-group-v494-https-offline/);
 assert.match(sw, /desktop-layout-v465\.css\?v=465/);
 // No placeholder navigation modules from the AI-only collage were added.
 for (const fake of ['Клиенты', 'Материалы', 'Календарь', 'Заметки', 'Справочник']) assert.ok(!html.includes(`<b>${fake}</b>`), `Unexpected invented page: ${fake}`);

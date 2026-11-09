@@ -97,7 +97,7 @@
   function renderFinanceLegacy() {
     const list = estimates().map(normalize);
     const paid = list.reduce((s, e) => s + num(e.paid), 0);
-    const balance = list.reduce((s, e) => s + num(e.balance), 0);
+    const balance = list.reduce((s, e) => s + ((e.status === 'Отправлена' || e.status === 'В работе' || (e.status === 'Выполнена' && Number(e.paid) > 0 && Number(e.balance) > 0)) ? num(e.balance) : 0), 0);
     const expenses = list.reduce((s, e) => s + num(e.expenseTotal), 0);
     const profit = list.reduce((s, e) => s + num(e.total) - num(e.expenseTotal), 0);
 
@@ -130,10 +130,6 @@
           <div class="finance-line"><span>Зарплата</span><b>${money(e.expenseSalary)} MDL</b></div>
         </div>
         <div class="payment-list">${pays.length ? pays.map(p => `<div class="payment-row"><span>${escapeHtml(p.date || '')} · ${escapeHtml(p.method || '')}${p.note ? ' · ' + escapeHtml(p.note) : ''}</span><b>${money(p.amount)} MDL <button type="button" class="settings-small-btn danger" data-delete-payment="${escapeHtml(String(e.id))}:${escapeHtml(String(p.id))}" aria-label="Удалить оплату">×</button></b></div>`).join('') : '<div class="muted" style="margin-top:10px">Платежей пока нет.</div>'}</div>
-        <div class="estimate-finance-actions">
-          <button type="button" class="btn primary" data-add-payment="${escapeHtml(String(e.id))}">＋ Оплата</button>
-          <button type="button" class="btn secondary" data-edit-expenses="${escapeHtml(String(e.id))}">Расходы</button>
-        </div>
       </article>`;
     }).join('');
   }
@@ -242,7 +238,7 @@
     const totals = scoped.reduce((sum, estimate) => ({
       estimate: sum.estimate + Math.max(0, Number(estimate.total) || 0),
       paid: sum.paid + Math.max(0, Number(estimate.paid) || 0),
-      balance: sum.balance + Math.max(0, Number(estimate.balance) || 0),
+      balance: sum.balance + ((estimate.status === 'Отправлена' || estimate.status === 'В работе' || (estimate.status === 'Выполнена' && Number(estimate.paid) > 0 && Number(estimate.balance) > 0)) ? Math.max(0, Number(estimate.balance) || 0) : 0),
       expenses: sum.expenses + Math.max(0, Number(estimate.expenseTotal) || 0)
     }), { estimate: 0, paid: 0, balance: 0, expenses: 0 });
 
@@ -391,9 +387,7 @@
       '<div><span>Расходы</span><b>' + formatAmount(expenseTotal) + ' MDL</b></div>' +
       '<div class="finance-estimate-profit"><span>Прибыль по смете</span><b>' + formatAmount(profit) + ' MDL</b></div></div>' +
       '<div class="finance-detail-block"><h3>Расходы по категориям</h3><div class="finance-expense-chips">' + expenseMarkup + '</div></div>' +
-      '<div class="finance-detail-block"><h3>Оплаты</h3><div class="finance-payment-list">' + paymentMarkup + '</div></div>' +
-      '<div class="estimate-finance-actions"><button type="button" class="btn primary" data-add-payment="' + escapeHtml(id) + '">＋ Оплата</button>' +
-      '<button type="button" class="btn secondary" data-edit-expenses="' + escapeHtml(id) + '">＋ Расходы</button></div></div></details>';
+      '<div class="finance-detail-block"><h3>Оплаты</h3><div class="finance-payment-list">' + paymentMarkup + '</div></div></div></details>';
   }
 
   function renderFinance() {
@@ -418,7 +412,7 @@
 
     const totals = filtered.reduce((sum, estimate) => ({
       paid: sum.paid + Math.max(0, Number(estimate.paid) || 0),
-      balance: sum.balance + Math.max(0, Number(estimate.balance) || 0),
+      balance: sum.balance + ((estimate.status === 'Отправлена' || estimate.status === 'В работе' || (estimate.status === 'Выполнена' && Number(estimate.paid) > 0 && Number(estimate.balance) > 0)) ? Math.max(0, Number(estimate.balance) || 0) : 0),
       expenses: sum.expenses + Math.max(0, Number(estimate.expenseTotal) || 0),
       profit: sum.profit + (Math.max(0, Number(estimate.total) || 0) - Math.max(0, Number(estimate.expenseTotal) || 0))
     }), { paid: 0, balance: 0, expenses: 0, profit: 0 });
@@ -452,7 +446,7 @@
 
   function setTab(tab) {
     const value = tab === 'finance' ? 'finance' : 'overview';
-    try { localStorage.setItem('master_group_analytics_tab_v1', value); } catch (_) {}
+    try { localStorage.setItem(window.__mgAccountStorageKey?window.__mgAccountStorageKey('master_group_analytics_tab_v1'):'master_group_analytics_tab_v1', value); } catch (_) {}
     document.querySelectorAll('[data-analytics-tab]').forEach(button => {
       const active = button.dataset.analyticsTab === value;
       button.classList.toggle('active', active);
@@ -472,7 +466,7 @@
     openScreen('statsScreen');
     renderOverview();
     let tab = 'overview';
-    try { tab = localStorage.getItem('master_group_analytics_tab_v1') || 'overview'; } catch (_) {}
+    try { tab = localStorage.getItem(window.__mgAccountStorageKey?window.__mgAccountStorageKey('master_group_analytics_tab_v1'):'master_group_analytics_tab_v1') || 'overview'; } catch (_) {}
     setTab(tab);
   }
 

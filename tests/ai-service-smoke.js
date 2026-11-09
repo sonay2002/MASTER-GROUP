@@ -107,4 +107,6 @@ if(!source.includes('if(!localLlmAutoEnabled&&!manual)return null'))throw new Er
   if(!restored.ok||restored.count<1)throw new Error('Personal corrections could not be exported and restored');
   if(dictionaryCalls!==0)throw new Error(`Dictionary fallback must be disabled, called ${dictionaryCalls} times`);
   console.log('AI OpenRouter smoke OK');
+  // The service under test schedules long-lived retry timers; terminate only after all assertions pass.
+  process.exit(0);
 })();

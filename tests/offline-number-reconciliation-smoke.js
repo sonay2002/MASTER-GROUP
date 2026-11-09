@@ -5,7 +5,8 @@ if(!sync.includes('async function ensureCloudNumber(estimate)'))throw new Error(
 if(!sync.includes('FIREBASE_REPO.nextEstimateNumber(user.uid)'))throw new Error('Temporary numbers are not replaced with an account-scoped number');
 if(!sync.includes('const cloudNumberPromises=new Map()')||!sync.includes('if(inFlight)return inFlight'))throw new Error('Concurrent uploads can reserve multiple cloud numbers for one offline estimate');
 if(!sync.includes('e=await ensureCloudNumber(e)'))throw new Error('Queued uploads skip number reconciliation');
-if(!sync.includes('estimate=await ensureCloudNumber(estimate)'))throw new Error('Direct cloud saves skip number reconciliation');
+if(!sync.includes('const saved=await uploadEstimate(String(estimate.id));'))throw new Error('Direct cloud saves do not use the serialized upload path');
+if(!sync.includes('return withEstimateWriteLock(id,async()=>{'))throw new Error('Direct and queued saves do not share the per-estimate write lock');
 if(!core.includes('e._localNumberPending=true'))throw new Error('Offline estimates are not marked for later renumbering');
 if(!core.includes('if(state.estimate?._localNumberPending)e._localNumberPending=true'))throw new Error('Editing may lose the temporary-number marker');
 console.log('Offline number reconciliation smoke: PASS');

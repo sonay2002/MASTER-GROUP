@@ -35,9 +35,10 @@
     }
     const total = list.reduce((s, e) => s + num(e.total), 0);
     const paid = list.reduce((s, e) => s + num(e.paid), 0);
-    const left = list.reduce((s, e) => s + num(e.balance), 0);
+    const payable = e => e.status === 'Отправлена' || e.status === 'В работе' || (e.status === 'Выполнена' && num(e.paid) > 0 && num(e.balance) > 0);
+    const left = list.reduce((s, e) => s + (payable(e) ? num(e.balance) : 0), 0);
     const exp = list.reduce((s, e) => s + num(e.expenseTotal), 0);
-    const owing = list.filter(e => num(e.balance) > 0).length;
+    const owing = list.filter(e => payable(e) && num(e.balance) > 0).length;
     const withExp = list.filter(e => num(e.expenseTotal) > 0).length;
     const pct = total > 0 ? Math.min(100, Math.round(paid / total * 100)) : 0;
     const kpis = [

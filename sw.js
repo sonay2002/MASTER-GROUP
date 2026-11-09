@@ -1,15 +1,22 @@
-/* Master Group v478 — GitHub Pages safe Service Worker */
-// Supersedes master-group-v458-estimate-list-compact.
-const CACHE = 'master-group-v478-desktop-variant-a';
+/* Master Group v551 — flat 2D direction icon set. */
+// Caches the app shell and approved direction image assets.
+const CACHE = 'master-group-v566-animated-startup';
 const CORE = [
+  "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./js/zoom-lock.js",
-  "./css/styles.css?v=440",
+  "./css/styles.css?v=501",
+  "./css/sf-pro-v499.css?v=499",
+  "./css/admin-monitor-v503.css?v=509",
+
   "./css/contact-card-final.css?v=440",
   "./css/soft-ui.css?v=443",
   "./css/estimates-editor-v456.css?v=456",
+  "./css/team-estimate-editor-v517.css?v=517",
+  "./css/wizard-v518.css?v=562",
+  "./js/wizard-v518.js?v=562",
   "./css/estimates-list-compact-v458.css?v=458",
   "./css/estimates-status-palette-v460.css?v=460",
   "./css/desktop-layout-v465.css?v=465",
@@ -23,23 +30,27 @@ const CORE = [
   "./css/desktop-wizard-v476.css?v=476",
   "./css/desktop-catalog-v477.css?v=477",
   "./css/fix-hidden-screens-v478.css?v=478",
+  "./css/desktop-workspace-nav-v483.css?v=488",
+  "./js/account-data-scope-v510.js",
+  "./js/offline-db.js",
   "./js/state.js",
   "./js/data-model.js",
   "./js/storage.js",
   "./js/responsive-runtime-v351.js",
-  "./js/catalog.js?v=447",
+  "./js/catalog.js?v=533",
   "./js/estimate-engine.js",
   "./js/calculations.js",
   "./js/finance-service.js",
   "./js/estimate-ui.js",
   "./js/mg-ai-service.js",
-  "./js/estimate-core.js?v=447",
-  "./js/finance-ui.js?v=460",
-  "./js/estimates-redesign-v454.js?v=460",
+  "./js/estimate-core.js?v=512",
+  "./js/finance-ui.js?v=481",
+  "./js/estimates-redesign-v512.js?v=512",
   "./js/document-actions-v419.js?v=431",
   "./js/desktop-workspace-v465.js?v=468",
   "./js/desktop-master-detail-v470.js?v=470",
-  "./js/desktop-home-v471.js?v=471",
+  "./js/desktop-home-v471.js?v=481",
+  "./js/desktop-workspace-nav-v483.js?v=488",
   "./js/desktop-wizard-v476.js?v=476",
   "./js/desktop-catalog-v477.js?v=477",
   "./js/estimate-templates.js",
@@ -53,28 +64,47 @@ const CORE = [
   "./js/offline-engine.js",
   "./js/firebase-client.js",
   "./js/firebase-repository.js",
-  "./js/firebase-sync.js?v=447",
+  "./js/firebase-sync.js?v=510",
+  "./js/admin-monitor-v500.js?v=509",
   "./js/direct-interaction-fix.js",
   "./js/settings-trash-fix.js",
   "./js/status-direct-fix.js",
   "./js/filter-direct-fix.js",
   "./js/finance-final-fix.js",
   "./js/analytics-tabs-v310.js?v=311",
-  "./js/mg-icons-v208.js",
+  "./js/mg-icons-v208.js?v=560",
   "./js/settings-icon-runtime-v208.js",
-  "./js/new-direction-icon-picker-v211.js?v=213",
+  "./js/new-direction-icon-picker-v211.js?v=560",
   "./js/v280-fixed-top-nav.js",
   "./js/v282-fixed-top-nav-visibility.js",
   "./js/v284-settings-cleanup.js",
   "./js/settings-hub-v357.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/direction-approved/landscape.png",
-  "./icons/direction-approved/camera.png",
-  "./icons/direction-approved/metal.png",
-  "./icons/direction-approved/plumbing.png",
-  "./icons/direction-approved/electrical.png",
-];
+  "./icons/direction-approved/clean.png?v=561",
+"./icons/direction-approved/camera.png?v=560",
+"./icons/direction-approved/metal.png?v=560",
+"./icons/direction-approved/plumbing.png?v=560",
+"./icons/direction-approved/construction.png?v=560",
+"./icons/direction-approved/electrical.png?v=560",
+"./icons/direction-approved/excavator.png?v=560",
+"./icons/direction-approved/fence.png?v=565",
+"./icons/direction-approved/finishing.png?v=560",
+"./icons/direction-approved/flooring.png?v=561",
+"./icons/direction-approved/heating.png?v=560",
+"./icons/direction-approved/landscape.png?v=561",
+"./icons/direction-approved/masonry.png?v=560",
+"./icons/direction-approved/paint.png?v=560",
+"./icons/direction-approved/sewer.png?v=560",
+"./icons/direction-approved/transport.png?v=563",
+"./icons/direction-approved/roof.png?v=561",
+"./icons/direction-approved/ventilation.png?v=560",
+"./icons/direction-approved/water.png?v=560",
+"./icons/direction-approved/welding.png?v=560",
+"./icons/direction-approved/window.png?v=560",
+"./icons/direction-approved/aircon.png?v=560",
+"./icons/direction-approved/tools.png?v=560",
+"./icons/direction-approved/other.png?v=563"];
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE)
@@ -96,6 +126,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   // Never handle cross-origin resources (Firebase CDN, etc.) here.
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api/') || url.pathname === '/monitor') return;
   const isNavigation = event.request.mode === 'navigate' || url.pathname.endsWith('/index.html');
   const isAppAsset = /\.(?:js|css|json|webmanifest)$/i.test(url.pathname);
   const isApprovedIcon = /\/icons\/direction-approved\/[^/]+\.png$/i.test(url.pathname);
@@ -105,11 +136,14 @@ self.addEventListener('fetch', event => {
         .then(response => {
           if (response.ok) {
             const copy = response.clone();
-            caches.open(CACHE).then(cache => cache.put('./index.html', copy)).catch(() => {});
+            caches.open(CACHE).then(async cache => {
+              await cache.put(event.request, copy);
+              await cache.put('./index.html', response.clone());
+            }).catch(() => {});
           }
           return response;
         })
-        .catch(() => caches.match('./index.html'))
+        .catch(async () => (await caches.match(event.request)) || caches.match('./index.html'))
     );
     return;
   }

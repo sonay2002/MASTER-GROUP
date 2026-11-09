@@ -3,11 +3,12 @@
   'use strict';
   const TRASH='master_group_deleted_estimates_v1';
   const TAB='master_group_settings_tab_v1';
+  const scoped=k=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(k):k}catch(_){return k}};
   const $=id=>document.getElementById(id);
   const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   const money=n=>(Number(n)||0).toFixed(2);
-  const readTrash=()=>{try{const a=JSON.parse(localStorage.getItem(TRASH)||'[]');return Array.isArray(a)?a:[]}catch{return[]}};
-  const writeTrash=a=>localStorage.setItem(TRASH,JSON.stringify(a.slice(0,100)));
+  const readTrash=()=>{try{const a=JSON.parse(localStorage.getItem(scoped(TRASH))||'[]');return Array.isArray(a)?a:[]}catch{return[]}};
+  const writeTrash=a=>localStorage.setItem(scoped(TRASH),JSON.stringify(a.slice(0,100)));
   const saved=()=>window.MGStorage?.saved?.()||[];
   const persist=a=>window.MGStorage?.persist?.(a)!==false;
   function openSettings(){
@@ -65,7 +66,7 @@
     const clean=JSON.parse(JSON.stringify(e));delete clean._deletedAt;delete clean._deletedFrom;
     const a=readTrash().filter(x=>String(x.id)!==String(id));writeTrash(a);
     if(!persist([clean,...saved()])){writeTrash([e,...a]);return}
-    try{const k='master_group_cloud_deleted_v1';const d=JSON.parse(localStorage.getItem(k)||'[]').filter(x=>String(x?.id)!==String(id));localStorage.setItem(k,JSON.stringify(d));}catch{}
+    try{const k='master_group_cloud_deleted_v1';const d=JSON.parse(localStorage.getItem(scoped(k))||'[]').filter(x=>String(x?.id)!==String(id));localStorage.setItem(scoped(k),JSON.stringify(d));}catch{}
     try{window.__mgCloudMarkDirty?.([String(id)]);window.__mgCloudFlushRestore?.(clean);}catch{}
     renderTrash();$('trashDetailModal')?.classList.remove('open');
     window.MGAppCore?.renderEstimates?.();

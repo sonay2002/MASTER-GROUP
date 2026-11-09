@@ -8,10 +8,11 @@
     'В работе':'В работе','Выполненные':'Выполнена','Выполнена':'Выполнена',
     'Отменённые':'Отменена','Отменена':'Отменена'
   };
+  const scoped=key=>{try{return window.__mgAccountStorageKey?window.__mgAccountStorageKey(key):key}catch(_){return key}};
   function canonical(value){return MAP[String(value||'').trim()]||'Все';}
   function apply(value){
     const status=canonical(value);
-    localStorage.setItem(KEY,status);
+    localStorage.setItem(scoped(KEY),status);
     const finance=window.MGAppFinance;
     const core=window.MGAppCore;
     /* Keep the finance renderer as the single source of truth. */
