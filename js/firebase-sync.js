@@ -148,7 +148,7 @@
     msg('');
   }
   function hideAuth(){ const el=$('mgCloudAuth'); if(!el)return; el.hidden=true; el.style.display='none'; authAttempt=false }
-  function keepAuthVisible(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
+  function keepAuthVisible(){ try{window.MGSplash?.finish?.()}catch(_){} const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
   function lockAuthGate(){ const el=$('mgCloudAuth'); if(el){el.hidden=false;el.style.display='flex'} }
   function unlockAuthGate(){ try{window.MGSplash?.finish?.()}catch(_){} const el=$('mgCloudAuth'); if(el){el.hidden=true;el.style.display='none'} authAttempt=false }
   function localEstimates(){const a=read(KEY,[]);return Array.isArray(a)?a:[]}

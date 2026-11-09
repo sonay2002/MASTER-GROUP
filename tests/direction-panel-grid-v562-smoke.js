@@ -23,7 +23,7 @@ assert(css.includes('position:absolute!important;'), 'expanded panel must overla
 assert(css.includes('grid-template-columns:repeat(auto-fill,60px)!important;'), 'expanded panel must reflow to a grid');
 assert(css.includes('overflow-y:auto!important;'), 'expanded grid must scroll vertically');
 assert(css.includes('grid-auto-flow:column!important;'), 'collapsed rail must remain horizontal');
-assert(sw.includes("master-group-v562-expandable-directions-icon-audit"), 'service worker cache must be bumped');
+assert(sw.includes("master-group-v566-animated-startup"), 'service worker cache must be at the current release');
 assert(sw.includes('"./css/wizard-v518.css?v=562"'), 'service worker must include v562 CSS');
 assert(sw.includes('"./js/wizard-v518.js?v=562"'), 'service worker must include v562 JS');
 
